@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/features/history/history_store.dart';
@@ -24,6 +26,27 @@ void main() {
     await expectLater(settings.update(language: 'fil'), throwsStateError);
     expect(settings.language, 'en');
   });
+  test(
+    'appearance updates immediately and rolls back when persistence fails',
+    () async {
+      final storage = DelayedStorage();
+      final settings = SettingsStore(storage);
+      final update = settings.update(theme: ThemeMode.dark);
+      final failure = expectLater(update, throwsStateError);
+      await Future<void>.delayed(Duration.zero);
+      final duringSave = settings.theme;
+      storage.writeDone.completeError(StateError('save failed'));
+      await failure;
+      expect(duringSave, ThemeMode.dark);
+      expect(settings.theme, ThemeMode.system);
+    },
+  );
+}
+
+class DelayedStorage extends MemoryStorage {
+  final writeDone = Completer<void>();
+  @override
+  Future<void> write(String key, String value) => writeDone.future;
 }
 
 class FailingStorage extends MemoryStorage {

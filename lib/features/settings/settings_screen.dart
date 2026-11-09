@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
 import '../history/history_store.dart';
 import '../scan/reputation_client.dart';
+import '../sms/sms_service.dart';
 import 'settings_store.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -12,10 +13,14 @@ class SettingsScreen extends StatefulWidget {
     required this.settings,
     required this.history,
     this.preview = false,
+    this.sms,
+    this.onReviewSms,
   });
   final SettingsStore settings;
   final HistoryStore history;
   final bool preview;
+  final SmsService? sms;
+  final VoidCallback? onReviewSms;
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -70,7 +75,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       false;
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.settings,
+    listenable: Listenable.merge([
+      widget.settings,
+      if (widget.sms != null) widget.sms!,
+    ]),
     builder: (context, _) {
       final l = AppLocalizations.of(context);
       final settings = widget.settings;
@@ -122,8 +130,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                   onChanged: _busy
                       ? null
-                      : (value) =>
-                            _change(() => settings.update(language: value)),
+                      : (value) => _change(() async {
+                          await settings.update(language: value);
+                          await widget.sms?.setLanguage(settings.language);
+                        }),
                 ),
                 const SizedBox(height: 32),
                 Text(l.privacy, style: theme.textTheme.titleLarge),
@@ -206,9 +216,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         },
                 ),
                 const SizedBox(height: 32),
-                Text(l.smsOff, style: theme.textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(l.smsDetail),
+                if (widget.sms?.supported == true) ...[
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l.smsHeading),
+                    subtitle: Text(
+                      widget.sms!.enabled
+                          ? l.smsEnabled
+                          : widget.sms!.smsPermission
+                          ? l.smsDisabled
+                          : l.smsPermissionNeeded,
+                    ),
+                    value: widget.sms!.enabled,
+                    onChanged: _busy
+                        ? null
+                        : (value) async {
+                            if (value &&
+                                !await _confirm(
+                                  l.smsDisclosure,
+                                  l.smsDisclosureBody,
+                                  l.enableSmsChecks,
+                                )) {
+                              return;
+                            }
+                            await _change(
+                              () => widget.sms!.setEnabled(
+                                value,
+                                language: settings.language,
+                              ),
+                            );
+                          },
+                  ),
+                  Text(l.smsLimits),
+                  if (widget.sms!.degraded)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(l.smsDegraded),
+                    ),
+                  if (!widget.sms!.notifications) ...[
+                    const SizedBox(height: 12),
+                    Text(l.smsAlertsOff),
+                    TextButton(
+                      onPressed: _busy
+                          ? null
+                          : () => _change(widget.sms!.requestNotifications),
+                      child: Text(l.enableSmsAlerts),
+                    ),
+                  ],
+                  if (widget.onReviewSms != null)
+                    OutlinedButton.icon(
+                      onPressed: widget.onReviewSms,
+                      icon: const Icon(Icons.sms_outlined),
+                      label: Text(l.recentSms),
+                    ),
+                ] else ...[
+                  Text(l.smsOff, style: theme.textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  Text(l.smsDetail),
+                ],
                 const SizedBox(height: 32),
                 Text(l.about, style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),

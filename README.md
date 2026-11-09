@@ -37,7 +37,20 @@ $env:ANDROID_HOME = (Join-Path (Get-Location) '.toolchain/android-sdk')
 flutter build apk --debug --no-pub
 ```
 
-Debug APK: `build/app/outputs/flutter-apk/app-debug.apk`. This is a development build, not a signed store release. The application identity/signing and distribution evidence remain release decisions.
+The default flavor is `manual`; its APK is `build/app/outputs/flutter-apk/app-manual-debug.apk`. It omits restricted SMS permissions and the receiver.
+
+For the user-selected sideloaded SMS development build:
+
+```powershell
+flutter build apk --debug --flavor smsLab --no-pub
+flutter run --flavor smsLab
+```
+
+SMS APK: `build/app/outputs/flutter-apk/app-smslab-debug.apk`, development ID `com.example.usisa.smslab`. The two flavors install separately. These use development signing and are not public/store releases. Release identity/signing, physical-device calibration and Google Play eligibility remain gates.
+
+In SMS Lab, open Settings → Incoming SMS checks and confirm the disclosure before Android asks for RECEIVE_SMS. Review notifications have their own enable action. No READ_SMS, SEND_SMS, notification listener, inbox scan or third-party conversation access is requested. Android's permission-group wording can be broader than the actual RECEIVE_SMS permission.
+
+Authenticated system receipt queues encrypted event references, and WorkManager invokes the same Dart rules in a headless Flutter engine. Checks work without an open Activity but Android can delay them. Force-stop prevents receipt; reopening does not replay the inbox. Caution/high results produce generic private alerts; low results stay quiet. The Recent SMS reviews screen works with notifications denied. Temporary review access expires after 15 minutes, with a maximum of 20 events. Cleanup is scheduled and also runs on queue access; Android may delay physical deletion. Disabling SMS or Clear saved data invalidates workers, erases temporary records and cancels alerts. History and private drafts are independent opt-ins.
 
 ## Optional URL-reputation gateway
 
@@ -67,7 +80,9 @@ Android emulators can use `http://10.0.2.2:8787` in debug builds once debug clea
 ```powershell
 flutter analyze --no-pub
 flutter test --no-pub
+flutter test integration_test/manual_scan_test.dart -d emulator-5556 --flavor manual --no-pub
 node --test server/reputation.test.mjs
+dart run tool/evaluate.dart
 dart compile js tool/web_scanner_check.dart -o .verification/web_scanner_check.cjs
 node -e "globalThis.self = globalThis; require('./.verification/web_scanner_check.cjs');"
 ```
@@ -78,6 +93,8 @@ The JavaScript check covers the real scanner, including ID generation; VM tests 
 
 Messages are processed locally unless the user explicitly requests a disclosed external check. No background clipboard reads, automatic link opening, third-party chat scraping or SMS sending/deletion is implemented. Suspicious URLs are displayed as text.
 
-The first rules are versioned Dart constants shared by manual/OCR and the planned SMS worker. Rule changes currently require an app release. They are heuristics, not trained or calibrated probabilities. Evaluation on separate PH examples, native lifecycle/OCR checks, and a human Filipino copy review remain required before release.
+The first rules are versioned Dart constants shared by manual/OCR and the SMS worker. Rule changes require an app release. They are heuristics, not calibrated probabilities. A 36-example synthetic diagnostic set lives in `test/fixtures/evaluation_messages.json`; `dart run tool/evaluate.dart` generates `docs/evaluation.md`. Five of 20 labeled scams were missed in that small set; no accuracy claim is appropriate. Paraphrases/obfuscation remain a limitation and motivate the planned AI assessment.
+
+API35 emulator evidence includes incoming SMS after process removal, generic notification content, cold notification routing, system-picker OCR with editable review, and a native integration test for secure-storage round-trip/manual scanning. Native policy/encryption instrumentation and Dart race/permission tests are included. Real carrier/dual-SIM behavior, device-maker battery restrictions, TalkBack and human Filipino review still require physical-device/release validation. No live Web Risk or Groq call has been made. See `docs/feasibility.md` and `docs/release-checklist.md` for the detailed evidence boundary.
 
 Learn guidance draws on the [BSP fraud/scam primer](https://www.bsp.gov.ph/Media_and_Research/Primers%20Faqs/How_much_do_you_know_about_Fraud_and_Scam.pdf), [GCash account protection](https://help.gcash.com/hc/en-us/articles/19578518834457-How-can-I-protect-my-GCash-account), and [BPI social-engineering guidance](https://www.bpi.com.ph/personal/bank/digital-banking/online/cybersecurity/social-engineering-attacks). The app has no affiliation with these organizations.

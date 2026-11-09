@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
 import '../history/history_store.dart';
 import '../settings/settings_store.dart';
+import '../sms/sms_service.dart';
 import 'scan_controller.dart';
 import 'scan_models.dart';
 import 'result_screen.dart';
@@ -14,9 +15,19 @@ import 'ocr_service.dart';
 import 'screenshot_review_screen.dart';
 
 class ScanScreen extends StatefulWidget {
-  const ScanScreen({super.key, required this.history, required this.settings});
+  const ScanScreen({
+    super.key,
+    required this.history,
+    required this.settings,
+    this.sms,
+    this.onManageSms,
+    this.onReviewSms,
+  });
   final HistoryStore history;
   final SettingsStore settings;
+  final SmsService? sms;
+  final VoidCallback? onManageSms;
+  final VoidCallback? onReviewSms;
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
@@ -109,6 +120,7 @@ class _ScanScreenState extends State<ScanScreen> {
     }
     FocusScope.of(context).unfocus();
     final generation = widget.history.generation;
+    final retain = widget.history.enabled;
     await _scan.check(
       reviewed ??
           ScanInput(
@@ -123,7 +135,9 @@ class _ScanScreenState extends State<ScanScreen> {
     final result = _scan.result!;
     var saved = true;
     try {
-      await widget.history.save(result, expectedGeneration: generation);
+      if (retain) {
+        await widget.history.save(result, expectedGeneration: generation);
+      }
     } catch (_) {
       saved = false;
     }
@@ -297,11 +311,18 @@ class _ScanScreenState extends State<ScanScreen> {
                   TextButton(
                     onPressed: _scan.busy
                         ? null
-                        : () {
+                        : () async {
                             _inputs[_mode].clear();
                             if (_mode == 0) {
-                              _scheduleDraft();
+                              _draftTimer?.cancel();
+                              _draftRevision++;
+                              try {
+                                await widget.history.clearDraft();
+                              } catch (_) {
+                                _draftError();
+                              }
                             }
+                            if (!mounted) return;
                             setState(() => _scan.error = null);
                           },
                     child: Text(l.clear),
@@ -352,22 +373,54 @@ class _ScanScreenState extends State<ScanScreen> {
             const SizedBox(height: 32),
             const Divider(),
             const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.sms_outlined, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l.smsOff, style: theme.textTheme.titleSmall),
-                      const SizedBox(height: 6),
-                      Text(l.smsDetail),
-                    ],
+            ListenableBuilder(
+              listenable: widget.sms ?? widget.settings,
+              builder: (context, _) => Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.sms_outlined, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.sms?.supported == true
+                              ? widget.sms!.enabled
+                                    ? l.smsEnabled
+                                    : l.smsDisabled
+                              : l.smsOff,
+                          style: theme.textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          widget.sms?.supported == true
+                              ? widget.sms!.degraded
+                                    ? l.smsDegraded
+                                    : l.smsLimits
+                              : l.smsDetail,
+                        ),
+                        if (widget.sms?.supported == true) ...[
+                          if (!widget.sms!.notifications) Text(l.smsAlertsOff),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              TextButton(
+                                onPressed: widget.onManageSms,
+                                child: Text(l.manageSms),
+                              ),
+                              TextButton(
+                                onPressed: widget.onReviewSms,
+                                child: Text(l.recentSms),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 28),
             Text(l.reminderTitle, style: theme.textTheme.titleLarge),

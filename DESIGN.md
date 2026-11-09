@@ -1,6 +1,6 @@
 # Usisa design specification
 
-Status: proposed design for review; no product implementation is included.
+Status: approved direction; manual flows and the sideloaded Android SMS Lab are implemented. Groq AI is planned only. See README for current validation and release limits.
 Date: 9 November 2026.
 Companion: [implementation plan](docs/superpowers/plans/2026-11-09-usisa-implementation.md).
 
@@ -23,9 +23,9 @@ Detection cannot verify every sender or guarantee that content is safe. The app 
 
 ## 2. Current project and proposed decisions
 
-The repository currently contains the Flutter counter example in `lib/main.dart`, its counter test, and generated platform projects. `pubspec.yaml` declares Dart `^3.13.4`, Flutter, and `cupertino_icons`; no OCR, storage, networking, or product features exist. The Android application ID is still `com.example.usisa`, and release builds currently use debug signing.
+The project uses Dart/Flutter Material 3 with shared local rules, English/Filipino UI, on-device OCR, encrypted opt-in retention, and a consented URL-reputation gateway. Separate `manual` and `smsLab` Android flavors keep restricted SMS permissions out of the default build. Development identities remain `com.example.usisa` and `com.example.usisa.smslab`; signing and public release identity remain release gates.
 
-The following are design proposals, not choices already approved by the user:
+The following decisions define the approved implementation direction:
 
 | Decision | Proposal and reason |
 |---|---|
@@ -263,7 +263,7 @@ No-result and not-checked link states never use a green success checkmark. When 
 | # | Pattern | Application to Usisa |
 |---|---|---|
 | 1 | Optimistic UI updates | Adapt: immediate benign preference changes with rollback on save failure. Risk verdicts, permission grants, and completed checks wait for real confirmation. |
-| 2 | Skeleton loaders | Adopt selectively: initial history placeholders; truthful stage indicators for OCR/analysis. Static placeholders with reduced motion. |
+| 2 | Skeleton loaders | Adapt: explicit progress indicators during local initialization, OCR and SMS review. Defer list skeletons until a measured wait warrants them; no fabricated scan verdicts. |
 | 3 | Command palette | Defer: direct scan actions fit a phone better. Reconsider for a larger desktop product. |
 | 4 | Persistent sidebar navigation | Adapt: bottom navigation on phones, rail on wider layouts, preserved draft and scroll state. |
 | 5 | Loading and empty states | Adopt: specify initial, empty, filtered-empty, loading, partial, offline, denied, failed, and success states. |
@@ -272,11 +272,11 @@ No-result and not-checked link states never use a green success checkmark. When 
 | 8 | Throttling | Adapt: one active scan per revision, duplicate SMS event suppression, bounded server requests; distinct messages must not disappear. |
 | 9 | Smart form validation | Adopt: visible labels, inline correction, whitespace checks, explicit input limits, and HTTP(S)-only URL mode. |
 | 10 | Bulk list actions | Adopt for retained history: explicit selection, count, clear selection, and confirmed deletion. |
-| 11 | Reusable data table | Adapt: reusable history rows and tablet list/detail; no horizontally scrolling phone table. |
+| 11 | Reusable data table | Adapt: shared history rows, filters and selection in a width-limited list; details open as a secondary route. No horizontally scrolling phone table. |
 | 12 | Advanced filtering | Adopt a small useful subset: risk, source, date, combined search, count, and removable filters. |
 | 13 | Keyboard shortcuts | Adapt: standard editing, focus traversal, Escape/back dismiss, Enter search; accessible visible actions remain primary. Multiline Enter inserts a newline. |
 | 14 | Tier-based indicators | Adapt to risk labels with icon and explanation; no subscription tiers. Unavailable is not a risk tier. |
-| 15 | Onboarding data capture | Adapt: language and optional privacy preferences, no name/email/phone or mandatory account. Permissions requested when used. |
+| 15 | Onboarding data capture | Adapt: one short first-run explanation and Start checking. Language and optional privacy preferences live in Settings; no name/email/phone or account. Permissions requested when used. |
 | 16 | Referral and affiliate pages | Defer: outside the scam-checking task; never encourage sharing private scan content for growth. |
 | 17 | Custom 404 page | Adapt: recoverable missing/deleted result route, including expired notification targets. |
 | 18 | Mobile-optimized layouts | Adopt: 320 logical pixels upward, thumb-reachable actions, safe areas, keyboard handling, scalable text, tablet rail. |
@@ -297,7 +297,8 @@ No-result and not-checked link states never use a green success checkmark. When 
 - Request only capabilities actually used: no contact access, SMS sending/deletion, bulk inbox reading, accessibility-service scraping, or notification-listener workaround. Runtime consent and store approval are separate requirements.
 - SMS alerts are generic by default: “A message needs your review.” No sender/body/URL on the lock screen. Notification permission is separate on Android 13+. Turning checks off stops new processing and clears pending jobs. [Android notifications](https://developer.android.com/develop/ui/compose/notifications/notification-permission)
 - Enabling SMS checks also discloses temporary encrypted processing storage: at most 20 events, expiring 15 minutes after receipt, excluded from backup. This is separate from optional permanent history. Alerts may be delayed by Android scheduling; no checks are promised while force-stopped. If the queue fills, mark checks degraded and report that some messages could not be checked instead of silently claiming coverage. [Android persistent work](https://developer.android.com/develop/background-work/background-tasks/persistent)
-- Foreground and headless work share one durable privacy generation. Each SMS event captures that generation; a native serialized commit rechecks it before writing a temporary result or issuing a notification. Disabling checks or clearing saved data increments the generation and cancels/erases pending work and its notifications under the same gate. Background workers never write permanent history directly: opening an unexpired SMS result imports it through the foreground history store only when retention is enabled. Until opened, even an SMS result with history enabled expires after 15 minutes. History saves also carry their captured generation so a delayed import cannot undo a clear operation.
+- The native temporary SMS queue owns a durable privacy generation and serialized commit gate. Each event captures it; completion and notification dispatch recheck it. Disabling SMS or clearing saved data invalidates pending work and erases its records/notifications. Permanent history has one foreground writer with an independent erasure generation; clear-all waits for both native invalidation and serialized local erasure. Foreground import captures both scopes, so a delayed import cannot undo a clear. History and draft preferences remain independent. A future background history writer must use a durable shared gate before it is introduced.
+- Temporary SMS reviews become inaccessible after 15 minutes. WorkManager schedules encrypted-file cleanup, and every queue access also rejects/deletes expired content. Android can delay cleanup or prevent it while force-stopped; physical deletion at an exact wall-clock deadline is not promised. Only a result explicitly opened with history enabled may remain in the separate 30-day history.
 
 ## 10. Accessibility, evaluation, and completion
 

@@ -27,6 +27,22 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures { buildConfig = true }
+    flavorDimensions += "capability"
+    productFlavors {
+        create("manual") {
+            dimension = "capability"
+            buildConfigField("boolean", "SMS_ENABLED", "false")
+        }
+        create("smsLab") {
+            dimension = "capability"
+            applicationIdSuffix = ".smslab"
+            versionNameSuffix = "-sms-lab"
+            buildConfigField("boolean", "SMS_ENABLED", "true")
+        }
     }
 
     buildTypes {
@@ -46,4 +62,13 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("androidx.work:work-runtime:2.11.2")
+    // Keep Flutter integration tests and Android instrumentation on the same runner.
+    debugImplementation("androidx.test:runner:1.7.0")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }

@@ -788,6 +788,132 @@ abstract class AppLocalizations {
   /// **'Save encrypted copies of message text, links, and findings on this device for up to 30 days (latest 100 scans). You can erase them at any time.'**
   String get privateHistoryConsent;
 
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A second look before you act.'**
+  String get welcomeTitle;
+
+  /// No description provided for @welcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish messages in the Philippines.'**
+  String get welcomeBody;
+
+  /// No description provided for @welcomePrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual text checks work offline. History, cloud link checks, and incoming SMS checks are optional and start off. Usisa can miss scams; verify important requests independently.'**
+  String get welcomePrivacy;
+
+  /// No description provided for @startChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Start checking'**
+  String get startChecking;
+
+  /// No description provided for @smsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming SMS checks'**
+  String get smsHeading;
+
+  /// No description provided for @smsDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable incoming SMS checks?'**
+  String get smsDisclosure;
+
+  /// No description provided for @smsDisclosureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa reads only new SMS received while this feature is enabled. It checks them locally without uploading messages or reading your inbox or other apps. Up to 20 encrypted reviews expire after 15 minutes; Android may delay file cleanup. Android may delay or stop checks; force-stopping Usisa prevents them. Detection can miss scams.'**
+  String get smsDisclosureBody;
+
+  /// No description provided for @enableSmsChecks.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable SMS checks'**
+  String get enableSmsChecks;
+
+  /// No description provided for @smsPermissionNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS permission needed'**
+  String get smsPermissionNeeded;
+
+  /// No description provided for @smsEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming SMS checks enabled'**
+  String get smsEnabled;
+
+  /// No description provided for @smsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming SMS checks off'**
+  String get smsDisabled;
+
+  /// No description provided for @smsLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Local checks only. Android may delay checks; coverage is not guaranteed. Low-risk messages stay quiet.'**
+  String get smsLimits;
+
+  /// No description provided for @smsAlertsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off. Open recent SMS reviews here. You can also enable notifications in Android app settings.'**
+  String get smsAlertsOff;
+
+  /// No description provided for @enableSmsAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable review notifications'**
+  String get enableSmsAlerts;
+
+  /// No description provided for @smsDegraded.
+  ///
+  /// In en, this message translates to:
+  /// **'Some messages could not be checked. Coverage is incomplete. Try turning SMS checks off and on again.'**
+  String get smsDegraded;
+
+  /// No description provided for @manageSms.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage SMS checks'**
+  String get manageSms;
+
+  /// No description provided for @recentSms.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent SMS reviews'**
+  String get recentSms;
+
+  /// No description provided for @smsTemporary.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are removed after checking.'**
+  String get smsTemporary;
+
+  /// No description provided for @smsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No temporary SMS reviews. Messages may have expired, stayed quiet, or not been received while checks were enabled.'**
+  String get smsEmpty;
+
+  /// No description provided for @smsMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This SMS review is unavailable. It may have expired, been erased, or checks were turned off. Copy the message into Text to check it again.'**
+  String get smsMissing;
+
+  /// No description provided for @smsPending.
+  ///
+  /// In en, this message translates to:
+  /// **'This message has no completed check yet. Try again shortly, or copy it into Text for a manual check.'**
+  String get smsPending;
+
   /// No description provided for @continueAction.
   ///
   /// In en, this message translates to:

@@ -392,6 +392,79 @@ class AppLocalizationsFil extends AppLocalizations {
       'Mag-save ng encrypted na kopya ng teksto, link, at resulta sa device hanggang 30 araw (pinakahuling 100). Maaari itong burahin anumang oras.';
 
   @override
+  String get welcomeTitle => 'Suriin muna bago kumilos.';
+
+  @override
+  String get welcomeBody =>
+      'Tingnan ang mga babala sa kahina-hinalang mensahe at link. Para sa mga mensaheng English, Filipino, at Taglish sa Pilipinas.';
+
+  @override
+  String get welcomePrivacy =>
+      'Gumagana offline ang manwal na pagsuri. Naka-off muna at opsyonal ang history, online na pagsuri ng link, at papasok na SMS. Maaaring may scam na hindi matukoy; kumpirmahin ang mahahalagang hiling sa hiwalay na opisyal na paraan.';
+
+  @override
+  String get startChecking => 'Simulang magsuri';
+
+  @override
+  String get smsHeading => 'Pagsuri ng papasok na SMS';
+
+  @override
+  String get smsDisclosure => 'I-enable ang pagsuri ng SMS?';
+
+  @override
+  String get smsDisclosureBody =>
+      'Binabasa lang ng Usisa ang bagong SMS habang naka-enable ito. Lokal ang pagsuri: walang pag-upload, pagbasa ng inbox, o pag-access sa ibang app. Hanggang 20 naka-encrypt na pagsusuri ang nag-e-expire matapos ang 15 minuto; maaaring maantala ng Android ang pagbura. Maaaring maantala o ihinto ng Android ang pagsuri; hindi gagana kapag naka-force stop ang Usisa. Maaaring may scam na hindi matukoy.';
+
+  @override
+  String get enableSmsChecks => 'I-enable ang pagsuri ng SMS';
+
+  @override
+  String get smsPermissionNeeded => 'Kailangan ng pahintulot sa SMS';
+
+  @override
+  String get smsEnabled => 'Naka-enable ang pagsuri ng SMS';
+
+  @override
+  String get smsDisabled => 'Naka-off ang pagsuri ng SMS';
+
+  @override
+  String get smsLimits =>
+      'Lokal na pagsuri lang. Maaaring maantala ng Android; hindi garantisado ang saklaw. Walang alerto para sa mababang panganib.';
+
+  @override
+  String get smsAlertsOff =>
+      'Naka-off ang mga notification. Buksan dito ang kamakailang SMS. Maaari ring i-enable sa Android app settings.';
+
+  @override
+  String get enableSmsAlerts => 'I-enable ang mga notification';
+
+  @override
+  String get smsDegraded =>
+      'May mga mensaheng hindi nasuri. Hindi kumpleto ang saklaw. Subukang i-off at i-on muli ang pagsuri ng SMS.';
+
+  @override
+  String get manageSms => 'Pamahalaan ang pagsuri ng SMS';
+
+  @override
+  String get recentSms => 'Kamakailang SMS';
+
+  @override
+  String get smsTemporary =>
+      'Naka-encrypt ang pansamantalang kopya at nawawala 15 minuto mula sa pagtanggap. Binubura ang mababang panganib pagkatapos suriin.';
+
+  @override
+  String get smsEmpty =>
+      'Walang pansamantalang SMS. Maaaring nag-expire, mababa ang panganib, o hindi natanggap habang naka-enable ang pagsuri.';
+
+  @override
+  String get smsMissing =>
+      'Hindi magagamit ang pagsusuring ito. Maaaring nag-expire, nabura, o naka-off ang pagsuri. Kopyahin ang mensahe sa Text para suriin muli.';
+
+  @override
+  String get smsPending =>
+      'Wala pang natapos na pagsusuri. Subukan mamaya o kopyahin sa Text para sa manwal na pagsuri.';
+
+  @override
   String get continueAction => 'Magpatuloy';
 
   @override

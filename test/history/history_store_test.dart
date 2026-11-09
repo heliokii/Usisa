@@ -4,6 +4,35 @@ import 'package:usisa/features/scan/scam_analyzer.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 
 void main() {
+  test('disabling history keeps separately opted-in private draft', () async {
+    final history = HistoryStore(MemoryStorage());
+    await history.setEnabled(true);
+    await history.saveDraft(
+      'separate draft',
+      expectedGeneration: history.generation,
+    );
+    await history.setEnabled(false);
+    expect(await history.loadDraft(), 'separate draft');
+  });
+  test(
+    'clear waits for native SMS invalidation as well as local erasure',
+    () async {
+      var invalidated = false;
+      final history = HistoryStore(
+        MemoryStorage(),
+        clearSmsPrivacy: () async {
+          invalidated = true;
+        },
+      );
+      await history.saveDraft(
+        'private',
+        expectedGeneration: history.generation,
+      );
+      await history.clear();
+      expect(invalidated, isTrue);
+      expect(await history.loadDraft(), isNull);
+    },
+  );
   test(
     'private draft expires after 24 hours and clear rejects stale autosave',
     () async {

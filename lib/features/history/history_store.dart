@@ -39,14 +39,17 @@ class MemoryStorage implements PrivateStorage {
 }
 
 class HistoryStore extends ChangeNotifier {
-  HistoryStore(this.storage, {DateTime Function()? clock})
+  HistoryStore(this.storage, {DateTime Function()? clock, this.clearSmsPrivacy})
     : clock = clock ?? DateTime.now;
   final PrivateStorage storage;
   final DateTime Function() clock;
+  final Future<void> Function()? clearSmsPrivacy;
   final _entries = <ScanResult>[];
   List<ScanResult> get entries => List.unmodifiable(_entries);
   bool enabled = false;
   int generation = 0;
+  int _historyRevision = 0;
+  int _draftRevision = 0;
   Future<void> _tail = Future.value();
   bool _disposed = false;
 
@@ -89,30 +92,41 @@ class HistoryStore extends ChangeNotifier {
 
   Future<void> setEnabled(bool value) async {
     enabled = value;
-    generation++;
+    _historyRevision++;
     if (!value) {
-      await clear();
+      await _serial(() async {
+        final data = await storage.readAll();
+        for (final key in data.keys.where((key) => key.startsWith('scan.'))) {
+          await storage.delete(key);
+        }
+        _entries.clear();
+      });
     }
     _changed();
   }
 
-  Future<void> save(ScanResult result, {required int expectedGeneration}) =>
-      _serial(() async {
-        if (!enabled ||
-            expectedGeneration != generation ||
-            clock().difference(result.createdAt) >= const Duration(days: 30)) {
-          return;
-        }
-        await storage.write('scan.${result.id}', jsonEncode(result.toJson()));
-        if (expectedGeneration != generation) {
-          await storage.delete('scan.${result.id}');
-          return;
-        }
-        _entries.removeWhere((r) => r.id == result.id);
-        _entries.add(result);
-        await _prune();
-        _changed();
-      });
+  Future<void> save(ScanResult result, {required int expectedGeneration}) {
+    final revision = _historyRevision;
+    return _serial(() async {
+      if (!enabled ||
+          revision != _historyRevision ||
+          expectedGeneration != generation ||
+          clock().difference(result.createdAt) >= const Duration(days: 30)) {
+        return;
+      }
+      await storage.write('scan.${result.id}', jsonEncode(result.toJson()));
+      if (expectedGeneration != generation ||
+          revision != _historyRevision ||
+          !enabled) {
+        await storage.delete('scan.${result.id}');
+        return;
+      }
+      _entries.removeWhere((r) => r.id == result.id);
+      _entries.add(result);
+      await _prune();
+      _changed();
+    });
+  }
 
   Future<void> _prune() async {
     _entries.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -139,7 +153,10 @@ class HistoryStore extends ChangeNotifier {
 
   Future<void> clear() {
     generation++;
+    _draftRevision++;
+    _historyRevision++;
     return _serial(() async {
+      await clearSmsPrivacy?.call();
       final all = await storage.readAll();
       for (final key in all.keys.where(
         (k) => k.startsWith('scan.') || k == 'draft',
@@ -151,23 +168,27 @@ class HistoryStore extends ChangeNotifier {
     });
   }
 
-  Future<void> saveDraft(String text, {required int expectedGeneration}) =>
-      _serial(() async {
-        if (expectedGeneration != generation || text.runes.length > 10000) {
-          return;
-        }
-        if (text.isEmpty) {
-          await storage.delete('draft');
-          return;
-        }
-        await storage.write(
-          'draft',
-          jsonEncode({'text': text, 'createdAt': clock().toIso8601String()}),
-        );
-        if (expectedGeneration != generation) {
-          await storage.delete('draft');
-        }
-      });
+  Future<void> saveDraft(String text, {required int expectedGeneration}) {
+    final revision = _draftRevision;
+    return _serial(() async {
+      if (expectedGeneration != generation ||
+          revision != _draftRevision ||
+          text.runes.length > 10000) {
+        return;
+      }
+      if (text.isEmpty) {
+        await storage.delete('draft');
+        return;
+      }
+      await storage.write(
+        'draft',
+        jsonEncode({'text': text, 'createdAt': clock().toIso8601String()}),
+      );
+      if (expectedGeneration != generation || revision != _draftRevision) {
+        await storage.delete('draft');
+      }
+    });
+  }
 
   Future<String?> loadDraft() async {
     String? result;
@@ -195,7 +216,7 @@ class HistoryStore extends ChangeNotifier {
   }
 
   Future<void> clearDraft() {
-    generation++;
+    _draftRevision++;
     return _serial(() => storage.delete('draft'));
   }
 

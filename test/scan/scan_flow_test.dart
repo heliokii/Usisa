@@ -8,6 +8,8 @@ void main() {
   ) async {
     await tester.pumpWidget(const UsisaApp());
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Start checking'));
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.byType(TextField).first,
       'GCash: Send your OTP now or your account will be suspended. https://gcash.com.evil.test',
@@ -31,6 +33,8 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const UsisaApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Start checking'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Check message'));
     await tester.tap(find.text('Check message'));

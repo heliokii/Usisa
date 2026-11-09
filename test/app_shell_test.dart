@@ -9,7 +9,8 @@ void main() {
     tester,
   ) async {
     final storage = MemoryStorage();
-    await SettingsStore(storage).update(language: 'fil', theme: ThemeMode.dark);
+    await SettingsStore(storage)
+        .update(language: 'fil', theme: ThemeMode.dark, onboarded: true);
     await tester.pumpWidget(UsisaApp(storage: storage));
     await tester.pumpAndSettle();
     expect(find.text('Suriin bago pindutin.'), findsOneWidget);
@@ -21,6 +22,8 @@ void main() {
   });
   testWidgets('scan shell keeps draft across destinations', (tester) async {
     await tester.pumpWidget(const UsisaApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Start checking'));
     await tester.pumpAndSettle();
     expect(find.text('Check before you tap.'), findsOneWidget);
     await tester.enterText(find.byType(TextField).first, 'My private draft');
@@ -42,6 +45,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     await tester.pumpWidget(const UsisaApp());
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Start checking'));
+    await tester.tap(find.text('Start checking'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(NavigationBar), findsOneWidget);

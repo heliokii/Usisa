@@ -391,6 +391,79 @@ class AppLocalizationsEn extends AppLocalizations {
       'Save encrypted copies of message text, links, and findings on this device for up to 30 days (latest 100 scans). You can erase them at any time.';
 
   @override
+  String get welcomeTitle => 'A second look before you act.';
+
+  @override
+  String get welcomeBody =>
+      'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish messages in the Philippines.';
+
+  @override
+  String get welcomePrivacy =>
+      'Manual text checks work offline. History, cloud link checks, and incoming SMS checks are optional and start off. Usisa can miss scams; verify important requests independently.';
+
+  @override
+  String get startChecking => 'Start checking';
+
+  @override
+  String get smsHeading => 'Incoming SMS checks';
+
+  @override
+  String get smsDisclosure => 'Enable incoming SMS checks?';
+
+  @override
+  String get smsDisclosureBody =>
+      'Usisa reads only new SMS received while this feature is enabled. It checks them locally without uploading messages or reading your inbox or other apps. Up to 20 encrypted reviews expire after 15 minutes; Android may delay file cleanup. Android may delay or stop checks; force-stopping Usisa prevents them. Detection can miss scams.';
+
+  @override
+  String get enableSmsChecks => 'Enable SMS checks';
+
+  @override
+  String get smsPermissionNeeded => 'SMS permission needed';
+
+  @override
+  String get smsEnabled => 'Incoming SMS checks enabled';
+
+  @override
+  String get smsDisabled => 'Incoming SMS checks off';
+
+  @override
+  String get smsLimits =>
+      'Local checks only. Android may delay checks; coverage is not guaranteed. Low-risk messages stay quiet.';
+
+  @override
+  String get smsAlertsOff =>
+      'Notifications are off. Open recent SMS reviews here. You can also enable notifications in Android app settings.';
+
+  @override
+  String get enableSmsAlerts => 'Enable review notifications';
+
+  @override
+  String get smsDegraded =>
+      'Some messages could not be checked. Coverage is incomplete. Try turning SMS checks off and on again.';
+
+  @override
+  String get manageSms => 'Manage SMS checks';
+
+  @override
+  String get recentSms => 'Recent SMS reviews';
+
+  @override
+  String get smsTemporary =>
+      'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are removed after checking.';
+
+  @override
+  String get smsEmpty =>
+      'No temporary SMS reviews. Messages may have expired, stayed quiet, or not been received while checks were enabled.';
+
+  @override
+  String get smsMissing =>
+      'This SMS review is unavailable. It may have expired, been erased, or checks were turned off. Copy the message into Text to check it again.';
+
+  @override
+  String get smsPending =>
+      'This message has no completed check yet. Try again shortly, or copy it into Text for a manual check.';
+
+  @override
   String get continueAction => 'Continue';
 
   @override
