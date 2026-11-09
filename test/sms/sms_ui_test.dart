@@ -13,6 +13,12 @@ void main() {
   testWidgets(
     'SMS permission is requested only after the user confirms disclosure',
     (tester) async {
+      tester.view.physicalSize = const Size(320, 740);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       var permissionRequests = 0;
       const channel = MethodChannel('usisa/sms');
       final messenger =
@@ -52,9 +58,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(permissionRequests, 0);
       await tester.ensureVisible(find.text('Incoming SMS checks'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Incoming SMS checks'));
       await tester.pumpAndSettle();
       expect(find.text('Enable incoming SMS checks?'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsWidgets,
+      );
       expect(permissionRequests, 0);
       await tester.tap(find.text('Enable SMS checks'));
       await tester.pumpAndSettle();

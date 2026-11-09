@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -26,7 +28,8 @@ class ResultScreen extends StatefulWidget {
   State<ResultScreen> createState() => _ResultScreenState();
 }
 
-class _ResultScreenState extends State<ResultScreen> {
+class _ResultScreenState extends State<ResultScreen>
+    with WidgetsBindingObserver {
   late ScanResult _result = widget.result;
   late bool _saveFailed = !widget.saved;
   bool _checkingLinks = false;
@@ -35,8 +38,67 @@ class _ResultScreenState extends State<ResultScreen> {
   Finding? _highlight;
   bool _originalOpen = false;
   final _originalKey = GlobalKey();
+  String _coverageText(BuildContext context, LinkResult link) {
+    final l = AppLocalizations.of(context);
+    var text = link.reputationExpired
+        ? '${link.reputation == ReputationState.matched ? '${l.previousThreat}\n' : ''}${l.reputationExpired}'
+        : switch (link.currentReputation) {
+            ReputationState.matched => l.knownThreat,
+            ReputationState.noMatch => l.notListed,
+            ReputationState.unavailable => l.linkUnavailable,
+            ReputationState.checking => l.checkingLinks,
+            ReputationState.notRequested => l.notChecked,
+          };
+    final at = link.checkedAt?.toLocal();
+    if (at != null) {
+      final material = MaterialLocalizations.of(context);
+      final date =
+          '${material.formatCompactDate(at)} ${material.formatTimeOfDay(TimeOfDay.fromDateTime(at))}';
+      text += '\n${l.checkedAtLabel(date)}';
+    }
+    return text;
+  }
+
+  Timer? _coverageTimer;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scheduleCoverageExpiry();
+  }
+
+  void _scheduleCoverageExpiry() {
+    _coverageTimer?.cancel();
+    final now = DateTime.now();
+    final deadlines =
+        _result.links
+            .map((l) => l.reputationDeadline)
+            .whereType<DateTime>()
+            .where((d) => d.isAfter(now))
+            .toList()
+          ..sort();
+    if (deadlines.isNotEmpty) {
+      _coverageTimer = Timer(deadlines.first.difference(now), () {
+        if (mounted) {
+          setState(() {});
+          _scheduleCoverageExpiry();
+        }
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      setState(() {});
+      _scheduleCoverageExpiry();
+    }
+  }
+
   @override
   void dispose() {
+    _coverageTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     _linkRevision++;
     _client?.close();
     super.dispose();
@@ -70,7 +132,13 @@ class _ResultScreenState extends State<ResultScreen> {
                 ))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: SelectableText(link.original),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SelectableText(link.uri!.removeFragment().toString()),
+                        if (link.schemeAssumed) Text(l.assumedHttps),
+                      ],
+                    ),
                   ),
               ],
             ),
@@ -139,11 +207,13 @@ class _ResultScreenState extends State<ResultScreen> {
               : link.withReputation(
                   check.state,
                   at: check.checkedAt,
+                  until: check.expiresAt,
                   threats: check.threatTypes,
                 );
         }).toList(),
       );
       setState(() => _result = updated);
+      _scheduleCoverageExpiry();
       if (generation != null) {
         try {
           await widget.history!.save(updated, expectedGeneration: generation);
@@ -282,13 +352,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     tilePadding: EdgeInsets.zero,
                     leading: const Icon(Icons.link_rounded),
                     title: Text(link.host),
-                    subtitle: Text(switch (link.reputation) {
-                      ReputationState.matched => l.knownThreat,
-                      ReputationState.noMatch => l.notListed,
-                      ReputationState.unavailable => l.linkUnavailable,
-                      ReputationState.checking => l.checkingLinks,
-                      ReputationState.notRequested => l.notChecked,
-                    }),
+                    subtitle: Text(_coverageText(context, link)),
                     children: [
                       Align(
                         alignment: Alignment.centerLeft,
@@ -301,6 +365,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                 link.original,
                                 style: theme.textTheme.bodyLarge,
                               ),
+                              if (link.schemeAssumed) Text(l.assumedHttps),
                               for (final finding in link.findings)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 12),

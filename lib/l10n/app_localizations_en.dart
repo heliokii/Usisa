@@ -249,7 +249,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyOffBody =>
-      'Messages stay in this session. Enable encrypted history to keep up to 100 checks for 30 days on this device.';
+      'Messages stay in this session. Enable encrypted history for the latest 100 checks, with review access expiring after 30 days.';
 
   @override
   String get enableHistory => 'Enable private history';
@@ -353,7 +353,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get draftDetail =>
-      'Keep one encrypted text draft for up to 24 hours. Screenshots are never saved.';
+      'Restore one encrypted text draft within 24 hours. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Screenshots are never saved.';
 
   @override
   String get onlineChecks => 'Online link checks';
@@ -388,7 +388,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privateHistoryConsent =>
-      'Save encrypted copies of message text, links, and findings on this device for up to 30 days (latest 100 scans). You can erase them at any time.';
+      'Save encrypted copies of message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Clear saved data erases them immediately when storage is available.';
+
+  @override
+  String get assumedHttps =>
+      'HTTPS was assumed because the link has no scheme. No page was opened.';
+
+  @override
+  String get reputationExpired =>
+      'Previous online result is no longer current. Check again.';
+
+  @override
+  String get previousThreat => 'Previously listed as a threat.';
+
+  @override
+  String checkedAtLabel(String date) {
+    return 'Last checked: $date';
+  }
+
+  @override
+  String get retentionCleanupFailed =>
+      'Some expired data could not be erased. Try Clear saved data in Settings.';
 
   @override
   String get welcomeTitle => 'A second look before you act.';

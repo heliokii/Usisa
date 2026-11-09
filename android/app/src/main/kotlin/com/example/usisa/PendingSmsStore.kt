@@ -24,7 +24,7 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
     val enabled: Boolean get() = synchronized(lock) { prefs.getBoolean("enabled", false) }
     val degraded: Boolean get() = synchronized(lock) { prefs.getBoolean("degraded", false) }
     val language: String get() = synchronized(lock) { prefs.getString("language", "en") ?: "en" }
-    enum class PutResult { ADDED, DUPLICATE, FULL, DISABLED }
+    enum class PutResult { ADDED, DUPLICATE, FULL, DISABLED, STALE }
     companion object {
         val lock = Any()
         private val idPattern = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
@@ -94,8 +94,9 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
             value
         } catch (_: Exception) { remove(id); markDegraded(); null }
     }
-    fun put(id: String, body: String): PutResult = synchronized(lock) {
+    fun put(id: String, body: String, receiptGeneration: Long, receivedAt: Long = clock()): PutResult = synchronized(lock) {
         if (!enabled) return@synchronized PutResult.DISABLED
+        if (receiptGeneration != generation || !SmsPolicy.isLive(receivedAt, clock())) return@synchronized PutResult.STALE
         require(idPattern.matches(id))
         val seen = try { JSONObject(prefs.getString("seen", "{}")!!) } catch (_: Exception) { JSONObject() }
         val now = clock()
@@ -105,7 +106,7 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
         if (ids().size >= SmsPolicy.MAX_EVENTS || body.codePointCount(0, body.length) > 10000) {
             markDegraded(); return@synchronized PutResult.FULL
         }
-        write(id, JSONObject().put("id", id).put("body", body).put("receivedAt", now).put("generation", generation))
+        write(id, JSONObject().put("id", id).put("body", body).put("receivedAt", receivedAt).put("generation", receiptGeneration))
         // shortcut: keep 200 fingerprints for 15 minutes; enlarge after measured carrier retry bursts.
         if (seen.length() >= 200) seen.keys().asSequence().minByOrNull { seen.optLong(it) }?.let { seen.remove(it) }
         seen.put(id, now)

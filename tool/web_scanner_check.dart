@@ -11,9 +11,14 @@ void main() {
   final benign = analyzer.analyze(
     const ScanInput('Your OTP is 123456. Never share your OTP.'),
   );
+  final bare = analyzer.analyze(
+    const ScanInput('bit.ly/example', source: ScanSource.sms),
+  );
   if (result.risk != RiskLevel.high ||
       benign.risk != RiskLevel.low ||
-      result.id == benign.id) {
+      result.id == benign.id ||
+      bare.risk != RiskLevel.caution ||
+      bare.links.single.uri.toString() != 'https://bit.ly/example') {
     throw StateError(
       'JavaScript target must produce distinct IDs and correct scam/benign results.',
     );

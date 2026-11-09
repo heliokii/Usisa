@@ -18,7 +18,8 @@ class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION || !permitted(context)) return
         val store = PendingSmsStore(context)
-        if (!store.enabled) return
+        val receiptGeneration = synchronized(PendingSmsStore.lock) { if (!store.enabled) return; store.generation }
+        val receivedAt = System.currentTimeMillis()
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
         if (messages.isEmpty() || messages.map { it.originatingAddress }.distinct().size != 1) return
         val pdus = intent.extras?.get("pdus") as? Array<*> ?: return
@@ -29,12 +30,20 @@ class SmsReceiver : BroadcastReceiver() {
         val pending = goAsync()
         io.execute {
             try {
-                when (store.put(id, body)) {
+                when (store.put(id, body, receiptGeneration, receivedAt)) {
                     PendingSmsStore.PutResult.ADDED -> SmsCheckWorker.enqueue(context, id)
-                    PendingSmsStore.PutResult.FULL -> SmsAlerts.show(context, "queue-limit", true)
+                    PendingSmsStore.PutResult.FULL -> synchronized(PendingSmsStore.lock) {
+                        if (SmsPolicy.canCommit(receiptGeneration, store.generation, store.enabled) && permitted(context)) SmsAlerts.show(context, "queue-limit", true)
+                    }
                     else -> Unit
                 }
-            } catch (_: Exception) { store.markDegraded(); SmsAlerts.show(context, "queue-error", true) }
+            } catch (_: Exception) {
+                synchronized(PendingSmsStore.lock) {
+                    if (SmsPolicy.canCommit(receiptGeneration, store.generation, store.enabled) && permitted(context)) {
+                        store.markDegraded(); SmsAlerts.show(context, "queue-error", true)
+                    }
+                }
+            }
             finally { pending.finish() }
         }
     }

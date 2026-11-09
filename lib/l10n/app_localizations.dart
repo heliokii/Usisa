@@ -527,7 +527,7 @@ abstract class AppLocalizations {
   /// No description provided for @historyOffBody.
   ///
   /// In en, this message translates to:
-  /// **'Messages stay in this session. Enable encrypted history to keep up to 100 checks for 30 days on this device.'**
+  /// **'Messages stay in this session. Enable encrypted history for the latest 100 checks, with review access expiring after 30 days.'**
   String get historyOffBody;
 
   /// No description provided for @enableHistory.
@@ -725,7 +725,7 @@ abstract class AppLocalizations {
   /// No description provided for @draftDetail.
   ///
   /// In en, this message translates to:
-  /// **'Keep one encrypted text draft for up to 24 hours. Screenshots are never saved.'**
+  /// **'Restore one encrypted text draft within 24 hours. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Screenshots are never saved.'**
   String get draftDetail;
 
   /// No description provided for @onlineChecks.
@@ -785,8 +785,38 @@ abstract class AppLocalizations {
   /// No description provided for @privateHistoryConsent.
   ///
   /// In en, this message translates to:
-  /// **'Save encrypted copies of message text, links, and findings on this device for up to 30 days (latest 100 scans). You can erase them at any time.'**
+  /// **'Save encrypted copies of message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Clear saved data erases them immediately when storage is available.'**
   String get privateHistoryConsent;
+
+  /// No description provided for @assumedHttps.
+  ///
+  /// In en, this message translates to:
+  /// **'HTTPS was assumed because the link has no scheme. No page was opened.'**
+  String get assumedHttps;
+
+  /// No description provided for @reputationExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous online result is no longer current. Check again.'**
+  String get reputationExpired;
+
+  /// No description provided for @previousThreat.
+  ///
+  /// In en, this message translates to:
+  /// **'Previously listed as a threat.'**
+  String get previousThreat;
+
+  /// No description provided for @checkedAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last checked: {date}'**
+  String checkedAtLabel(String date);
+
+  /// No description provided for @retentionCleanupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Some expired data could not be erased. Try Clear saved data in Settings.'**
+  String get retentionCleanupFailed;
 
   /// No description provided for @welcomeTitle.
   ///

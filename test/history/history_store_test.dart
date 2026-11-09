@@ -4,6 +4,30 @@ import 'package:usisa/features/scan/scam_analyzer.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 
 void main() {
+  test('expired history disappears during an active session and startup purges old drafts', () async {
+    var now = DateTime.utc(2026, 11, 10);
+    final storage = MemoryStorage();
+    final history = HistoryStore(storage, clock: () => now)..enabled = true;
+    await history.save(
+      ScanResult(
+        id: 'retention',
+        text: 'synthetic',
+        source: ScanSource.text,
+        findings: [],
+        links: [],
+        createdAt: now,
+      ),
+      expectedGeneration: 0,
+    );
+    await history.saveDraft('synthetic draft', expectedGeneration: 0);
+    now = now.add(const Duration(hours: 24));
+    await history.load();
+    expect(storage.values.containsKey('draft'), isFalse);
+    now = now.add(const Duration(days: 29));
+    expect(history.entries, isEmpty);
+    await history.load();
+    expect(storage.values.keys.where((k) => k.startsWith('scan.')), isEmpty);
+  });
   test('disabling history keeps separately opted-in private draft', () async {
     final history = HistoryStore(MemoryStorage());
     await history.setEnabled(true);

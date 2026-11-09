@@ -9,10 +9,12 @@ class ReputationCheck {
   const ReputationCheck(
     this.state, {
     this.checkedAt,
+    this.expiresAt,
     this.threatTypes = const [],
   });
   final ReputationState state;
   final DateTime? checkedAt;
+  final DateTime? expiresAt;
   final List<String> threatTypes;
 }
 
@@ -67,6 +69,7 @@ class ReputationClient {
       }
       final at = DateTime.tryParse(value['checkedAt'] as String);
       if (at == null ||
+          at.isBefore(DateTime.now().subtract(const Duration(minutes: 5))) ||
           at.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
         return unavailable;
       }
@@ -87,6 +90,7 @@ class ReputationClient {
         return ReputationCheck(
           ReputationState.matched,
           checkedAt: at,
+          expiresAt: expiry,
           threatTypes: threats,
         );
       }

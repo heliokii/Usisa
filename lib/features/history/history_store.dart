@@ -45,7 +45,23 @@ class HistoryStore extends ChangeNotifier {
   final DateTime Function() clock;
   final Future<void> Function()? clearSmsPrivacy;
   final _entries = <ScanResult>[];
-  List<ScanResult> get entries => List.unmodifiable(_entries);
+  List<ScanResult> get entries => List.unmodifiable(
+    _entries.where((r) => _live(r.createdAt, const Duration(days: 30))),
+  );
+  DateTime? _draftExpiresAt;
+  DateTime? get nextExpiry {
+    final dates = [
+      for (final r in _entries) r.createdAt.add(const Duration(days: 30)),
+      ?_draftExpiresAt,
+    ]..sort();
+    return dates.firstOrNull;
+  }
+
+  bool _live(DateTime at, Duration ttl) {
+    final age = clock().difference(at);
+    return !age.isNegative && age < ttl;
+  }
+
   bool enabled = false;
   int generation = 0;
   int _historyRevision = 0;
@@ -73,8 +89,7 @@ class HistoryStore extends ChangeNotifier {
         final value = ScanResult.fromJson(
           jsonDecode(entry.value) as Map<String, dynamic>,
         );
-        if (enabled &&
-            clock().difference(value.createdAt) < const Duration(days: 30)) {
+        if (enabled && _live(value.createdAt, const Duration(days: 30))) {
           loaded.add(value);
         } else {
           await storage.delete(entry.key);
@@ -87,6 +102,7 @@ class HistoryStore extends ChangeNotifier {
       ..clear()
       ..addAll(loaded);
     await _prune();
+    await _readDraft(data['draft']);
     _changed();
   });
 
@@ -111,7 +127,7 @@ class HistoryStore extends ChangeNotifier {
       if (!enabled ||
           revision != _historyRevision ||
           expectedGeneration != generation ||
-          clock().difference(result.createdAt) >= const Duration(days: 30)) {
+          !_live(result.createdAt, const Duration(days: 30))) {
         return;
       }
       await storage.write('scan.${result.id}', jsonEncode(result.toJson()));
@@ -131,9 +147,7 @@ class HistoryStore extends ChangeNotifier {
   Future<void> _prune() async {
     _entries.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final remove = _entries
-        .where(
-          (r) => clock().difference(r.createdAt) >= const Duration(days: 30),
-        )
+        .where((r) => !_live(r.createdAt, const Duration(days: 30)))
         .toList();
     final current = _entries.where((r) => !remove.contains(r)).toList();
     remove.addAll(current.skip(100));
@@ -164,6 +178,7 @@ class HistoryStore extends ChangeNotifier {
         await storage.delete(key);
       }
       _entries.clear();
+      _draftExpiresAt = null;
       _changed();
     });
   }
@@ -178,46 +193,63 @@ class HistoryStore extends ChangeNotifier {
       }
       if (text.isEmpty) {
         await storage.delete('draft');
+        _draftExpiresAt = null;
+        _changed();
         return;
       }
+      final createdAt = clock();
       await storage.write(
         'draft',
-        jsonEncode({'text': text, 'createdAt': clock().toIso8601String()}),
+        jsonEncode({'text': text, 'createdAt': createdAt.toIso8601String()}),
       );
       if (expectedGeneration != generation || revision != _draftRevision) {
         await storage.delete('draft');
+        _draftExpiresAt = null;
+      } else {
+        _draftExpiresAt = createdAt.add(const Duration(hours: 24));
       }
+      _changed();
     });
   }
 
   Future<String?> loadDraft() async {
     String? result;
     await _serial(() async {
-      final raw = (await storage.readAll())['draft'];
-      if (raw == null) {
-        return;
-      }
-      try {
-        final value = jsonDecode(raw) as Map<String, dynamic>;
-        final text = value['text'] as String;
-        final age = clock().difference(
-          DateTime.parse(value['createdAt'] as String),
-        );
-        if (age < const Duration(hours: 24) && text.runes.length <= 10000) {
-          result = text;
-          return;
-        }
-      } catch (_) {
-        /* A corrupt private draft must not become a scan result. */
-      }
-      await storage.delete('draft');
+      result = await _readDraft((await storage.readAll())['draft']);
+      _changed();
     });
     return result;
   }
 
+  Future<String?> _readDraft(String? raw) async {
+    if (raw == null) {
+      _draftExpiresAt = null;
+      return null;
+    }
+    try {
+      final value = jsonDecode(raw) as Map<String, dynamic>;
+      final text = value['text'] as String;
+      final createdAt = DateTime.parse(value['createdAt'] as String);
+      if (_live(createdAt, const Duration(hours: 24)) &&
+          text.runes.length <= 10000) {
+        _draftExpiresAt = createdAt.add(const Duration(hours: 24));
+        return text;
+      }
+    } catch (_) {
+      /* A corrupt private draft must not become a scan result. */
+    }
+    await storage.delete('draft');
+    _draftExpiresAt = null;
+    return null;
+  }
+
   Future<void> clearDraft() {
     _draftRevision++;
-    return _serial(() => storage.delete('draft'));
+    return _serial(() async {
+      await storage.delete('draft');
+      _draftExpiresAt = null;
+      _changed();
+    });
   }
 
   @override

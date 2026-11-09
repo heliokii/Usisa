@@ -1,8 +1,12 @@
 import 'scan_models.dart';
 
 class UrlChecker {
+  static const _bareSource =
+      r'''(?<![a-z0-9_@.-])(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})(?![a-z0-9_@-])(?::[0-9]{1,5})?(?:[/?#][^\s<>"']*)?''';
+  static final _bare = RegExp(_bareSource, caseSensitive: false);
   static final _candidate = RegExp(
-    r'''(?:[a-z][a-z0-9+.-]*://|javascript:|data:|file:)[^\s<>"']*''',
+    r'''(?:[a-z][a-z0-9+.-]*://|javascript:|data:|file:)[^\s<>"']*|''' +
+        _bareSource,
     caseSensitive: false,
   );
   // Exact host boundaries, never substrings. Review sources before extending this list.
@@ -30,7 +34,12 @@ class UrlChecker {
       if (RegExp(r'\s').hasMatch(value)) {
         return null;
       }
-      final uri = Uri.tryParse(value);
+      final bare = _bare.firstMatch(value);
+      final uri = Uri.tryParse(
+        bare?.start == 0 && bare?.end == value.length
+            ? 'https://$value'
+            : value,
+      );
       if (uri == null ||
           !['http', 'https'].contains(uri.scheme) ||
           uri.host.isEmpty ||
@@ -66,6 +75,9 @@ class UrlChecker {
         throw const ScanException('urlTooLong');
       }
       final uri = parse(original);
+      if (uri != null && uri.toString().length > 2048) {
+        throw const ScanException('urlTooLong');
+      }
       results.add(
         LinkResult(
           original: original,

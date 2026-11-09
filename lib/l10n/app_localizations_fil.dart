@@ -250,7 +250,7 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get historyOffBody =>
-      'Mananatili lang ang mga mensahe sa session. I-enable ang encrypted na kasaysayan para sa hanggang 100 pagsusuri sa loob ng 30 araw.';
+      'Mananatili lang ang mga mensahe sa session. I-enable ang encrypted na kasaysayan para sa pinakahuling 100 pagsusuri; nag-e-expire ang access matapos ang 30 araw.';
 
   @override
   String get enableHistory => 'I-enable ang pribadong kasaysayan';
@@ -354,7 +354,7 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get draftDetail =>
-      'Magtago ng isang encrypted na draft hanggang 24 oras. Hindi sine-save ang screenshot.';
+      'Ibalik ang isang encrypted na draft sa loob ng 24 oras. Binubura ang nag-expire na file habang bukas ang Usisa o sa susunod na paggamit; hindi ito magagawa sa takdang oras kung sarado o naka-stop ang app. Hindi sine-save ang screenshot.';
 
   @override
   String get onlineChecks => 'Online na pagsusuri ng link';
@@ -389,7 +389,27 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get privateHistoryConsent =>
-      'Mag-save ng encrypted na kopya ng teksto, link, at resulta sa device hanggang 30 araw (pinakahuling 100). Maaari itong burahin anumang oras.';
+      'Mag-save ng encrypted na teksto, link, at resulta sa device (pinakahuling 100). Nag-e-expire ang access matapos ang 30 araw. Binubura ang nag-expire na file habang bukas ang Usisa o sa susunod na paggamit; hindi ito magagawa sa takdang oras kung sarado o naka-stop ang app. Binubura agad ng Burahin ang naka-save na datos kapag gumagana ang storage.';
+
+  @override
+  String get assumedHttps =>
+      'Ipinagpalagay ang HTTPS dahil walang scheme ang link. Walang pahinang binuksan.';
+
+  @override
+  String get reputationExpired =>
+      'Hindi na kasalukuyan ang dating online na resulta. Suriin muli.';
+
+  @override
+  String get previousThreat => 'Dating nakalista bilang banta.';
+
+  @override
+  String checkedAtLabel(String date) {
+    return 'Huling sinuri: $date';
+  }
+
+  @override
+  String get retentionCleanupFailed =>
+      'May nag-expire na datos na hindi nabura. Subukan ang Burahin ang naka-save na datos sa Settings.';
 
   @override
   String get welcomeTitle => 'Suriin muna bago kumilos.';

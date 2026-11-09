@@ -8,7 +8,7 @@ The manual-scanning milestone is implemented. The sideloaded automatic-SMS build
 
 - Local text and HTTP(S) URL checks with evidence and practical safety advice.
 - Android/iOS screenshot selection, bundled on-device Latin OCR and editable review before scanning. Native device validation is still required.
-- Optional encrypted history (latest 100 scans, 30 days), a separately optional 24-hour text draft, local search/filters, and protected deletion. Both retention settings default off.
+- Optional encrypted history (latest 100 scans, review access expires after 30 days), a separate draft restorable within 24 hours, local search/filters and protected deletion. Both start off. Expired files are cleaned while the app runs or on next use; closed/stopped apps cannot erase at an exact deadline. Cleanup failures are shown.
 - English/Filipino interface, system/light/dark appearance, compact bottom navigation and wider navigation rail using the 60:30:10 palette.
 - Optional URL-reputation gateway with separate consent, typed unavailable states and no provider key in the app. Requires configuration; no live provider lookup has been verified.
 

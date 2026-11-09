@@ -53,6 +53,7 @@ class LinkResult {
     required this.findings,
     this.reputation = ReputationState.notRequested,
     this.checkedAt,
+    this.expiresAt,
     this.threatTypes = const [],
   });
   final String original;
@@ -60,11 +61,49 @@ class LinkResult {
   final List<Finding> findings;
   final ReputationState reputation;
   final DateTime? checkedAt;
+  final DateTime? expiresAt;
   final List<String> threatTypes;
   String get host => uri?.host ?? original;
+  bool get schemeAssumed =>
+      uri != null &&
+      !RegExp(r'^https?://', caseSensitive: false).hasMatch(original);
+  DateTime? get reputationDeadline {
+    final at = checkedAt;
+    if (at == null) return null;
+    final ceiling = at.add(const Duration(minutes: 5));
+    if (reputation == ReputationState.matched) {
+      final expiry = expiresAt;
+      return expiry == null
+          ? at
+          : expiry.isBefore(ceiling)
+          ? expiry
+          : ceiling;
+    }
+    return reputation == ReputationState.noMatch ? ceiling : null;
+  }
+
+  ReputationState get currentReputation {
+    if (reputation != ReputationState.matched &&
+        reputation != ReputationState.noMatch) {
+      return reputation;
+    }
+    final now = DateTime.now();
+    return checkedAt == null ||
+            checkedAt!.isAfter(now) ||
+            reputationDeadline == null ||
+            !now.isBefore(reputationDeadline!)
+        ? ReputationState.unavailable
+        : reputation;
+  }
+
+  bool get reputationExpired =>
+      (reputation == ReputationState.matched ||
+          reputation == ReputationState.noMatch) &&
+      currentReputation == ReputationState.unavailable;
   LinkResult withReputation(
     ReputationState state, {
     DateTime? at,
+    DateTime? until,
     List<String> threats = const [],
   }) => LinkResult(
     original: original,
@@ -72,6 +111,7 @@ class LinkResult {
     findings: findings,
     reputation: state,
     checkedAt: at,
+    expiresAt: until,
     threatTypes: threats,
   );
   Map<String, dynamic> toJson() => {
@@ -80,6 +120,7 @@ class LinkResult {
     'findings': findings.map((f) => f.toJson()).toList(),
     'reputation': reputation.name,
     'checkedAt': checkedAt?.toIso8601String(),
+    'expiresAt': expiresAt?.toIso8601String(),
     'threatTypes': threatTypes,
   };
   factory LinkResult.fromJson(Map<String, dynamic> json) => LinkResult(
@@ -92,6 +133,9 @@ class LinkResult {
     checkedAt: json['checkedAt'] == null
         ? null
         : DateTime.parse(json['checkedAt'] as String),
+    expiresAt: json['expiresAt'] == null
+        ? null
+        : DateTime.parse(json['expiresAt'] as String),
     threatTypes: List<String>.from(json['threatTypes'] as List),
   );
 }
@@ -114,6 +158,7 @@ class ScanResult {
   final DateTime createdAt;
   final String ruleVersion;
   RiskLevel get risk {
+    // A past threat match remains a warning; freshness is reported separately as unknown coverage.
     if (links.any((l) => l.reputation == ReputationState.matched) ||
         findings.any((f) => f.severity == RiskLevel.high)) {
       return RiskLevel.high;
@@ -126,9 +171,9 @@ class ScanResult {
   bool get hasUncheckedLinks => links.any(
     (l) =>
         l.uri == null ||
-        l.reputation == ReputationState.notRequested ||
-        l.reputation == ReputationState.unavailable ||
-        l.reputation == ReputationState.checking,
+        l.currentReputation == ReputationState.notRequested ||
+        l.currentReputation == ReputationState.unavailable ||
+        l.currentReputation == ReputationState.checking,
   );
   ScanResult withLinks(List<LinkResult> value) => ScanResult(
     id: id,

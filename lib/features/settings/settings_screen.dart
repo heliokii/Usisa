@@ -58,6 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
+          scrollable: true,
           title: Text(title),
           content: Text(body),
           actions: [

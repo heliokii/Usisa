@@ -5,6 +5,28 @@ import 'package:usisa/features/scan/scan_models.dart';
 void main() {
   final analyzer = ScamAnalyzer();
   ScanResult check(String text) => analyzer.analyze(ScanInput(text));
+  test(
+    'scheme-less links are checked in text, SMS and dedicated link mode',
+    () {
+      for (final source in [ScanSource.text, ScanSource.sms, ScanSource.link]) {
+        final result = analyzer.analyze(
+          ScanInput('bit.ly/example', source: source),
+        );
+        expect(result.links.single.uri.toString(), 'https://bit.ly/example');
+        expect(result.links.single.original, 'bit.ly/example');
+        expect(result.risk, RiskLevel.caution);
+        expect(result.hasUncheckedLinks, isTrue);
+      }
+      expect(
+        check('Visit gcash-login.example/verify now.').links.single.host,
+        'gcash-login.example',
+      );
+      expect(
+        check('Contact user@example.test, version 1.2.3 or PHP 250.00.').links,
+        isEmpty,
+      );
+    },
+  );
 
   test('bank impersonation plus OTP disclosure is high', () {
     final result = check(

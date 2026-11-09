@@ -15,10 +15,17 @@ import 'l10n/app_localizations.dart';
 import 'theme/usisa_theme.dart';
 
 class UsisaApp extends StatefulWidget {
-  const UsisaApp({super.key, this.storage, this.isPreview = false, this.sms});
+  const UsisaApp({
+    super.key,
+    this.storage,
+    this.isPreview = false,
+    this.sms,
+    this.clock,
+  });
   final PrivateStorage? storage;
   final bool isPreview;
   final SmsService? sms;
+  final DateTime Function()? clock;
   @override
   State<UsisaApp> createState() => _UsisaAppState();
 }
@@ -36,6 +43,7 @@ class _UsisaAppState extends State<UsisaApp> {
   // shortcut: history has one foreground writer; add a durable shared gate before background history writes.
   late final HistoryStore history = HistoryStore(
     storage,
+    clock: widget.clock,
     clearSmsPrivacy: () async {
       if (sms.nativePlatform) await sms.invalidatePrivacy();
     },
@@ -127,19 +135,62 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
   String? _openSmsId;
   String? _queuedSmsId;
   bool _consumeAgain = false;
+  Timer? _retentionTimer;
+  bool _retentionActive = true;
+  bool _retentionRefreshing = false;
+  bool _retentionFailed = false;
+  void _scheduleRetention() {
+    _retentionTimer?.cancel();
+    if (!mounted || !_retentionActive || _retentionRefreshing) return;
+    final next = widget.history.nextExpiry;
+    if (next == null) return;
+    final delay = next.difference(widget.history.clock());
+    _retentionTimer = Timer(
+      delay <= Duration.zero ? const Duration(minutes: 1) : delay,
+      _refreshRetention,
+    );
+  }
+
+  Future<void> _refreshRetention() async {
+    if (!mounted || !_retentionActive || _retentionRefreshing) return;
+    _retentionRefreshing = true;
+    try {
+      await widget.history.load();
+      _retentionFailed = false;
+    } catch (_) {
+      _retentionFailed = true;
+    } finally {
+      _retentionRefreshing = false;
+      if (mounted) {
+        setState(() {});
+        _scheduleRetention();
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    widget.history.addListener(_scheduleRetention);
     _smsOpens = widget.sms.notificationOpens.listen(
       (_) => _consumeNotification(),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) => _consumeNotification());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _consumeNotification();
+      _refreshRetention();
+    });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _consumeNotification();
+    _retentionActive = state == AppLifecycleState.resumed;
+    if (_retentionActive) {
+      _consumeNotification();
+      _refreshRetention();
+    } else {
+      _retentionTimer?.cancel();
+    }
   }
 
   Future<void> _consumeNotification() async {
@@ -208,6 +259,8 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.history.removeListener(_scheduleRetention);
+    _retentionTimer?.cancel();
     _smsOpens?.cancel();
     super.dispose();
   }
@@ -279,6 +332,11 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
                     Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(l.saveFailed),
+                    ),
+                  if (_retentionFailed)
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(l.retentionCleanupFailed),
                     ),
                   Expanded(
                     child: IndexedStack(

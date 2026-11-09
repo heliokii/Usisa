@@ -11,6 +11,18 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class PendingSmsStoreTest {
+    @Test fun receiptQueuedBeforeClearCannotBeSavedAfterClear() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val store = PendingSmsStore(context, "sms_test_race")
+        store.setEnabled(false, "en")
+        store.setEnabled(true, "en")
+        val receiptGeneration = store.generation
+        val id = SmsPolicy.eventId(listOf(byteArrayOf(99, 88, 77)), 1)
+        store.invalidate()
+        assertNotEquals(PendingSmsStore.PutResult.ADDED, store.put(id, "Received before clear", receiptGeneration))
+        assertNull(store.read(id))
+        store.setEnabled(false, "en")
+    }
     @Test fun encryptedQueueExpiresAndRefusesStaleCommits() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         var now = 1000L
@@ -19,8 +31,8 @@ class PendingSmsStoreTest {
         store.setEnabled(true, "en")
         val id = SmsPolicy.eventId(listOf(byteArrayOf(1, 2, 3)), 1)
         val body = "Synthetic private message: share your OTP"
-        assertEquals(PendingSmsStore.PutResult.ADDED, store.put(id, body))
-        assertEquals(PendingSmsStore.PutResult.DUPLICATE, store.put(id, body))
+        assertEquals(PendingSmsStore.PutResult.ADDED, store.put(id, body, store.generation))
+        assertEquals(PendingSmsStore.PutResult.DUPLICATE, store.put(id, body, store.generation))
         assertEquals(body, store.read(id)!!.getString("body"))
         val raw = File(context.noBackupFilesDir, "sms_test/$id.bin").readBytes().toString(Charsets.UTF_8)
         assertFalse(raw.contains(body))
@@ -29,7 +41,7 @@ class PendingSmsStoreTest {
         assertFalse(store.complete(id, generation, JSONObject().put("error", "synthetic")))
         assertNull(store.read(id))
         val other = SmsPolicy.eventId(listOf(byteArrayOf(4, 5, 6)), 1)
-        assertEquals(PendingSmsStore.PutResult.ADDED, store.put(other, body))
+        assertEquals(PendingSmsStore.PutResult.ADDED, store.put(other, body, store.generation))
         now += SmsPolicy.TTL_MS
         assertNull(store.read(other))
         store.setEnabled(false, "en")
@@ -42,11 +54,11 @@ class PendingSmsStoreTest {
         store.setEnabled(true, "en")
         repeat(20) { index ->
             val id = SmsPolicy.eventId(listOf(byteArrayOf(index.toByte())), 1)
-            assertEquals(PendingSmsStore.PutResult.ADDED, store.put(id, "Same text"))
+            assertEquals(PendingSmsStore.PutResult.ADDED, store.put(id, "Same text", store.generation))
         }
-        assertEquals(PendingSmsStore.PutResult.FULL, store.put(SmsPolicy.eventId(listOf(byteArrayOf(100)), 1), "Same text"))
+        assertEquals(PendingSmsStore.PutResult.FULL, store.put(SmsPolicy.eventId(listOf(byteArrayOf(100)), 1), "Same text", store.generation))
         assertTrue(store.degraded)
         store.setEnabled(false, "en")
-        assertEquals(PendingSmsStore.PutResult.DISABLED, store.put(SmsPolicy.eventId(listOf(byteArrayOf(101)), 1), "Not retained"))
+        assertEquals(PendingSmsStore.PutResult.DISABLED, store.put(SmsPolicy.eventId(listOf(byteArrayOf(101)), 1), "Not retained", store.generation))
     }
 }
