@@ -27,12 +27,14 @@ void main() {
       final low = AiAssessment.fromJson(assessment(risk: 'low'), text: text);
       expect(local.withAi(low).risk, RiskLevel.high);
       expect(local.withAi(low).localRisk, RiskLevel.high);
-    final benign = ScamAnalyzer().analyze(const ScanInput('Hello'));
-    final high = AiAssessment.fromJson({
-      ...assessment(),
-      'warningSigns': [{'code': 'other', 'evidence': 'Hello'}],
-    }, text: benign.text);
-    expect(benign.localRisk, RiskLevel.low);
+      final benign = ScamAnalyzer().analyze(const ScanInput('Hello'));
+      final high = AiAssessment.fromJson({
+        ...assessment(),
+        'warningSigns': [
+          {'code': 'other', 'evidence': 'Hello'},
+        ],
+      }, text: benign.text);
+      expect(benign.localRisk, RiskLevel.low);
       expect(benign.withAi(high).risk, RiskLevel.high);
       final at = DateTime.now().subtract(const Duration(seconds: 1));
       final matched = ScamAnalyzer()
