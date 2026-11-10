@@ -1,3 +1,5 @@
+import 'ai_models.dart';
+
 enum ScanSource { text, link, screenshot, sms }
 
 enum RiskLevel { low, caution, high }
@@ -165,6 +167,8 @@ class ScanResult {
     required this.links,
     required this.createdAt,
     this.ruleVersion = 'rules-v1',
+    this.aiAssessment,
+    this.reviewedForAi = false,
   });
   final String id;
   final String text;
@@ -173,13 +177,22 @@ class ScanResult {
   final List<LinkResult> links;
   final DateTime createdAt;
   final String ruleVersion;
+  final AiAssessment? aiAssessment;
+  final bool reviewedForAi;
+  RiskLevel get localRisk => findings.any((f) => f.severity == RiskLevel.high)
+      ? RiskLevel.high
+      : findings.isNotEmpty || links.any((l) => l.findings.isNotEmpty)
+      ? RiskLevel.caution
+      : RiskLevel.low;
   RiskLevel get risk {
     // Safe Browsing advisories cannot outlive expiry; independent local warnings remain.
     if (links.any((l) => l.hasThreatWarning) ||
-        findings.any((f) => f.severity == RiskLevel.high)) {
+        localRisk == RiskLevel.high ||
+        aiAssessment?.risk == RiskLevel.high) {
       return RiskLevel.high;
     }
-    return findings.isNotEmpty || links.any((l) => l.findings.isNotEmpty)
+    return localRisk == RiskLevel.caution ||
+            aiAssessment?.risk == RiskLevel.caution
         ? RiskLevel.caution
         : RiskLevel.low;
   }
@@ -199,6 +212,19 @@ class ScanResult {
     links: value,
     createdAt: createdAt,
     ruleVersion: ruleVersion,
+    aiAssessment: aiAssessment,
+    reviewedForAi: reviewedForAi,
+  );
+  ScanResult withAi(AiAssessment value, {bool? reviewed}) => ScanResult(
+    id: id,
+    text: text,
+    source: source,
+    findings: findings,
+    links: links,
+    createdAt: createdAt,
+    ruleVersion: ruleVersion,
+    aiAssessment: value,
+    reviewedForAi: reviewed ?? reviewedForAi,
   );
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -208,6 +234,8 @@ class ScanResult {
     'links': links.map((l) => l.toJson()).toList(),
     'createdAt': createdAt.toIso8601String(),
     'ruleVersion': ruleVersion,
+    if (aiAssessment != null) 'aiAssessment': aiAssessment!.toJson(),
+    'reviewedForAi': reviewedForAi,
   };
   factory ScanResult.fromJson(Map<String, dynamic> json) => ScanResult(
     id: json['id'] as String,
@@ -221,5 +249,12 @@ class ScanResult {
         .toList(),
     createdAt: DateTime.parse(json['createdAt'] as String),
     ruleVersion: json['ruleVersion'] as String,
+    aiAssessment: json['aiAssessment'] == null
+        ? null
+        : AiAssessment.fromJson(
+            Map<String, dynamic>.from(json['aiAssessment'] as Map),
+            text: json['text'] as String,
+          ),
+    reviewedForAi: json['reviewedForAi'] == true,
   );
 }
