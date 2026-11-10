@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
+import '../../widgets/page_body.dart';
 import '../scan/result_screen.dart';
 import '../scan/scan_models.dart';
 import '../settings/settings_store.dart';
@@ -253,6 +254,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     builder: (context, _) {
       final l = AppLocalizations.of(context);
       final theme = Theme.of(context);
+      final gutter = PageBody.gutterOf(context);
       final matches = _filtered;
       return Align(
         alignment: Alignment.topCenter,
@@ -263,7 +265,7 @@ class _HistoryScreenState extends State<HistoryScreen>
               SliverList.list(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                    padding: EdgeInsets.fromLTRB(gutter, 20, gutter, 16),
                     child: Text(
                       l.historyHeading,
                       style: theme.textTheme.headlineLarge,
@@ -271,7 +273,10 @@ class _HistoryScreenState extends State<HistoryScreen>
                   ),
                   if (!widget.history.enabled)
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: gutter,
+                        vertical: 20,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -296,7 +301,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     )
                   else ...[
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.symmetric(horizontal: gutter),
                       child: TextField(
                         controller: _search,
                         decoration: InputDecoration(
@@ -317,8 +322,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: gutter,
                         vertical: 8,
                       ),
                       child: Wrap(
@@ -371,7 +376,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     ),
                     if (_selecting)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: EdgeInsets.symmetric(horizontal: gutter),
                         child: Wrap(
                           spacing: 8,
                           children: [
@@ -393,12 +398,15 @@ class _HistoryScreenState extends State<HistoryScreen>
                         ),
                       ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.symmetric(horizontal: gutter),
                       child: Text(l.resultCount(matches.length)),
                     ),
                     if (matches.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: gutter,
+                          vertical: 20,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -424,7 +432,7 @@ class _HistoryScreenState extends State<HistoryScreen>
               ),
               if (widget.history.enabled && matches.isNotEmpty)
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                  padding: EdgeInsets.fromLTRB(gutter, 8, gutter, 32),
                   sliver: SliverList.separated(
                     itemCount: matches.length,
                     separatorBuilder: (_, _) => const Divider(),
