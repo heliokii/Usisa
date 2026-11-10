@@ -368,7 +368,23 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get onlineBody =>
-      'Ipapadala ang buong URL, kasama ang path at query, sa Usisa gateway at Google Web Risk para sa pagsusuring ito at susunod na manwal na pagsusuri hanggang i-off. Mananatili sa device ang teksto, nagpadala, at larawan. Walang URL na ia-upload sa awtomatikong SMS.';
+      'Ipapadala ang buong URL, kasama ang path at query, sa Usisa gateway at Google Safe Browsing para sa manwal na pagsusuri hanggang i-off. Mananatili sa device ang mensahe, nagpadala, at larawan. Walang URL na ia-upload sa awtomatikong SMS. Maaaring makaligtaan ng Google ang banta o mag-flag ng lehitimong site. May bisa lamang ang online na babala sa takdang oras; lokal na resulta at detalye ng huling pagsusuri ang ise-save sa kasaysayan, hindi ang online na hatol.';
+
+  @override
+  String get googleAdvisory => 'Advisory provided by Google';
+
+  @override
+  String get advisoryUnavailable =>
+      'Hindi mabuksan ang pahina ng tulong. Nandito pa rin ang iyong pagsusuri.';
+
+  @override
+  String get phishingHelp => 'Alamin ang phishing';
+
+  @override
+  String get malwareHelp => 'Alamin ang malware';
+
+  @override
+  String get unwantedHelp => 'Alamin ang di-kanais-nais na software';
 
   @override
   String get enableOnline => 'I-enable ang online na pagsusuri';

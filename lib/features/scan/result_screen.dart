@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
@@ -18,12 +19,14 @@ class ResultScreen extends StatefulWidget {
     this.history,
     this.settings,
     this.reputationFactory,
+    this.advisoryLauncher,
   });
   final ScanResult result;
   final bool saved;
   final HistoryStore? history;
   final SettingsStore? settings;
   final ReputationClient Function()? reputationFactory;
+  final Future<bool> Function(Uri)? advisoryLauncher;
   @override
   State<ResultScreen> createState() => _ResultScreenState();
 }
@@ -41,7 +44,7 @@ class _ResultScreenState extends State<ResultScreen>
   String _coverageText(BuildContext context, LinkResult link) {
     final l = AppLocalizations.of(context);
     var text = link.reputationExpired
-        ? '${link.reputation == ReputationState.matched ? '${l.previousThreat}\n' : ''}${l.reputationExpired}'
+        ? '${link.hasThreatWarning ? '${l.previousThreat}\n' : ''}${l.reputationExpired}'
         : switch (link.currentReputation) {
             ReputationState.matched => l.knownThreat,
             ReputationState.noMatch => l.notListed,
@@ -60,6 +63,25 @@ class _ResultScreenState extends State<ResultScreen>
   }
 
   Timer? _coverageTimer;
+  Future<void> _openHelp(String address) async {
+    final uri = Uri.parse(address);
+    try {
+      final opened =
+          await (widget.advisoryLauncher?.call(uri) ??
+              launchUrl(uri, mode: LaunchMode.externalApplication));
+      if (opened) return;
+    } catch (_) {
+      /* Keep the current scan available if no browser can open help. */
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).advisoryUnavailable),
+        ),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -209,6 +231,7 @@ class _ResultScreenState extends State<ResultScreen>
                   at: check.checkedAt,
                   until: check.expiresAt,
                   threats: check.threatTypes,
+                  provider: check.provider,
                 );
         }).toList(),
       );
@@ -352,7 +375,21 @@ class _ResultScreenState extends State<ResultScreen>
                     tilePadding: EdgeInsets.zero,
                     leading: const Icon(Icons.link_rounded),
                     title: Text(link.host),
-                    subtitle: Text(_coverageText(context, link)),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_coverageText(context, link)),
+                        if (link.provider != null) Text(link.provider!),
+                        if (link.provider == safeBrowsingProvider &&
+                            link.currentReputation == ReputationState.matched)
+                          TextButton(
+                            onPressed: () => _openHelp(
+                              'https://developers.google.com/safe-browsing/v4/advisory',
+                            ),
+                            child: Text(l.googleAdvisory),
+                          ),
+                      ],
+                    ),
                     children: [
                       Align(
                         alignment: Alignment.centerLeft,
@@ -366,6 +403,38 @@ class _ResultScreenState extends State<ResultScreen>
                                 style: theme.textTheme.bodyLarge,
                               ),
                               if (link.schemeAssumed) Text(l.assumedHttps),
+                              if (link.provider == safeBrowsingProvider &&
+                                  link.currentReputation ==
+                                      ReputationState.matched)
+                                Wrap(
+                                  children: [
+                                    if (link.threatTypes.contains(
+                                      'SOCIAL_ENGINEERING',
+                                    ))
+                                      TextButton(
+                                        onPressed: () => _openHelp(
+                                          'https://www.antiphishing.org/',
+                                        ),
+                                        child: Text(l.phishingHelp),
+                                      ),
+                                    if (link.threatTypes.contains('MALWARE'))
+                                      TextButton(
+                                        onPressed: () => _openHelp(
+                                          'https://developers.google.com/search/',
+                                        ),
+                                        child: Text(l.malwareHelp),
+                                      ),
+                                    if (link.threatTypes.contains(
+                                      'UNWANTED_SOFTWARE',
+                                    ))
+                                      TextButton(
+                                        onPressed: () => _openHelp(
+                                          'https://www.google.com/about/unwanted-software-policy.html',
+                                        ),
+                                        child: Text(l.unwantedHelp),
+                                      ),
+                                  ],
+                                ),
                               for (final finding in link.findings)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 12),

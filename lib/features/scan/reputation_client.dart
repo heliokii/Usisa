@@ -11,11 +11,13 @@ class ReputationCheck {
     this.checkedAt,
     this.expiresAt,
     this.threatTypes = const [],
+    this.provider = safeBrowsingProvider,
   });
   final ReputationState state;
   final DateTime? checkedAt;
   final DateTime? expiresAt;
   final List<String> threatTypes;
+  final String provider;
 }
 
 class ReputationClient {
@@ -50,6 +52,7 @@ class ReputationClient {
       return unavailable;
     }
     try {
+      final elapsed = Stopwatch()..start();
       final response = await _client
           .post(
             baseUri!.resolve('/v1/link-check'),
@@ -62,7 +65,7 @@ class ReputationClient {
       }
       final value = jsonDecode(response.body);
       if (value is! Map<String, dynamic> ||
-          value['provider'] != 'Google Web Risk' ||
+          value['provider'] != safeBrowsingProvider ||
           value['checkedAt'] is! String ||
           value['threatTypes'] is! List) {
         return unavailable;
@@ -78,7 +81,10 @@ class ReputationClient {
         return unavailable;
       }
       if (value['status'] == 'noMatch' && threats.isEmpty) {
-        return ReputationCheck(ReputationState.noMatch, checkedAt: at);
+        return ReputationCheck(
+          ReputationState.noMatch,
+          checkedAt: DateTime.now().toUtc(),
+        );
       }
       final expiry = value['expiresAt'] is String
           ? DateTime.tryParse(value['expiresAt'] as String)
@@ -86,11 +92,19 @@ class ReputationClient {
       if (value['status'] == 'matched' &&
           threats.isNotEmpty &&
           expiry != null &&
-          expiry.isAfter(DateTime.now())) {
+          expiry.isAfter(at)) {
+        // Use a device deadline so small server clock differences cannot extend an advisory.
+        var lifetime = expiry.difference(at);
+        if (lifetime > const Duration(minutes: 5)) {
+          lifetime = const Duration(minutes: 5);
+        }
+        final remaining = lifetime - elapsed.elapsed;
+        if (remaining <= Duration.zero) return unavailable;
+        final checkedOnDevice = DateTime.now().toUtc();
         return ReputationCheck(
           ReputationState.matched,
-          checkedAt: at,
-          expiresAt: expiry,
+          checkedAt: checkedOnDevice,
+          expiresAt: checkedOnDevice.add(remaining),
           threatTypes: threats,
         );
       }

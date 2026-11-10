@@ -2,7 +2,7 @@
 
 Flutter/Dart scam checks for messages and links in the Philippines. The app explains potential warning signs in English and Filipino and accepts English, Filipino and Taglish input.
 
-The local manual app and sideloaded SMS Lab are implemented and tested on an Android emulator. Physical-phone and live URL-provider validation remain open; AI assistance is planned separately. No detection method guarantees authenticity or catches every scam.
+The local manual app and sideloaded SMS Lab are implemented and tested on an Android emulator. Live URL checks use Google Safe Browsing for the confirmed noncommercial research scope. Physical-phone validation remains open; AI assistance is planned separately. No detection method guarantees authenticity or catches every scam.
 
 ## Current capabilities
 
@@ -10,7 +10,7 @@ The local manual app and sideloaded SMS Lab are implemented and tested on an And
 - Android/iOS screenshot selection, bundled on-device Latin OCR and editable review before scanning. Offline Android emulator tests cover image bounds, failures and picker Activity recovery; physical-phone and iOS runtime validation remain open.
 - Optional encrypted history (latest 100 scans, review access expires after 30 days), a separate draft restorable within 24 hours, local search/filters and protected deletion. Both start off. Expired files are cleaned while the app runs or on next use; closed/stopped apps cannot erase at an exact deadline. Cleanup failures are shown.
 - English/Filipino interface, system/light/dark appearance, compact bottom navigation and wider navigation rail using the 60:30:10 palette.
-- Optional URL-reputation gateway with separate consent, typed unavailable states and no provider key in the app. The configured key's live test currently fails with Google `BILLING_DISABLED`; successful provider coverage is not yet verified.
+- Optional URL-reputation gateway with separate consent, Google attribution, expiry-aware warnings and no provider key in the app. Live threat/no-match checks have passed through the Android emulator and gateway. Saved history keeps local findings and check metadata without caching Safe Browsing verdicts.
 
 Browser previews use memory only. OCR and automatic SMS are native capabilities; a browser render does not prove them.
 
@@ -54,18 +54,18 @@ Authenticated system receipt queues encrypted event references, and WorkManager 
 
 ## Optional URL-reputation gateway
 
-The small Node 24+ gateway holds provider credentials. It does not fetch submitted sites or follow their redirects. It sends only consented URLs to the fixed Google Web Risk API, with input limits, timeouts, rate/concurrency limits, no raw URL logs and no persistent response cache.
+The small Node 24+ gateway holds provider credentials. It does not fetch submitted sites or follow their redirects. It sends only consented URLs to the fixed Google Safe Browsing v4 Lookup API, with input limits, timeouts, rate/concurrency limits, no raw URL logs and no persistent response cache. Safe Browsing is free for noncommercial use; reassess licensing before revenue-generating use.
 
-Set `WEB_RISK_API_KEY` in the worktree-root `.env` for the server. For browser development, also set `ALLOWED_ORIGIN` to the exact preview origin; do not use a wildcard. Missing provider configuration reports unavailable.
+Enable **Safe Browsing APIs** in the Google project and set `SAFE_BROWSING_API_KEY` in the worktree-root `.env` for the server. For browser development, also set `ALLOWED_ORIGIN` to the exact preview origin; do not use a wildcard. Missing provider configuration reports unavailable. Keys stay on the server.
 
 ```powershell
 cd server
 npm start
 ```
 
-The server binds to loopback on port 8787 by default and explicitly loads `../.env` if present. A public deployment needs TLS, trusted ingress abuse controls and a provider budget; none is deployed by this change.
+The server binds to loopback on port 8787 by default and explicitly loads `../.env` if present. A public deployment needs TLS, trusted ingress abuse controls and suitable quotas; none is deployed by this change.
 
-The user now requires a free option for noncommercial school/research use. Google Safe Browsing is the researched replacement recommendation; see `docs/free-url-providers.md`. The gateway still uses Web Risk until migration, consent/attribution/expiry changes and live validation are complete. Do not enable Web Risk billing as part of that replacement.
+The free-provider migration is implemented; see `docs/free-url-providers.md` and `docs/provider-validation.md`. Existing Web Risk consent is reset for re-consent. Current Google warnings expire within the returned lifetime or five minutes, whichever is sooner. Small server/device clock differences are handled without extending the lifetime. Legacy Web Risk records retain their original source; no Web Risk calls remain.
 
 Supply only the public gateway URL to Flutter, for example:
 
@@ -73,7 +73,7 @@ Supply only the public gateway URL to Flutter, for example:
 flutter run -d chrome --dart-define=USISA_GATEWAY_URL=http://127.0.0.1:8787
 ```
 
-Android emulators can use `http://10.0.2.2:8787` in debug builds once debug cleartext networking is configured; release gateways must use HTTPS. The server's allowed browser origin and this gateway URL are different settings.
+For Android emulator development, run `flutter run --flavor manual --no-pub --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787`. Release gateways must use HTTPS. Standard APK exports omit a gateway URL and honestly show that configuration is needed; provide the deployment URL when building an online-enabled APK. The server's allowed browser origin and this gateway URL are different settings.
 
 `GROQ_API_KEY` remains server-only. The planned AI feature recommends `GROQ_MODEL=openai/gpt-oss-120b`; no AI endpoint or model call is implemented yet. Never add `.env` to Flutter assets or pass keys through Dart defines. See `DESIGN.md` and the AI plan under `docs/superpowers/plans/`.
 
@@ -84,6 +84,7 @@ flutter analyze --no-pub
 flutter test --no-pub
 flutter test integration_test/manual_scan_test.dart -d emulator-5556 --flavor manual --no-pub
 flutter test integration_test/ocr_native_test.dart -d emulator-5556 --flavor manual --no-pub
+flutter test integration_test/reputation_native_test.dart -d emulator-5556 --flavor manual --no-pub --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
 node --test server/reputation.test.mjs
 dart run tool/evaluate.dart
 dart compile js tool/web_scanner_check.dart -o .verification/web_scanner_check.cjs
@@ -100,6 +101,6 @@ Messages are processed locally unless the user explicitly requests a disclosed e
 
 The first rules are versioned Dart constants shared by manual/OCR and the SMS worker. Rule changes require an app release. They are heuristics, not calibrated probabilities. A 36-example synthetic diagnostic set lives in `test/fixtures/evaluation_messages.json`; `dart run tool/evaluate.dart` generates `docs/evaluation.md`. Five of 20 labeled scams were missed in that small set; no accuracy claim is appropriate. Paraphrases/obfuscation remain a limitation and motivate the planned AI assessment.
 
-API35 emulator evidence includes incoming SMS after process removal, generic notification content, cold notification routing, offline OCR with editable review and picker Activity recreation, and native secure-storage/manual integration. Native policy/encryption instrumentation and Dart race/permission tests are included. Real carrier/dual-SIM behavior, device-maker battery restrictions, TalkBack and human Filipino review still require physical-device/release validation. A live Web Risk test correctly returned unavailable after Google rejected it with `BILLING_DISABLED`; no Groq inference was called. See `docs/feasibility.md`, `docs/completion-audit.md`, `docs/provider-validation.md` and `docs/release-checklist.md` for the detailed evidence boundary.
+API35 emulator evidence includes incoming SMS after process removal, generic notification content, cold notification routing, offline OCR with editable review and picker Activity recreation, native secure-storage/manual integration, and consented live Safe Browsing threat/no-match results. Native policy/encryption instrumentation and Dart race/permission tests are included. Real carrier/dual-SIM behavior, device-maker battery restrictions, TalkBack and human Filipino review still require physical-device/release validation. No Groq inference was called. See `docs/feasibility.md`, `docs/completion-audit.md`, `docs/provider-validation.md` and `docs/release-checklist.md` for the detailed evidence boundary.
 
 Learn guidance draws on the [BSP fraud/scam primer](https://www.bsp.gov.ph/Media_and_Research/Primers%20Faqs/How_much_do_you_know_about_Fraud_and_Scam.pdf), [GCash account protection](https://help.gcash.com/hc/en-us/articles/19578518834457-How-can-I-protect-my-GCash-account), and [BPI social-engineering guidance](https://www.bpi.com.ph/personal/bank/digital-banking/online/cybersecurity/social-engineering-attacks). The app has no affiliation with these organizations.

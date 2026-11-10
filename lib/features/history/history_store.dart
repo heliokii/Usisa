@@ -130,7 +130,20 @@ class HistoryStore extends ChangeNotifier {
           !_live(result.createdAt, const Duration(days: 30))) {
         return;
       }
-      await storage.write('scan.${result.id}', jsonEncode(result.toJson()));
+      // Permanent history never caches Safe Browsing advisories beyond their lifetime.
+      final retained = result.withLinks(
+        result.links
+            .map(
+              (link) => link.provider == safeBrowsingProvider
+                  ? link.withReputation(
+                      ReputationState.unavailable,
+                      at: link.checkedAt,
+                    )
+                  : link,
+            )
+            .toList(),
+      );
+      await storage.write('scan.${result.id}', jsonEncode(retained.toJson()));
       if (expectedGeneration != generation ||
           revision != _historyRevision ||
           !enabled) {

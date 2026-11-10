@@ -33,7 +33,7 @@ class SettingsStore extends ChangeNotifier {
     restoreDraft = value['restoreDraft'] == true;
     onboarded = value['onboarded'] == true;
     onlineLinkChecks =
-        value['onlineLinkChecks'] == true && value['onlineDisclosure'] == 1;
+        value['onlineLinkChecks'] == true && value['onlineDisclosure'] == 2;
   }
 
   Future<void> update({
@@ -51,7 +51,7 @@ class SettingsStore extends ChangeNotifier {
         'saveHistory': saveHistory ?? this.saveHistory,
         'restoreDraft': restoreDraft ?? this.restoreDraft,
         'onlineLinkChecks': onlineLinkChecks ?? this.onlineLinkChecks,
-        'onlineDisclosure': 1,
+        'onlineDisclosure': 2,
         'onboarded': onboarded ?? this.onboarded,
       };
       final oldLanguage = this.language;

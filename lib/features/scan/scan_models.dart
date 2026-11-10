@@ -4,6 +4,8 @@ enum RiskLevel { low, caution, high }
 
 enum ReputationState { notRequested, checking, matched, noMatch, unavailable }
 
+const safeBrowsingProvider = 'Google Safe Browsing';
+
 class ScanException implements Exception {
   const ScanException(this.code);
   final String code;
@@ -55,6 +57,7 @@ class LinkResult {
     this.checkedAt,
     this.expiresAt,
     this.threatTypes = const [],
+    this.provider,
   });
   final String original;
   final Uri? uri;
@@ -63,6 +66,11 @@ class LinkResult {
   final DateTime? checkedAt;
   final DateTime? expiresAt;
   final List<String> threatTypes;
+  final String? provider;
+  bool get hasThreatWarning =>
+      reputation == ReputationState.matched &&
+      (provider != safeBrowsingProvider ||
+          currentReputation == ReputationState.matched);
   String get host => uri?.host ?? original;
   bool get schemeAssumed =>
       uri != null &&
@@ -105,6 +113,7 @@ class LinkResult {
     DateTime? at,
     DateTime? until,
     List<String> threats = const [],
+    String? provider,
   }) => LinkResult(
     original: original,
     uri: uri,
@@ -113,6 +122,7 @@ class LinkResult {
     checkedAt: at,
     expiresAt: until,
     threatTypes: threats,
+    provider: provider ?? this.provider,
   );
   Map<String, dynamic> toJson() => {
     'original': original,
@@ -122,6 +132,7 @@ class LinkResult {
     'checkedAt': checkedAt?.toIso8601String(),
     'expiresAt': expiresAt?.toIso8601String(),
     'threatTypes': threatTypes,
+    'provider': provider,
   };
   factory LinkResult.fromJson(Map<String, dynamic> json) => LinkResult(
     original: json['original'] as String,
@@ -137,6 +148,11 @@ class LinkResult {
         ? null
         : DateTime.parse(json['expiresAt'] as String),
     threatTypes: List<String>.from(json['threatTypes'] as List),
+    provider:
+        json['provider'] as String? ??
+        (['matched', 'noMatch'].contains(json['reputation'])
+            ? 'Google Web Risk'
+            : null),
   );
 }
 
@@ -158,8 +174,8 @@ class ScanResult {
   final DateTime createdAt;
   final String ruleVersion;
   RiskLevel get risk {
-    // A past threat match remains a warning; freshness is reported separately as unknown coverage.
-    if (links.any((l) => l.reputation == ReputationState.matched) ||
+    // Safe Browsing advisories cannot outlive expiry; independent local warnings remain.
+    if (links.any((l) => l.hasThreatWarning) ||
         findings.any((f) => f.severity == RiskLevel.high)) {
       return RiskLevel.high;
     }

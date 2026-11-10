@@ -19,8 +19,8 @@ function readBody(req) {
   });
 }
 
-export function createGateway({lookup = createReputationLookup({apiKey:process.env.WEB_RISK_API_KEY}),
-  configured = Boolean(process.env.WEB_RISK_API_KEY), allowedOrigin = process.env.ALLOWED_ORIGIN ?? ''} = {}) {
+export function createGateway({lookup = createReputationLookup({apiKey:process.env.SAFE_BROWSING_API_KEY}),
+  configured = Boolean(process.env.SAFE_BROWSING_API_KEY), allowedOrigin = process.env.ALLOWED_ORIGIN ?? ''} = {}) {
   const rates = new Map();
   let active = 0;
   const server = createServer(async (req,res) => {
@@ -81,6 +81,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const port = Number(process.env.PORT ?? 8787);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
   createGateway().listen(port,'127.0.0.1',() => {
-    console.log(`Usisa gateway listening on http://127.0.0.1:${port}; URL checks ${process.env.WEB_RISK_API_KEY ? 'configured' : 'unavailable'}`);
+    console.log(`Usisa gateway listening on http://127.0.0.1:${port}; URL checks ${process.env.SAFE_BROWSING_API_KEY ? 'configured' : 'unavailable'}`);
   });
 }

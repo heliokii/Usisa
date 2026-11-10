@@ -749,8 +749,38 @@ abstract class AppLocalizations {
   /// No description provided for @onlineBody.
   ///
   /// In en, this message translates to:
-  /// **'Full URLs, including path and query, will be sent to the Usisa gateway and Google Web Risk for this and future manual scans until disabled. Message text, sender, and images stay on your device. Background SMS checks never upload URLs.'**
+  /// **'Full URLs, including path and query, go to the Usisa gateway and Google Safe Browsing for manual link checks until disabled. Messages, senders, and images stay on your device. SMS checks never upload URLs. Google can miss threats or flag legitimate sites. Online advisories expire; saved history keeps local findings and last-check details, not online verdicts.'**
   String get onlineBody;
+
+  /// No description provided for @googleAdvisory.
+  ///
+  /// In en, this message translates to:
+  /// **'Advisory provided by Google'**
+  String get googleAdvisory;
+
+  /// No description provided for @advisoryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the help page. Your scan is still available.'**
+  String get advisoryUnavailable;
+
+  /// No description provided for @phishingHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn about phishing'**
+  String get phishingHelp;
+
+  /// No description provided for @malwareHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn about malware'**
+  String get malwareHelp;
+
+  /// No description provided for @unwantedHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn about unwanted software'**
+  String get unwantedHelp;
 
   /// No description provided for @enableOnline.
   ///

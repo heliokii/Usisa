@@ -10,6 +10,44 @@ import 'package:usisa/features/scan/result_screen.dart';
 import 'package:usisa/l10n/app_localizations.dart';
 
 void main() {
+  test('small gateway clock skew does not hide a fresh advisory or extend its lifetime', () async {
+    final at = DateTime.now().toUtc().add(const Duration(seconds: 2));
+    final client = ReputationClient(
+      baseUri: Uri.parse('https://gateway.example'),
+      client: MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'status': 'matched',
+            'threatTypes': ['MALWARE'],
+            'checkedAt': at.toIso8601String(),
+            'expiresAt': at.add(const Duration(seconds: 60)).toIso8601String(),
+            'provider': 'Google Safe Browsing',
+          }),
+          200,
+        ),
+      ),
+    );
+    final check = await client.check(Uri.parse('https://example.test'));
+    expect(check.state, ReputationState.matched);
+    expect(check.checkedAt!.isAfter(DateTime.now()), isFalse);
+    final link =
+        LinkResult(
+          original: 'https://example.test',
+          uri: Uri.parse('https://example.test'),
+          findings: [],
+        ).withReputation(
+          check.state,
+          at: check.checkedAt,
+          until: check.expiresAt,
+          provider: check.provider,
+        );
+    expect(link.currentReputation, ReputationState.matched);
+    expect(
+      check.expiresAt!.difference(check.checkedAt!),
+      lessThanOrEqualTo(const Duration(seconds: 60)),
+    );
+    client.close();
+  });
   testWidgets(
     'expired saved matches show the historical warning, check time and unknown coverage',
     (tester) async {
@@ -91,7 +129,7 @@ void main() {
               'threatTypes': [],
               'checkedAt': DateTime.now().toUtc().toIso8601String(),
               'expiresAt': null,
-              'provider': 'Google Web Risk',
+              'provider': 'Google Safe Browsing',
             }),
             200,
           );
@@ -116,6 +154,15 @@ void main() {
       http.Response('{bad', 200),
       http.Response('{"status":"safe"}', 200),
       http.Response('{"status":"matched","threatTypes":[]}', 200),
+      http.Response(
+        jsonEncode({
+          'status': 'noMatch',
+          'threatTypes': [],
+          'provider': 'Google Web Risk',
+          'checkedAt': DateTime.now().toUtc().toIso8601String(),
+        }),
+        200,
+      ),
     ]) {
       final client = ReputationClient(
         baseUri: Uri.parse('https://gateway.example'),
@@ -144,7 +191,7 @@ void main() {
                     .toUtc()
                     .add(Duration(hours: expired ? -1 : 1))
                     .toIso8601String(),
-                'provider': 'Google Web Risk',
+                'provider': 'Google Safe Browsing',
               }),
               200,
             ),

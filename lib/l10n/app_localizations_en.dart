@@ -367,7 +367,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onlineBody =>
-      'Full URLs, including path and query, will be sent to the Usisa gateway and Google Web Risk for this and future manual scans until disabled. Message text, sender, and images stay on your device. Background SMS checks never upload URLs.';
+      'Full URLs, including path and query, go to the Usisa gateway and Google Safe Browsing for manual link checks until disabled. Messages, senders, and images stay on your device. SMS checks never upload URLs. Google can miss threats or flag legitimate sites. Online advisories expire; saved history keeps local findings and last-check details, not online verdicts.';
+
+  @override
+  String get googleAdvisory => 'Advisory provided by Google';
+
+  @override
+  String get advisoryUnavailable =>
+      'Could not open the help page. Your scan is still available.';
+
+  @override
+  String get phishingHelp => 'Learn about phishing';
+
+  @override
+  String get malwareHelp => 'Learn about malware';
+
+  @override
+  String get unwantedHelp => 'Learn about unwanted software';
 
   @override
   String get enableOnline => 'Enable online checks';
