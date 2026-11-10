@@ -21,6 +21,8 @@ Use Flutter 3.47.5 / Dart 3.13.4 or a compatible newer toolchain. Android minimu
 
 Runtime checks now cover API24 and API35 emulators. On Android 7.0/API24, encrypted storage/manual scanning, offline OCR, three encrypted SMS queue tests, an incoming SMS after process removal, cold notification routing and manually confirmed live AI all passed. These checks do not replace carrier, physical-phone or human accessibility validation.
 
+The optimized SMS Lab release build also passed offline OCR with editable review, headless incoming SMS and cold notification routing on API35. Release rules preserve ML Kit's reflectively loaded constructors and suppress only the unbundled optional script classes. APK signing verification and static 16 KB ZIP/native-library alignment checks pass; a 16 KB runtime device has not been tested. Release builds still use the development signing key and are for validation only.
+
 ```powershell
 flutter pub get
 flutter gen-l10n
@@ -118,6 +120,8 @@ Integration-test runs build a test entrypoint. Rebuild with `flutter build apk -
 Messages are processed locally unless the user explicitly requests a disclosed external check. No background clipboard reads, automatic link opening, third-party chat scraping or SMS sending/deletion is implemented. Suspicious URLs are displayed as text.
 
 The first rules are versioned Dart constants shared by manual/OCR and the SMS worker. Rule changes require an app release. They are heuristics, not calibrated probabilities. A 36-example synthetic diagnostic set lives in `test/fixtures/evaluation_messages.json`; `dart run tool/evaluate.dart` generates `docs/evaluation.md`. Five of 20 labeled scams were missed in that small set; no accuracy claim is appropriate. Paraphrases/obfuscation remain limitations of both approaches; AI adds a separately attributed assessment.
+
+For PH research data, [Scott Lee Chua's published SMS collection](https://github.com/scottleechua/data/tree/main/spam-and-marketing-sms) reports 8,895 records under CC BY 4.0. Private notifications/OTP text is redacted; its spam/ads/government categories still need independent fraud-label review. A separate [Mishra/Soni smishing dataset](https://data.mendeley.com/datasets/f45bkkt8pr/1) provides ham/spam/smishing labels under CC BY 4.0, without establishing PH/Taglish coverage. Source versions and limits are recorded in `docs/dataset-options-2026-11-10.md`. Neither corpus has been imported, uploaded to Groq or used to tune the app.
 
 API35 emulator evidence includes incoming SMS after process removal, generic notification content, cold notification routing, offline OCR with editable review and picker Activity recreation, native secure-storage/manual integration, consented live Safe Browsing results, and reviewed manual Groq assessment. Native policy/encryption instrumentation and Dart race/permission tests are included. Real carrier/dual-SIM behavior, device-maker battery restrictions, TalkBack and human Filipino review still require physical-device/release validation. See `docs/feasibility.md`, `docs/completion-audit.md`, `docs/provider-validation.md`, `docs/ai-evaluation.md` and `docs/release-checklist.md` for the detailed evidence boundary.
 
