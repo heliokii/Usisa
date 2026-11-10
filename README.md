@@ -65,6 +65,8 @@ npm start
 
 The server binds to loopback on port 8787 by default and explicitly loads `../.env` if present. A public deployment needs TLS, trusted ingress abuse controls and a provider budget; none is deployed by this change.
 
+The user now requires a free option for noncommercial school/research use. Google Safe Browsing is the researched replacement recommendation; see `docs/free-url-providers.md`. The gateway still uses Web Risk until migration, consent/attribution/expiry changes and live validation are complete. Do not enable Web Risk billing as part of that replacement.
+
 Supply only the public gateway URL to Flutter, for example:
 
 ```powershell

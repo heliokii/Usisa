@@ -25,6 +25,8 @@ Detection cannot verify every sender or guarantee that content is safe. The app 
 
 The project uses Dart/Flutter Material 3 with shared local rules, English/Filipino UI, on-device OCR, encrypted opt-in retention, and a consented URL-reputation gateway. Separate `manual` and `smsLab` Android flavors keep restricted SMS permissions out of the default build. Development identities remain `com.example.usisa` and `com.example.usisa.smslab`; signing and public release identity remain release gates.
 
+Provider research update, 10 November 2026: the user requested a free alternative after Web Risk returned BILLING_DISABLED and confirmed noncommercial school/research use. **Google Safe Browsing is the recommended replacement**, subject to API/key setup and its attribution/expiry requirements. The gateway still implements Web Risk; migration is not yet complete. See [provider comparison and integration implications](docs/free-url-providers.md).
+
 The following decisions define the approved implementation direction:
 
 | Decision | Proposal and reason |
