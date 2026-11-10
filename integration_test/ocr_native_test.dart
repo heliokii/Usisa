@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -10,9 +11,19 @@ import 'package:path_provider/path_provider.dart';
 import 'package:usisa/features/scan/ocr_service_native.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 
-Future<Uint8List> imageBytes(int width, int height, {bool text = true}) async {
+Future<Uint8List> imageBytes(
+  int width,
+  int height, {
+  bool text = true,
+  bool rotated = false,
+  bool obscureUrl = false,
+}) async {
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder)..drawColor(Colors.white, BlendMode.src);
+  if (rotated) {
+    canvas.translate(height.toDouble(), 0);
+    canvas.rotate(math.pi / 2);
+  }
   final painter = TextPainter(
     text: const TextSpan(
       text: 'GCash: Send your OTP immediately.\nhttps://gcash.com.evil.test',
@@ -21,8 +32,17 @@ Future<Uint8List> imageBytes(int width, int height, {bool text = true}) async {
     textDirection: TextDirection.ltr,
   )..layout(maxWidth: width - 80);
   if (text) painter.paint(canvas, const Offset(40, 60));
+  if (obscureUrl) {
+    canvas.drawRect(
+      Rect.fromLTWH(40, 105, width - 80, 80),
+      Paint()..color = Colors.white,
+    );
+  }
   final picture = recorder.endRecording();
-  final image = await picture.toImage(width, height);
+  final image = await picture.toImage(
+    rotated ? height : width,
+    rotated ? width : height,
+  );
   try {
     return (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer
         .asUint8List();
@@ -55,6 +75,22 @@ void main() {
         expect(draft.text, contains('OTP'));
         expect(draft.text, contains('https://gcash.com.evil.test'));
         expect(await valid.exists(), isFalse);
+
+        final rotated = await File('${fixtures.path}/rotated.png')
+            .writeAsBytes(await imageBytes(1200, 400, rotated: true));
+        final rotatedDraft = await service.readImage(XFile(rotated.path));
+        expect(rotatedDraft.text, contains('OTP'));
+        expect(await rotated.exists(), isFalse);
+
+        final partial = await File('${fixtures.path}/partial.png')
+            .writeAsBytes(await imageBytes(1200, 400, obscureUrl: true));
+        final partialDraft = await service.readImage(XFile(partial.path));
+        expect(partialDraft.text, contains('OTP'));
+        expect(
+          partialDraft.text,
+          isNot(contains('https://gcash.com.evil.test')),
+        );
+        expect(await partial.exists(), isFalse);
 
         final source = await File('${documents.path}/source.png')
             .writeAsBytes(bytes);
