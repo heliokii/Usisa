@@ -8,7 +8,7 @@ test('fixed provider endpoint returns threat and never requests the submitted ho
     assert.equal(url.origin, 'https://webrisk.googleapis.com');
     assert.equal(url.searchParams.get('uri'), 'https://example.test/path');
     assert.ok(options.signal);
-    return Response.json({ threat: { threatTypes: ['SOCIAL_ENGINEERING'], expireTime: '2026-12-01T00:00:00Z' } });
+    return Response.json({ threat: { threatTypes: ['SOCIAL_ENGINEERING'], expireTime: new Date(Date.now() + 60000).toISOString() } });
   }});
   const result = await lookup('https://example.test/path');
   assert.equal(result.status, 'matched');
@@ -17,6 +17,29 @@ test('fixed provider endpoint returns threat and never requests the submitted ho
 test('empty successful provider response means no match, not verified safe', async () => {
   const lookup = createReputationLookup({ apiKey: 'synthetic', fetchImpl: async () => Response.json({}) });
   assert.equal((await lookup('https://example.test')).status, 'noMatch');
+});
+test('already expired provider evidence remains unavailable', async () => {
+  const lookup = createReputationLookup({apiKey: 'synthetic', fetchImpl: async () =>
+    Response.json({threat: {threatTypes: ['MALWARE'], expireTime: '2000-01-01T00:00:00Z'}})});
+  assert.equal((await lookup('https://example.test')).status, 'unavailable');
+});
+test('provider work is aborted after five seconds with a sanitized unavailable result', async () => {
+  let aborted = false;
+  const lookup = createReputationLookup({apiKey: 'synthetic', fetchImpl: async (_, {signal}) =>
+    new Promise((resolve, reject) => {
+      const timer = setTimeout(() => resolve(Response.json({})), 10000);
+      signal.addEventListener('abort', () => {
+        aborted = true;
+        clearTimeout(timer);
+        reject(new Error('private upstream diagnostic'));
+      }, {once: true});
+    })});
+  const start = performance.now();
+  const result = await lookup('https://example.test/private');
+  assert.equal(aborted, true);
+  assert.equal(result.status, 'unavailable');
+  assert.ok(performance.now() - start < 9000);
+  assert.ok(!JSON.stringify(result).includes('private'));
 });
 test('missing configuration, provider quota, network and malformed output stay unavailable', async () => {
   assert.equal((await createReputationLookup({})('https://example.test')).status, 'unavailable');
@@ -35,6 +58,11 @@ test('gateway validates trust boundaries, method, rate limit and capabilities', 
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
     assert.deepEqual(await (await fetch(`${base}/v1/capabilities`)).json(), {urlReputation:true,aiScanning:false});
+    for (const [body, status] of [['{broken', 400], [' '.repeat(8193), 413]]) {
+      const response = await fetch(`${base}/v1/link-check`, {method:'POST', headers:{'Content-Type':'application/json'}, body});
+      assert.equal(response.status, status);
+    }
+    assert.equal((await fetch(`${base}/v1/link-check`, {method:'POST', body:'{}'})).status, 415);
     for (const body of [{url:'file:///tmp/private'},{url:'https://example.test',extra:'not allowed'},{url:'https://'+ 'a'.repeat(2048)}]) {
       assert.equal((await fetch(`${base}/v1/link-check`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).status,400);
     }

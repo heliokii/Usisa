@@ -19,7 +19,8 @@ export function createReputationLookup({apiKey, fetchImpl = fetch} = {}) {
       const threat = body.threat;
       if (!threat || !Array.isArray(threat.threatTypes) || !threat.threatTypes.length ||
           threat.threatTypes.some(type => !allowedThreats.has(type)) ||
-          typeof threat.expireTime !== 'string' || !Number.isFinite(Date.parse(threat.expireTime))) return unavailable();
+          typeof threat.expireTime !== 'string' || !Number.isFinite(Date.parse(threat.expireTime)) ||
+          Date.parse(threat.expireTime) <= Date.now()) return unavailable();
       return {status:'matched',threatTypes:threat.threatTypes,checkedAt,
         expiresAt:threat.expireTime,provider:'Google Web Risk'};
     } catch (_) { return unavailable(); }

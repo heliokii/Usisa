@@ -13,6 +13,64 @@ import 'package:usisa/theme/usisa_theme.dart';
 
 void main() {
   WidgetController.hitTestWarningShouldBeFatal = true;
+  testWidgets(
+    'landscape keyboard and reduced motion preserve the scan journey',
+    (tester) async {
+      tester.view.physicalSize = const Size(840, 390);
+      tester.view.devicePixelRatio = 1;
+      tester.view.viewInsets = const FakeViewPadding(bottom: 160);
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetViewInsets);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final storage = MemoryStorage();
+      await SettingsStore(storage).update(onboarded: true);
+      await tester.pumpWidget(UsisaApp(storage: storage));
+      await tester.pumpAndSettle();
+      const text = 'GCash: Send your OTP immediately.\nKeep this draft.';
+      await tester.enterText(find.byType(TextField).first, text);
+      await tester.ensureVisible(find.text('Check message'));
+      await tester.tap(find.text('Check message'));
+      await tester.pumpAndSettle();
+      expect(find.text('High risk'), findsWidgets);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Semantics && widget.properties.liveRegion == true,
+        ),
+        findsWidgets,
+      );
+      await tester.ensureVisible(find.text('Asks for a security secret'));
+      await tester.tap(find.text('Asks for a security secret'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SelectableText), findsWidgets);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text(text), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('scan controls have labels and Android sized tap targets', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    try {
+      final storage = MemoryStorage();
+      await SettingsStore(storage).update(onboarded: true);
+      await tester.pumpWidget(UsisaApp(storage: storage));
+      await tester.pumpAndSettle();
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    } finally {
+      handle.dispose();
+    }
+  });
+
   testWidgets('both themes keep body and risk text above 4.5:1 contrast', (
     tester,
   ) async {

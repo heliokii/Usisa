@@ -141,6 +141,10 @@ class AppLocalizationsFil extends AppLocalizations {
       'Maaaring magkamali ang pagbasa. Suriin ang mga pangalan, numero, at link.';
 
   @override
+  String get previewUnavailable =>
+      'Hindi maipakita ang larawan. Maaari mo pa ring suriin at i-edit ang nakuhang teksto.';
+
+  @override
   String get checkThisText => 'Suriin ang tekstong ito';
 
   @override
@@ -390,6 +394,12 @@ class AppLocalizationsFil extends AppLocalizations {
   @override
   String get privateHistoryConsent =>
       'Mag-save ng encrypted na teksto, link, at resulta sa device (pinakahuling 100). Nag-e-expire ang access matapos ang 30 araw. Binubura ang nag-expire na file habang bukas ang Usisa o sa susunod na paggamit; hindi ito magagawa sa takdang oras kung sarado o naka-stop ang app. Binubura agad ng Burahin ang naka-save na datos kapag gumagana ang storage.';
+
+  @override
+  String get reviewRecoveredScreenshot => 'Suriin ang nakaraang screenshot';
+
+  @override
+  String get discardRecoveredScreenshot => 'Alisin ang nakaraang screenshot';
 
   @override
   String get assumedHttps =>

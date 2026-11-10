@@ -12,6 +12,7 @@ import 'scan_controller.dart';
 import 'scan_models.dart';
 import 'result_screen.dart';
 import 'ocr_service.dart';
+import 'ocr_models.dart';
 import 'screenshot_review_screen.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -22,21 +23,24 @@ class ScanScreen extends StatefulWidget {
     this.sms,
     this.onManageSms,
     this.onReviewSms,
+    this.ocr,
   });
   final HistoryStore history;
   final SettingsStore settings;
   final SmsService? sms;
   final VoidCallback? onManageSms;
   final VoidCallback? onReviewSms;
+  final OcrService? ocr;
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   final _inputs = [TextEditingController(), TextEditingController()];
   final _scan = ScanController();
-  final _ocr = OcrService();
+  late final _ocr = widget.ocr ?? OcrService();
   bool _reading = false;
+  OcrDraft? _recovered;
   int _ocrRevision = 0;
   int _mode = 0;
   bool _opening = false;
@@ -45,10 +49,12 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     widget.settings.addListener(_settingsChanged);
     if (widget.settings.restoreDraft) {
       _restoreDraft();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _recoverScreenshot());
   }
 
   Future<void> _restoreDraft() async {
@@ -105,6 +111,7 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     widget.settings.removeListener(_settingsChanged);
     _draftTimer?.cancel();
     for (final input in _inputs) {
@@ -157,14 +164,52 @@ class _ScanScreenState extends State<ScanScreen> {
     _opening = false;
   }
 
-  Future<void> _importScreenshot() async {
-    if (_reading) {
-      return;
-    }
+  void _ocrError(Object error) {
+    final l = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l.errorMessage(error is ScanException ? error.code : 'ocrFailed'),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _recoverScreenshot();
+  }
+
+  Future<void> _recoverScreenshot() async {
+    if (!mounted || !_ocr.available || _reading || _recovered != null) return;
     setState(() => _reading = true);
     final revision = ++_ocrRevision;
     try {
-      final draft = await _ocr.readScreenshot();
+      final draft = await _ocr.recoverScreenshot();
+      if (mounted && revision == _ocrRevision) {
+        setState(() => _recovered = draft);
+      }
+    } catch (error) {
+      if (mounted && revision == _ocrRevision) _ocrError(error);
+    } finally {
+      if (mounted) setState(() => _reading = false);
+    }
+  }
+
+  Future<void> _importScreenshot({OcrDraft? recovered}) async {
+    if (_reading) {
+      return;
+    }
+    setState(() {
+      _reading = true;
+      if (recovered != null) {
+        _recovered = null;
+        _mode = 2;
+      }
+    });
+    final revision = ++_ocrRevision;
+    try {
+      final draft = recovered ?? await _ocr.readScreenshot();
       if (!mounted || draft == null || revision != _ocrRevision) {
         return;
       }
@@ -176,16 +221,7 @@ class _ScanScreenState extends State<ScanScreen> {
       }
     } catch (e) {
       if (mounted && revision == _ocrRevision) {
-        final l = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is ScanException
-                  ? l.errorMessage(e.code)
-                  : l.errorMessage('ocrFailed'),
-            ),
-          ),
-        );
+        _ocrError(e);
       }
     } finally {
       if (mounted) {
@@ -250,6 +286,24 @@ class _ScanScreenState extends State<ScanScreen> {
               ],
             ),
             const SizedBox(height: 28),
+            if (_recovered != null) ...[
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.image_outlined),
+                title: Text(l.reviewRecoveredScreenshot),
+                onTap: _reading
+                    ? null
+                    : () => _importScreenshot(recovered: _recovered),
+                trailing: IconButton(
+                  tooltip: l.discardRecoveredScreenshot,
+                  onPressed: _reading
+                      ? null
+                      : () => setState(() => _recovered = null),
+                  icon: const Icon(Icons.close),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             Wrap(
               spacing: 8,
               runSpacing: 8,

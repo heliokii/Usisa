@@ -141,6 +141,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Images can be misread. Check names, numbers, and links before continuing.';
 
   @override
+  String get previewUnavailable =>
+      'Image preview is unavailable. You can still review and edit the extracted text.';
+
+  @override
   String get checkThisText => 'Check this text';
 
   @override
@@ -389,6 +393,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get privateHistoryConsent =>
       'Save encrypted copies of message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Clear saved data erases them immediately when storage is available.';
+
+  @override
+  String get reviewRecoveredScreenshot => 'Review previous screenshot';
+
+  @override
+  String get discardRecoveredScreenshot => 'Discard previous screenshot';
 
   @override
   String get assumedHttps =>

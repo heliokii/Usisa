@@ -313,6 +313,7 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
           children: [
             if (wide)
               NavigationRail(
+                scrollable: true,
                 selectedIndex: index,
                 onDestinationSelected: (i) => setState(() => index = i),
                 labelType: NavigationRailLabelType.all,

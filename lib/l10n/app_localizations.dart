@@ -332,6 +332,12 @@ abstract class AppLocalizations {
   /// **'Images can be misread. Check names, numbers, and links before continuing.'**
   String get ocrNotice;
 
+  /// No description provided for @previewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Image preview is unavailable. You can still review and edit the extracted text.'**
+  String get previewUnavailable;
+
   /// No description provided for @checkThisText.
   ///
   /// In en, this message translates to:
@@ -787,6 +793,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save encrypted copies of message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Clear saved data erases them immediately when storage is available.'**
   String get privateHistoryConsent;
+
+  /// No description provided for @reviewRecoveredScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Review previous screenshot'**
+  String get reviewRecoveredScreenshot;
+
+  /// No description provided for @discardRecoveredScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard previous screenshot'**
+  String get discardRecoveredScreenshot;
 
   /// No description provided for @assumedHttps.
   ///

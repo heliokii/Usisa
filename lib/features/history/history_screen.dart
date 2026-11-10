@@ -116,7 +116,8 @@ class _HistoryScreenState extends State<HistoryScreen>
             (_risk == null || r.risk == _risk) &&
             (_source == null || r.source == _source) &&
             (_days == 0 ||
-                DateTime.now().difference(r.createdAt).inDays < _days) &&
+                widget.history.clock().difference(r.createdAt).inDays <
+                    _days) &&
             r.text.toLowerCase().contains(_query.toLowerCase()),
       )
       .toList();

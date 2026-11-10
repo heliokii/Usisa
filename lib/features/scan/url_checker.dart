@@ -9,16 +9,18 @@ class UrlChecker {
         _bareSource,
     caseSensitive: false,
   );
-  // Exact host boundaries, never substrings. Review sources before extending this list.
+  // Exact host boundaries; references reviewed 2026-11-10, detailed in docs/domain-references.md.
   static const officialDomains = [
-    'gcash.com',
-    'maya.ph',
-    'bdo.com.ph',
-    'bpi.com.ph',
-    'landbank.com',
-    'sss.gov.ph',
-    'philhealth.gov.ph',
-    'pagibigfund.gov.ph',
+    'gcash.com', // https://gcash.com/
+    'maya.ph', // https://www.maya.ph/
+    'mayabank.ph', // Linked by https://www.maya.ph/
+    'bdo.com.ph', // https://www.bdo.com.ph/business/business-solutions/payment-solutions/bdo-checkout-buyer-terms-and-conditions
+    'bdonetworkbank.com.ph', // Linked by BDO's Kabayan savings account article (see references).
+    'bpi.com.ph', // https://www.bpi.com.ph/
+    'landbank.com', // https://www.landbank.com/cybersigurista-tips
+    'sss.gov.ph', // https://www.sss.gov.ph/
+    'philhealth.gov.ph', // https://www.philhealth.gov.ph/
+    'pagibigfund.gov.ph', // https://www.pagibigfund.gov.ph/about_governance_scorecard2024.html
   ];
   static const shorteners = [
     'bit.ly',
@@ -113,6 +115,11 @@ class UrlChecker {
     }
     if (host.contains('xn--') || RegExp(r'[^\x00-\x7F]').hasMatch(host)) {
       findings.add(Finding('unusualHost', evidence: host));
+    }
+    if (officialDomains.any(
+      (domain) => host == domain || host.endsWith('.$domain'),
+    )) {
+      return findings;
     }
     for (final domain in officialDomains) {
       final brand = domain.split('.').first;

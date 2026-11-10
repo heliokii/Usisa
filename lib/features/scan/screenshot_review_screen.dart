@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -13,10 +15,19 @@ class ScreenshotReviewScreen extends StatefulWidget {
 
 class _ScreenshotReviewScreenState extends State<ScreenshotReviewScreen> {
   late final _text = TextEditingController(text: widget.draft.text);
+  late final _preview = widget.draft.bytes.isEmpty
+      ? null
+      : ResizeImage(
+          MemoryImage(widget.draft.bytes),
+          width: 1280,
+          height: 1280,
+          policy: ResizeImagePolicy.fit,
+        );
   String? _error;
   @override
   void dispose() {
     _text.dispose();
+    if (_preview != null) unawaited(_preview.evict());
     super.dispose();
   }
 
@@ -33,14 +44,16 @@ class _ScreenshotReviewScreenState extends State<ScreenshotReviewScreen> {
             children: [
               Text(l.ocrNotice, style: Theme.of(context).textTheme.bodyLarge),
               const SizedBox(height: 20),
-              if (widget.draft.bytes.isNotEmpty) ...[
+              if (_preview != null) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.memory(
-                    widget.draft.bytes,
+                  child: Image(
+                    image: _preview,
                     height: 220,
                     fit: BoxFit.contain,
                     semanticLabel: l.screenshot,
+                    errorBuilder: (context, error, stack) =>
+                        Text(l.previewUnavailable),
                   ),
                 ),
                 const SizedBox(height: 24),

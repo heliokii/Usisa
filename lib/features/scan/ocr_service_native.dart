@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,27 +10,21 @@ import 'scan_models.dart';
 
 class OcrService {
   final _picker = ImagePicker();
-  bool get available =>
-      defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS;
+  bool get available => Platform.isAndroid || Platform.isIOS;
 
   Future<OcrDraft?> readScreenshot() async {
     if (!available) {
       throw const ScanException('ocrUnavailable');
     }
-    final recovered = await recoverScreenshot();
-    if (recovered != null) {
-      return recovered;
-    }
     final image = await _picker.pickImage(
       source: ImageSource.gallery,
       requestFullMetadata: false,
     );
-    return image == null ? null : _read(image);
+    return image == null ? null : readImage(image);
   }
 
   Future<OcrDraft?> recoverScreenshot() async {
-    if (defaultTargetPlatform != TargetPlatform.android) {
+    if (!Platform.isAndroid) {
       return null;
     }
     final response = await _picker.retrieveLostData();
@@ -39,11 +32,12 @@ class OcrService {
       throw const ScanException('ocrFailed');
     }
     final image = response.files?.firstOrNull;
-    return image == null ? null : _read(image);
+    return image == null ? null : readImage(image);
   }
 
-  Future<OcrDraft> _read(XFile image) async {
-    final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
+  Future<OcrDraft> readImage(XFile image) async {
+    if (!available) throw const ScanException('ocrUnavailable');
+    TextRecognizer? recognizer;
     try {
       if (await image.length() > 20 * 1024 * 1024) {
         throw const ScanException('imageTooLarge');
@@ -62,12 +56,17 @@ class OcrService {
       } finally {
         buffer.dispose();
       }
+      recognizer = TextRecognizer(script: TextRecognitionScript.latin);
       final result = await recognizer.processImage(
         InputImage.fromFilePath(image.path),
       );
       return OcrDraft(text: result.text, bytes: bytes);
+    } on ScanException {
+      rethrow;
+    } catch (_) {
+      throw const ScanException('ocrFailed');
     } finally {
-      await recognizer.close();
+      await recognizer?.close();
       // Delete only picker copies verified inside this app's temporary directory.
       final temp = await getTemporaryDirectory();
       final file = File(image.path);

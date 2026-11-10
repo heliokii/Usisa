@@ -6,6 +6,17 @@ void main() {
   final analyzer = ScamAnalyzer();
   ScanResult check(String text) => analyzer.analyze(ScanInput(text));
   test(
+    'reviewed Maya Bank domain is not mistaken for a Maya impersonation',
+    () {
+      for (final host in ['www.mayabank.ph', 'www.bdonetworkbank.com.ph']) {
+        final legitimate = check('https://$host/');
+        expect(legitimate.risk, RiskLevel.low);
+        expect(legitimate.hasUncheckedLinks, isTrue);
+      }
+      expect(check('https://mayabank.ph.evil.test/').risk, RiskLevel.caution);
+    },
+  );
+  test(
     'scheme-less links are checked in text, SMS and dedicated link mode',
     () {
       for (final source in [ScanSource.text, ScanSource.sms, ScanSource.link]) {
