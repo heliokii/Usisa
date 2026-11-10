@@ -254,6 +254,7 @@ class ScanResult {
         : AiAssessment.fromJson(
             Map<String, dynamic>.from(json['aiAssessment'] as Map),
             text: json['text'] as String,
+            retained: true,
           ),
     reviewedForAi: json['reviewedForAi'] == true,
   );

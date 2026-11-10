@@ -25,6 +25,7 @@ const aiRecommendationCodes = {
   'contact_provider_if_shared',
 };
 const aiModels = {'openai/gpt-oss-120b', 'openai/gpt-oss-20b'};
+const aiSummaryCode = 'assessment_complete';
 
 class ReviewedAiInput {
   const ReviewedAiInput({
@@ -77,6 +78,7 @@ class AiAssessment {
   factory AiAssessment.fromJson(
     Map<String, dynamic> json, {
     required String text,
+    bool retained = false,
   }) {
     Never invalid() => throw const FormatException('Invalid AI assessment');
     const keys = {
@@ -118,15 +120,16 @@ class AiAssessment {
     if ((assessed && risk == null) || (unknown && json['risk'] != null)) {
       invalid();
     }
-    final summary = json['summary'];
+    // Older retained assessments lose prose while keeping their validated quotes and metadata.
+    final summary = retained && json['summary'] is String
+        ? aiSummaryCode
+        : json['summary'];
     final rawSigns = json['warningSigns'];
     final rawAdvice = json['recommendationCodes'];
     final at = json['checkedAt'] is String
         ? DateTime.tryParse(json['checkedAt'] as String)
         : null;
-    if (summary is! String ||
-        summary.trim().isEmpty ||
-        summary.runes.length > 480 ||
+    if (summary != aiSummaryCode ||
         rawSigns is! List ||
         rawSigns.length > 5 ||
         rawAdvice is! List ||

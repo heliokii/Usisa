@@ -52,6 +52,14 @@ void main() {
       http.Response(
         jsonEncode({
           ...assessment(),
+          'summary':
+              'Call 09171234567 or visit https://invented.test for support.',
+        }),
+        200,
+      ),
+      http.Response(
+        jsonEncode({
+          ...assessment(),
           'warningSigns': [
             {'code': 'other', 'evidence': 'invented'},
           ],

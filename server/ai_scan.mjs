@@ -36,7 +36,8 @@ export function createAiScanner({apiKey,model,fetchImpl=fetch,timeoutMs=15000,on
       if (!validVerdict(verdict,text) || signal.aborted) return unavailable;
       // Evaluation receives numeric usage only; prompts, reasoning and raw responses never leave this boundary.
       if (Number.isSafeInteger(data.usage?.prompt_tokens) && Number.isSafeInteger(data.usage?.completion_tokens)) onUsage?.({modelId:model,promptVersion,promptTokens:data.usage.prompt_tokens,completionTokens:data.usage.completion_tokens});
-      return {state:verdict.risk === 'unknown' ? 'unableToAssess' : 'completed',...verdict,risk:verdict.risk === 'unknown' ? null : verdict.risk,modelId:model,promptVersion,checkedAt:new Date().toISOString()};
+      // Model prose is discarded; the app explains approved codes in its reviewed locale copy.
+      return {state:verdict.risk === 'unknown' ? 'unableToAssess' : 'completed',...verdict,summary:'assessment_complete',risk:verdict.risk === 'unknown' ? null : verdict.risk,modelId:model,promptVersion,checkedAt:new Date().toISOString()};
     } catch (_) { return unavailable; }
   };
 }

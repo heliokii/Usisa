@@ -156,8 +156,18 @@ class _ResultScreenState extends State<ResultScreen>
       _linkRevision++;
       _client?.close();
       _checkingLinks = false;
-      _result = ScamAnalyzer().analyze(
+      final analyzed = ScamAnalyzer().analyze(
         ScanInput(choice.text, source: _result.source),
+      );
+      _result = ScanResult(
+        id: _result.id,
+        text: analyzed.text,
+        source: analyzed.source,
+        findings: analyzed.findings,
+        links: analyzed.links,
+        createdAt: _result.createdAt,
+        ruleVersion: analyzed.ruleVersion,
+        reviewedForAi: true,
       );
       _highlight = null;
     }
@@ -522,9 +532,13 @@ class _ResultScreenState extends State<ResultScreen>
                       ),
                     ),
                 ],
-                if (ai?.summary.isNotEmpty == true) ...[
+                if (aiState == AiScanState.completed) ...[
                   const SizedBox(height: 12),
-                  Text(ai!.summary),
+                  Text(switch (ai!.risk!) {
+                    RiskLevel.high => l.highCopy,
+                    RiskLevel.caution => l.cautionCopy,
+                    RiskLevel.low => l.lowCopy,
+                  }),
                 ],
                 if (ai?.state == AiScanState.completed &&
                     ai?.risk != result.localRisk) ...[

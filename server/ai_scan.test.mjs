@@ -31,6 +31,14 @@ test('fixed Groq endpoint uses strict independent PH assessment and exact eviden
   assert.equal(result.warningSigns[0].evidence,'Send your OTP');
 });
 
+test('model prose with invented contacts never leaves the gateway as a summary', async () => {
+  const result = await createAiScanner({...options,fetchImpl:async()=>completion({...verdict,summary:'Call 09171234567 or visit https://invented.test for support.'})})({text,responseLanguage:'en'});
+  assert.equal(result.state,'completed');
+  assert.equal(result.summary,'assessment_complete');
+  assert.ok(!JSON.stringify(result).includes('invented.test'));
+  assert.ok(!JSON.stringify(result).includes('09171234567'));
+});
+
 test('invented evidence, extras, invalid enums, unknown contradictions and excessive output fail closed', async () => {
   for (const patch of [
     {warningSigns:[{code:'urgency',evidence:'not in message'}]},

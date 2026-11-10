@@ -84,6 +84,8 @@ Choose **AI assisted**, review/edit the exact text, then confirm **Send this tex
 
 The gateway validates exact evidence quotes and approved action codes. It makes no tool calls, fetches no submitted links and keeps no raw-message logs or completed-result cache. AI has a 15-second upstream deadline, four-call concurrency cap, ten requests/minute/socket IP and a default 50-call/day/process cap (`AI_DAILY_LIMIT`). In-flight matching submission keys coalesce; conflicts reject. Cancellation attempts to abort work but does not reverse an upload or refund consumed tokens. Mobile timeouts, backgrounding and stale responses do not erase local findings or recreate cleared history. Retries require review and confirmation again.
 
+Free-form model summaries are discarded at the gateway. The app explains the risk and approved warning/action codes in reviewed English/Filipino copy. Exact evidence quotes remain visible, and invented contact details or links in model prose cannot become recommendations. Editing a saved scan replaces its reviewed version under the same scan identity.
+
 These local controls reset on restart and do not replace organization spending limits, authentication or trusted public ingress. Public hosting, verified account retention/spend settings and real-world PH evaluation remain release gates. No endpoint has been published. A 20-message synthetic comparison with separate development examples lives in `docs/ai-evaluation.md`; unavailable and unassessed responses are counted, and no accuracy claim follows.
 
 ## Checks

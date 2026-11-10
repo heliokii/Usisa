@@ -6,7 +6,7 @@ import 'package:usisa/features/scan/scam_analyzer.dart';
 Map<String, dynamic> assessment({String risk = 'high'}) => {
   'state': risk == 'unknown' ? 'unableToAssess' : 'completed',
   'risk': risk == 'unknown' ? null : risk,
-  'summary': 'Verify this request independently.',
+  'summary': aiSummaryCode,
   'warningSigns': risk == 'unknown'
       ? []
       : [
@@ -101,4 +101,19 @@ void main() {
     expect(result.aiAssessment?.modelId, 'openai/gpt-oss-120b');
     expect(result.aiAssessment?.findings.single.evidence, 'Send your OTP');
   });
+  test(
+    'legacy retained prose is discarded without deleting local or AI evidence',
+    () {
+      final local = ScamAnalyzer().analyze(const ScanInput(text));
+      final json = local.toJson()
+        ..['aiAssessment'] = {
+          ...assessment(),
+          'summary': 'Call 09171234567 at https://invented.test',
+        };
+      final restored = ScanResult.fromJson(json);
+      expect(restored.id, local.id);
+      expect(restored.aiAssessment?.summary, aiSummaryCode);
+      expect(restored.aiAssessment?.findings.single.evidence, 'Send your OTP');
+    },
+  );
 }
