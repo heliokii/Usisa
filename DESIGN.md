@@ -2,6 +2,7 @@
 
 Status: manual flows, the sideloaded Android SMS Lab and optional Groq AI assistance are implemented for the development MVP. Live reviewed-text AI has Android emulator evidence. See README for current validation and release limits.
 Date: 9 November 2026.
+Implementation/evidence update: 10 November 2026.
 Companion: [implementation plan](docs/superpowers/plans/2026-11-09-usisa-implementation.md).
 
 ## 1. Product and audience
@@ -312,13 +313,15 @@ Require 4.5:1 contrast for ordinary text and 3:1 for large text and essential co
 
 Use synthetic/de-identified English, Filipino, and Taglish evaluation cases, including legitimate bank notices, legitimate OTP warnings, payment requests, hostile URLs, and ambiguous messages. Keep rule-development examples separate from held-out evaluation. Report precision, recall, false-positive rate, per-language/per-category results, and sample counts; set deployment thresholds from reviewed data rather than claiming an invented accuracy figure. Evaluate OCR transcription separately because an incorrect URL changes the subsequent check.
 
+The user bypassed independent PH labeling and Filipino-copy review for the development handoff. Those checks remain unverified. The frozen public-data baseline in `docs/public-dataset-baseline-2026-11-10.md` reports source-category counts and historical smishing-label comparisons, with explicit exclusions; it establishes no PH accuracy or measured AI improvement.
+
 Acceptance includes no/one/100 retained scans; storage expiry; long emoji/combining-character text; URLs with long queries and deceptive hosts; blank/partial OCR; multiple mixed-status links; offline launch; network loss; cancelled/retried scan; permission revocation; background app/process loss; expired notification targets; dark mode; large text; and reduced motion.
 
 Success criteria: a person can start a manual scan without an account or SMS permission, understand a finding and next step, see exactly which checks were incomplete, recover input after failure, and erase retained app data. Public claims about detection and automatic SMS availability require evaluation and platform evidence.
 
 ## 11. Design sources and remaining release decisions
 
-Skills used: UI/UX Pro Max; Frontend Design; Impeccable (planning/Operate guidance); Apple Design; Emil Design Engineering; Taste; transferable mobile-native, animation-performance, break-ui, and Web Design Guidelines principles. Web CSS/React/GSAP prescriptions do not apply to this Flutter specification. Brainstorming and Writing Plans guide the documents; this specification is awaiting review, not an approved implementation.
+Skills used: UI/UX Pro Max; Frontend Design; Impeccable (planning/Operate guidance); Apple Design; Emil Design Engineering; Taste; transferable mobile-native, animation-performance, break-ui, and Web Design Guidelines principles. Web CSS/React/GSAP prescriptions do not apply to this Flutter specification. Brainstorming and Writing Plans guided the original documents; the user subsequently authorized implementation in the separate worktree. Current implementation/evidence is recorded in README and the completion audit.
 
 Primary technical references checked on 9 November 2026:
 
