@@ -10,6 +10,106 @@ class AppLocalizationsFil extends AppLocalizations {
   AppLocalizationsFil([String locale = 'fil']) : super(locale);
 
   @override
+  String get analysisMode => 'Pagsusuri';
+
+  @override
+  String get onDevice => 'Sa device';
+
+  @override
+  String get aiAssisted => 'May tulong ng AI';
+
+  @override
+  String get aiManualOnly =>
+      'Magpapadala lang ng teksto sa AI matapos mong suriin at kumpirmahin.';
+
+  @override
+  String get aiReviewTitle => 'Suriin bago ipadala sa AI';
+
+  @override
+  String get aiDisclosure =>
+      'Ipapadala ang mismong tekstong ito sa server ng Usisa at sa Groq para sa pagsusuri ng AI. Alisin ang mga code o personal na detalyeng ayaw mong ibahagi. Kasama ang mga pangalan, numero at link sa tekstong ito. Mananatili sa device ang screenshot at hiwalay na detalye ng nagpadala. Maaaring magtago ang Groq ng mga request para sa pagiging maaasahan o pagsubaybay sa pang-aabuso, depende sa setting ng account. Maaaring magkamali ang AI; hindi nito pinapatunayan ang nagpadala o binibisita ang mga link.';
+
+  @override
+  String get aiTextLabel => 'Tekstong ipapadala';
+
+  @override
+  String get sendAi => 'Ipadala ang tekstong ito para sa AI';
+
+  @override
+  String get keepOnDevice => 'Panatilihin sa device';
+
+  @override
+  String get aiAssessment => 'Pagsusuri ng AI';
+
+  @override
+  String get onDeviceFindings => 'Mga nakita sa device';
+
+  @override
+  String get aiChecking =>
+      'Tapos na ang pagsusuri sa device. Nagsusuri ang AI…';
+
+  @override
+  String get aiUnknown =>
+      'Hindi masuri ng AI ang mensaheng ito. Gamitin ang mga nakita sa device at magberipika nang hiwalay.';
+
+  @override
+  String get aiUnavailable =>
+      'Tapos na ang pagsusuri sa device; hindi available ang AI. Nananatili ang teksto mo. Maaari mo itong suriin at subukang muli.';
+
+  @override
+  String get aiCancelled =>
+      'Kinansela ang AI. Nananatili ang mga nakita sa device. Maaaring naproseso na ang naipadalang request.';
+
+  @override
+  String get aiNotRequested =>
+      'Hindi hiniling ang AI. Suriin ang teksto para sa opsyonal na online na pagsusuri.';
+
+  @override
+  String get aiDisagreement =>
+      'Magkaiba ang mga pagsusuri. Pinananatili ang mas mataas na babala; walang pagsusuring nagpapatunay na ligtas ang mensahe.';
+
+  @override
+  String get aiReviewed =>
+      'Ang tekstong sinuri para sa AI ang ginamit sa resultang ito.';
+
+  @override
+  String get aiRetry => 'Suriin at subukang muli ang AI';
+
+  @override
+  String get aiLimitations =>
+      'Nagdaragdag ng konteksto ang AI pero maaari itong makaligtaan ang scam o magbigay ng maling babala. Ipinapakita ng sipi ang ginamit nitong teksto; hindi nito pinatutunayan ang konklusyon.';
+
+  @override
+  String get aiSettingsBody =>
+      'Opsyonal na online na tulong para sa teksto, link at sinuring teksto mula sa screenshot. Susuriin at kukumpirmahin mo ang bawat pagpapadala sa server ng Usisa at sa Groq. Sa device lang ang awtomatikong SMS. Hindi pinapagana ng pahintulot sa link checker ang AI.';
+
+  @override
+  String aiFindingTitle(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'credential_request': 'Humihingi ng lihim na pangseguridad',
+      'payment_request': 'Humihingi ng bayad',
+      'urgency': 'Minamadali kang kumilos',
+      'impersonation': 'Posibleng pagpapanggap',
+      'prize': 'Nangangako ng premyo',
+      'suspicious_link': 'Kaduda-dudang konteksto ng link',
+      'other': 'Babalang nakita ng AI',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiAdvice(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'dont_share_secrets':
+          'Huwag ibahagi ang OTP, password o PIN sa sinumang humihingi nito.',
+      'pause_payment': 'Ipagpaliban ang pagbabayad. Hiwalay na kumpirmahin ang tatanggap at dahilan.',
+      'contact_provider_if_shared': 'Kung nagbahagi ka na ng detalye, kontakin ang provider sa opisyal na app o sarili mong pinagkakatiwalaang tala.',
+      'other': 'Magberipika sa opisyal na app o pinagkakatiwalaang paraang ikaw mismo ang nagbukas.',
+    });
+    return '$_temp0';
+  }
+
+  @override
   String get deletedScan => 'Nabura ang naka-save na pagsusuri';
 
   @override

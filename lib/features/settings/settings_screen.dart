@@ -216,6 +216,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           }
                         },
                 ),
+                const SizedBox(height: 24),
+                Text(l.aiAssessment, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(l.aiSettingsBody),
                 const SizedBox(height: 32),
                 if (widget.sms?.supported == true) ...[
                   SwitchListTile(

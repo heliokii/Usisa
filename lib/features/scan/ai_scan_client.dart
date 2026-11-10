@@ -37,8 +37,9 @@ class AiScanClient {
         !configured ||
         input.text.trim().isEmpty ||
         input.text.runes.length > 10000 ||
-        !['en', 'fil'].contains(input.responseLanguage))
+        !['en', 'fil'].contains(input.responseLanguage)) {
       return unavailable;
+    }
     try {
       return await _request(input).timeout(timeout);
     } catch (_) {
@@ -74,8 +75,9 @@ class AiScanClient {
     }
     final bytes = <int>[];
     await for (final chunk in response.stream) {
-      if (bytes.length + chunk.length > 32768)
+      if (bytes.length + chunk.length > 32768) {
         throw const FormatException('Oversized assessment');
+      }
       bytes.addAll(chunk);
     }
     final value = AiAssessment.fromJson(
@@ -89,8 +91,9 @@ class AiScanClient {
         ].contains(value.state) ||
         value.checkedAt == null ||
         DateTime.now().difference(value.checkedAt!).abs() >
-            const Duration(minutes: 5))
+            const Duration(minutes: 5)) {
       return const AiAssessment(AiScanState.unavailable);
+    }
     return value;
   }
 

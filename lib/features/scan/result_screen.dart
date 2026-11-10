@@ -8,6 +8,11 @@ import '../../theme/usisa_theme.dart';
 import '../../widgets/page_body.dart';
 import 'scan_models.dart';
 import 'reputation_client.dart';
+import 'ai_models.dart';
+import 'ai_scan_client.dart';
+import 'ai_review_screen.dart';
+import 'scan_controller.dart';
+import 'scam_analyzer.dart';
 import '../history/history_store.dart';
 import '../settings/settings_store.dart';
 
@@ -20,6 +25,8 @@ class ResultScreen extends StatefulWidget {
     this.settings,
     this.reputationFactory,
     this.advisoryLauncher,
+    this.aiFactory,
+    this.initialAiInput,
   });
   final ScanResult result;
   final bool saved;
@@ -27,6 +34,8 @@ class ResultScreen extends StatefulWidget {
   final SettingsStore? settings;
   final ReputationClient Function()? reputationFactory;
   final Future<bool> Function(Uri)? advisoryLauncher;
+  final AiScanClient Function()? aiFactory;
+  final ReviewedAiInput? initialAiInput;
   @override
   State<ResultScreen> createState() => _ResultScreenState();
 }
@@ -35,6 +44,10 @@ class _ResultScreenState extends State<ResultScreen>
     with WidgetsBindingObserver {
   late ScanResult _result = widget.result;
   late bool _saveFailed = !widget.saved;
+  late final _aiScan = ScanController(initialResult: widget.result);
+  int _aiRevision = 0;
+  int? _aiGeneration;
+  bool _reviewingAi = false;
   bool _checkingLinks = false;
   ReputationClient? _client;
   int _linkRevision = 0;
@@ -86,7 +99,95 @@ class _ResultScreenState extends State<ResultScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _aiScan.addListener(_aiChanged);
+    widget.history?.addListener(_privacyChanged);
     _scheduleCoverageExpiry();
+    if (widget.initialAiInput != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_startAi(widget.initialAiInput!));
+      });
+    }
+  }
+
+  void _aiChanged() {
+    if (!mounted) return;
+    setState(() {
+      if (_aiScan.result?.id == _result.id) _result = _aiScan.result!;
+      if (_aiScan.error == 'saveFailed') _saveFailed = true;
+    });
+  }
+
+  void _privacyChanged() {
+    if (_aiScan.busy && _aiGeneration != widget.history?.generation) {
+      _aiScan.cancel();
+    }
+  }
+
+  Future<void> _startAi(ReviewedAiInput input) async {
+    if (_aiScan.busy) return;
+    _aiGeneration = input.privacyGeneration;
+    _aiScan.result = _result;
+    await _aiScan.checkAi(
+      input,
+      client: widget.aiFactory?.call() ?? AiScanClient(),
+      history: widget.history,
+    );
+  }
+
+  Future<void> _reviewAi() async {
+    if (_aiScan.busy || _reviewingAi) return;
+    _reviewingAi = true;
+    final generation = widget.history?.generation ?? 0;
+    final choice = await Navigator.of(context).push<AiReviewChoice>(
+      MaterialPageRoute(
+        builder: (_) => AiReviewScreen(
+          input: ScanInput(_result.text, source: _result.source),
+        ),
+      ),
+    );
+    _reviewingAi = false;
+    if (!mounted ||
+        choice == null ||
+        generation != (widget.history?.generation ?? 0)) {
+      return;
+    }
+    _aiScan.cancel();
+    if (choice.text != _result.text) {
+      _linkRevision++;
+      _client?.close();
+      _checkingLinks = false;
+      _result = ScamAnalyzer().analyze(
+        ScanInput(choice.text, source: _result.source),
+      );
+      _highlight = null;
+    }
+    if (choice.send) {
+      await _startAi(
+        ReviewedAiInput(
+          text: choice.text,
+          source: _result.source,
+          responseLanguage:
+              Localizations.localeOf(context).languageCode == 'fil'
+              ? 'fil'
+              : 'en',
+          inputRevision: ++_aiRevision,
+          privacyGeneration: generation,
+        ),
+      );
+    } else {
+      setState(
+        () => _result = _result.withAi(
+          const AiAssessment(AiScanState.notRequested),
+          reviewed: true,
+        ),
+      );
+      _aiScan.result = _result;
+      try {
+        await widget.history?.save(_result, expectedGeneration: generation);
+      } catch (_) {
+        if (mounted) setState(() => _saveFailed = true);
+      }
+    }
   }
 
   void _scheduleCoverageExpiry() {
@@ -111,6 +212,10 @@ class _ResultScreenState extends State<ResultScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _aiScan.cancel();
+    }
     if (state == AppLifecycleState.resumed) {
       setState(() {});
       _scheduleCoverageExpiry();
@@ -121,6 +226,9 @@ class _ResultScreenState extends State<ResultScreen>
   void dispose() {
     _coverageTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
+    widget.history?.removeListener(_privacyChanged);
+    _aiScan.removeListener(_aiChanged);
+    _aiScan.dispose();
     _linkRevision++;
     _client?.close();
     super.dispose();
@@ -235,7 +343,10 @@ class _ResultScreenState extends State<ResultScreen>
                 );
         }).toList(),
       );
-      setState(() => _result = updated);
+      setState(() {
+        _result = updated;
+        _aiScan.result = updated;
+      });
       _scheduleCoverageExpiry();
       if (generation != null) {
         try {
@@ -287,230 +398,314 @@ class _ResultScreenState extends State<ResultScreen>
         : result.findings.any((f) => f.code == 'paymentRequest')
         ? l.paymentAdvice
         : l.verifyAdvice;
-    return Scaffold(
-      appBar: AppBar(title: Text(l.result)),
-      body: SafeArea(
-        top: false,
-        child: PageBody(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Semantics(
-                liveRegion: true,
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: background,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(icon, color: color, size: 32),
-                      const SizedBox(height: 12),
-                      Text(
-                        l.riskLabel(result.risk.name),
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          color: color,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        copy,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: color,
-                        ),
-                      ),
-                      if (result.hasUncheckedLinks) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          l.unknownLink,
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(l.localChecked),
-              if (_saveFailed)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(l.notSaved),
-                ),
-              const SizedBox(height: 24),
-              Text(next, style: theme.textTheme.titleLarge),
-              const SizedBox(height: 32),
-              Text(
-                result.findings.isEmpty ? l.noWarnings : l.whyFlagged,
-                style: theme.textTheme.titleLarge,
-              ),
-              for (final finding in result.findings)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.info_outline_rounded),
-                    title: Text(l.findingTitle(finding.code)),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        '${l.findingBody(finding.code)}\n“${finding.evidence}”',
-                      ),
+    final ai = result.aiAssessment;
+    final aiState = ai?.state ?? AiScanState.notRequested;
+    final aiStatus = switch (aiState) {
+      AiScanState.notRequested => l.aiNotRequested,
+      AiScanState.checking => l.aiChecking,
+      AiScanState.unavailable => l.aiUnavailable,
+      AiScanState.unableToAssess => l.aiUnknown,
+      AiScanState.cancelled => l.aiCancelled,
+      AiScanState.completed => l.riskLabel(ai!.risk!.name),
+    };
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _aiScan.cancel();
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(l.result)),
+        body: SafeArea(
+          top: false,
+          child: PageBody(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  liveRegion: true,
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: background,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    trailing: const Icon(Icons.expand_more_rounded),
-                    onTap: () => _showEvidence(finding),
-                  ),
-                ),
-              if (result.links.isNotEmpty) ...[
-                const SizedBox(height: 32),
-                Text(l.linksInMessage, style: theme.textTheme.titleLarge),
-                const SizedBox(height: 8),
-                for (final link in result.links)
-                  ExpansionTile(
-                    tilePadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.link_rounded),
-                    title: Text(link.host),
-                    subtitle: Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_coverageText(context, link)),
-                        if (link.provider != null) Text(link.provider!),
-                        if (link.provider == safeBrowsingProvider &&
-                            link.currentReputation == ReputationState.matched)
-                          TextButton(
-                            onPressed: () => _openHelp(
-                              'https://developers.google.com/safe-browsing/v4/advisory',
-                            ),
-                            child: Text(l.googleAdvisory),
-                          ),
-                      ],
-                    ),
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SelectableText(
-                                link.original,
-                                style: theme.textTheme.bodyLarge,
-                              ),
-                              if (link.schemeAssumed) Text(l.assumedHttps),
-                              if (link.provider == safeBrowsingProvider &&
-                                  link.currentReputation ==
-                                      ReputationState.matched)
-                                Wrap(
-                                  children: [
-                                    if (link.threatTypes.contains(
-                                      'SOCIAL_ENGINEERING',
-                                    ))
-                                      TextButton(
-                                        onPressed: () => _openHelp(
-                                          'https://www.antiphishing.org/',
-                                        ),
-                                        child: Text(l.phishingHelp),
-                                      ),
-                                    if (link.threatTypes.contains('MALWARE'))
-                                      TextButton(
-                                        onPressed: () => _openHelp(
-                                          'https://developers.google.com/search/',
-                                        ),
-                                        child: Text(l.malwareHelp),
-                                      ),
-                                    if (link.threatTypes.contains(
-                                      'UNWANTED_SOFTWARE',
-                                    ))
-                                      TextButton(
-                                        onPressed: () => _openHelp(
-                                          'https://www.google.com/about/unwanted-software-policy.html',
-                                        ),
-                                        child: Text(l.unwantedHelp),
-                                      ),
-                                  ],
-                                ),
-                              for (final finding in link.findings)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l.findingTitle(finding.code),
-                                        style: theme.textTheme.titleSmall,
-                                      ),
-                                      Text(l.findingBody(finding.code)),
-                                    ],
-                                  ),
-                                ),
-                            ],
+                        Icon(icon, color: color, size: 32),
+                        const SizedBox(height: 12),
+                        Text(
+                          l.riskLabel(result.risk.name),
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: color,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        Text(
+                          copy,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: color,
+                          ),
+                        ),
+                        if (result.hasUncheckedLinks) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            l.unknownLink,
+                            style: TextStyle(
+                              color: color,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                const SizedBox(height: 8),
+                ),
+                const SizedBox(height: 16),
+                Text(l.localChecked),
+                if (result.reviewedForAi) ...[
+                  const SizedBox(height: 8),
+                  Text(l.aiReviewed),
+                ],
+                if (aiState == AiScanState.checking) ...[
+                  const SizedBox(height: 12),
+                  Semantics(liveRegion: true, child: Text(l.aiChecking)),
+                  const SizedBox(height: 8),
+                  const LinearProgressIndicator(),
+                  TextButton(onPressed: _aiScan.cancel, child: Text(l.cancel)),
+                ],
+                if (_saveFailed)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(l.notSaved),
+                  ),
+                const SizedBox(height: 24),
+                Text(next, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 32),
+                Text(
+                  '${l.onDeviceFindings} · ${l.riskLabel(result.localRisk.name)}',
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  result.findings.isEmpty ? l.noWarnings : l.whyFlagged,
+                  style: theme.textTheme.titleLarge,
+                ),
+                for (final finding in result.findings)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.info_outline_rounded),
+                      title: Text(l.findingTitle(finding.code)),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          '${l.findingBody(finding.code)}\n“${finding.evidence}”',
+                        ),
+                      ),
+                      trailing: const Icon(Icons.expand_more_rounded),
+                      onTap: () => _showEvidence(finding),
+                    ),
+                  ),
+                const SizedBox(height: 32),
+                Text(l.aiAssessment, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 12),
+                if (aiState != AiScanState.checking)
+                  Semantics(liveRegion: true, child: Text(aiStatus)),
+                if (ai?.modelId != null) ...[
+                  const SizedBox(height: 8),
+                  Text('Groq · ${ai!.modelId} · ${ai.promptVersion}'),
+                  if (ai.checkedAt != null)
+                    Text(
+                      l.checkedAtLabel(
+                        '${MaterialLocalizations.of(context).formatCompactDate(ai.checkedAt!.toLocal())} ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(ai.checkedAt!.toLocal()))}',
+                      ),
+                    ),
+                ],
+                if (ai?.summary.isNotEmpty == true) ...[
+                  const SizedBox(height: 12),
+                  Text(ai!.summary),
+                ],
+                if (ai?.state == AiScanState.completed &&
+                    ai?.risk != result.localRisk) ...[
+                  const SizedBox(height: 12),
+                  Text(l.aiDisagreement),
+                ],
+                for (final finding in ai?.findings ?? <Finding>[])
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.auto_awesome_outlined),
+                    title: Text(l.aiFindingTitle(finding.code)),
+                    subtitle: Text('“${finding.evidence}”'),
+                    onTap: () => _showEvidence(finding),
+                  ),
+                for (final code in ai?.recommendationCodes ?? <String>[])
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(l.aiAdvice(code)),
+                  ),
+                const SizedBox(height: 12),
+                Text(l.aiLimitations, style: theme.textTheme.bodyMedium),
+                const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  onPressed: _checkingLinks ? null : _checkLinks,
-                  icon: const Icon(Icons.cloud_outlined),
-                  label: Text(_checkingLinks ? l.checkingLinks : l.checkOnline),
+                  onPressed: _aiScan.busy || _reviewingAi ? null : _reviewAi,
+                  icon: const Icon(Icons.auto_awesome_outlined),
+                  label: Text(
+                    aiState == AiScanState.unavailable ||
+                            aiState == AiScanState.cancelled ||
+                            aiState == AiScanState.unableToAssess
+                        ? l.aiRetry
+                        : l.aiReviewTitle,
+                  ),
+                ),
+                if (result.links.isNotEmpty) ...[
+                  const SizedBox(height: 32),
+                  Text(l.linksInMessage, style: theme.textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  for (final link in result.links)
+                    ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.link_rounded),
+                      title: Text(link.host),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_coverageText(context, link)),
+                          if (link.provider != null) Text(link.provider!),
+                          if (link.provider == safeBrowsingProvider &&
+                              link.currentReputation == ReputationState.matched)
+                            TextButton(
+                              onPressed: () => _openHelp(
+                                'https://developers.google.com/safe-browsing/v4/advisory',
+                              ),
+                              child: Text(l.googleAdvisory),
+                            ),
+                        ],
+                      ),
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SelectableText(
+                                  link.original,
+                                  style: theme.textTheme.bodyLarge,
+                                ),
+                                if (link.schemeAssumed) Text(l.assumedHttps),
+                                if (link.provider == safeBrowsingProvider &&
+                                    link.currentReputation ==
+                                        ReputationState.matched)
+                                  Wrap(
+                                    children: [
+                                      if (link.threatTypes.contains(
+                                        'SOCIAL_ENGINEERING',
+                                      ))
+                                        TextButton(
+                                          onPressed: () => _openHelp(
+                                            'https://www.antiphishing.org/',
+                                          ),
+                                          child: Text(l.phishingHelp),
+                                        ),
+                                      if (link.threatTypes.contains('MALWARE'))
+                                        TextButton(
+                                          onPressed: () => _openHelp(
+                                            'https://developers.google.com/search/',
+                                          ),
+                                          child: Text(l.malwareHelp),
+                                        ),
+                                      if (link.threatTypes.contains(
+                                        'UNWANTED_SOFTWARE',
+                                      ))
+                                        TextButton(
+                                          onPressed: () => _openHelp(
+                                            'https://www.google.com/about/unwanted-software-policy.html',
+                                          ),
+                                          child: Text(l.unwantedHelp),
+                                        ),
+                                    ],
+                                  ),
+                                for (final finding in link.findings)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          l.findingTitle(finding.code),
+                                          style: theme.textTheme.titleSmall,
+                                        ),
+                                        Text(l.findingBody(finding.code)),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _checkingLinks ? null : _checkLinks,
+                    icon: const Icon(Icons.cloud_outlined),
+                    label: Text(
+                      _checkingLinks ? l.checkingLinks : l.checkOnline,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 32),
+                Text(l.nextSteps, style: theme.textTheme.titleLarge),
+                const SizedBox(height: 12),
+                for (final advice in [
+                  l.verifyAdvice,
+                  l.secretAdvice,
+                  if (result.risk != RiskLevel.low) l.clickedAdvice,
+                ])
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.arrow_right_rounded),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(advice, style: theme.textTheme.bodyLarge),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l.originalText),
+                  trailing: Icon(
+                    _originalOpen ? Icons.expand_less : Icons.expand_more,
+                  ),
+                  onTap: () => setState(() => _originalOpen = !_originalOpen),
+                ),
+                if (_originalOpen)
+                  Container(
+                    key: _originalKey,
+                    padding: const EdgeInsets.all(16),
+                    color: theme.colorScheme.surface,
+                    child: SelectableText.rich(_originalSpan(theme)),
+                  ),
+                const SizedBox(height: 12),
+                Text(
+                  '${l.sourceLabel(result.source.name)} • ${MaterialLocalizations.of(context).formatMediumDate(result.createdAt.toLocal())} • ${result.ruleVersion}',
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l.newScan),
                 ),
               ],
-              const SizedBox(height: 32),
-              Text(l.nextSteps, style: theme.textTheme.titleLarge),
-              const SizedBox(height: 12),
-              for (final advice in [
-                l.verifyAdvice,
-                l.secretAdvice,
-                if (result.risk != RiskLevel.low) l.clickedAdvice,
-              ])
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.arrow_right_rounded),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(advice, style: theme.textTheme.bodyLarge),
-                      ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 16),
-              const Divider(),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l.originalText),
-                trailing: Icon(
-                  _originalOpen ? Icons.expand_less : Icons.expand_more,
-                ),
-                onTap: () => setState(() => _originalOpen = !_originalOpen),
-              ),
-              if (_originalOpen)
-                Container(
-                  key: _originalKey,
-                  padding: const EdgeInsets.all(16),
-                  color: theme.colorScheme.surface,
-                  child: SelectableText.rich(_originalSpan(theme)),
-                ),
-              const SizedBox(height: 12),
-              Text(
-                '${l.sourceLabel(result.source.name)} • ${MaterialLocalizations.of(context).formatMediumDate(result.createdAt.toLocal())} • ${result.ruleVersion}',
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l.newScan),
-              ),
-            ],
+            ),
           ),
         ),
       ),

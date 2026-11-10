@@ -89,8 +89,9 @@ class AiAssessment {
       'promptVersion',
       'checkedAt',
     };
-    if (json.length != keys.length || !json.keys.every(keys.contains))
+    if (json.length != keys.length || !json.keys.every(keys.contains)) {
       invalid();
+    }
     final state = AiScanState.values
         .where((s) => s.name == json['state'])
         .firstOrNull;
@@ -103,8 +104,9 @@ class AiAssessment {
           json['warningSigns'] is! List ||
           (json['warningSigns'] as List).isNotEmpty ||
           json['recommendationCodes'] is! List ||
-          (json['recommendationCodes'] as List).isNotEmpty)
+          (json['recommendationCodes'] as List).isNotEmpty) {
         invalid();
+      }
       // Pending work is never resumed from retained history.
       return AiAssessment(
         state == AiScanState.checking ? AiScanState.cancelled : state,
@@ -113,8 +115,9 @@ class AiAssessment {
     final risk = RiskLevel.values
         .where((r) => r.name == json['risk'])
         .firstOrNull;
-    if ((assessed && risk == null) || (unknown && json['risk'] != null))
+    if ((assessed && risk == null) || (unknown && json['risk'] != null)) {
       invalid();
+    }
     final summary = json['summary'];
     final rawSigns = json['warningSigns'];
     final rawAdvice = json['recommendationCodes'];
@@ -130,20 +133,23 @@ class AiAssessment {
         rawAdvice.length > 4 ||
         at == null ||
         !aiModels.contains(json['modelId']) ||
-        json['promptVersion'] != 'ph-scam-v1')
+        json['promptVersion'] != 'ph-scam-v1') {
       invalid();
+    }
     final signs = <Finding>[];
     for (final sign in rawSigns) {
       if (sign is! Map ||
           sign.length != 2 ||
           !aiWarningCodes.contains(sign['code']) ||
-          sign['evidence'] is! String)
+          sign['evidence'] is! String) {
         invalid();
+      }
       final quote = sign['evidence'] as String;
       if (quote.trim().isEmpty ||
           quote.runes.length > 160 ||
-          !text.contains(quote))
+          !text.contains(quote)) {
         invalid();
+      }
       final start = text.indexOf(quote);
       signs.add(
         Finding(
@@ -157,11 +163,13 @@ class AiAssessment {
     }
     if ((risk == RiskLevel.caution || risk == RiskLevel.high) &&
             signs.isEmpty ||
-        unknown && signs.isNotEmpty)
+        unknown && signs.isNotEmpty) {
       invalid();
+    }
     if (!rawAdvice.every(aiRecommendationCodes.contains) ||
-        rawAdvice.toSet().length != rawAdvice.length)
+        rawAdvice.toSet().length != rawAdvice.length) {
       invalid();
+    }
     return AiAssessment(
       state,
       risk: risk,

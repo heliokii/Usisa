@@ -10,6 +10,104 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get analysisMode => 'Analysis';
+
+  @override
+  String get onDevice => 'On-device';
+
+  @override
+  String get aiAssisted => 'AI assisted';
+
+  @override
+  String get aiManualOnly => 'AI sends text only after you review and confirm.';
+
+  @override
+  String get aiReviewTitle => 'Review for AI check';
+
+  @override
+  String get aiDisclosure =>
+      'This exact text will be sent to Usisa’s server and Groq for an AI assessment. Remove any codes or personal details you do not want to share. Names, numbers and links in this text are included. Your screenshot and separate sender details stay on your device. Groq may retain requests for reliability or abuse monitoring, depending on account settings. AI can make mistakes; it does not verify the sender or visit links.';
+
+  @override
+  String get aiTextLabel => 'Text to send';
+
+  @override
+  String get sendAi => 'Send this text for AI check';
+
+  @override
+  String get keepOnDevice => 'Keep on device';
+
+  @override
+  String get aiAssessment => 'AI assessment';
+
+  @override
+  String get onDeviceFindings => 'On-device findings';
+
+  @override
+  String get aiChecking => 'On-device checks complete. AI is checking…';
+
+  @override
+  String get aiUnknown =>
+      'AI could not assess this message. Use the local findings and verify independently.';
+
+  @override
+  String get aiUnavailable =>
+      'On-device checks complete; AI assessment unavailable. Your text is preserved. You can review it and try again.';
+
+  @override
+  String get aiCancelled =>
+      'AI check cancelled. Local findings remain available. A request already sent may have been processed.';
+
+  @override
+  String get aiNotRequested =>
+      'AI was not requested. Review the text to add an optional online assessment.';
+
+  @override
+  String get aiDisagreement =>
+      'The assessments differ. The stronger warning is kept; neither assessment proves the message is safe.';
+
+  @override
+  String get aiReviewed => 'This result uses the text reviewed for AI.';
+
+  @override
+  String get aiRetry => 'Review and retry AI';
+
+  @override
+  String get aiLimitations =>
+      'AI adds context, but may miss scams or flag legitimate messages. Quotes show the text it used; they do not prove its conclusion.';
+
+  @override
+  String get aiSettingsBody =>
+      'Optional online help for text, links and reviewed screenshot text. You review and confirm each upload to Usisa’s server and Groq. Automatic SMS checks stay on-device. Online link-check consent does not enable AI.';
+
+  @override
+  String aiFindingTitle(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'credential_request': 'Asks for a security secret',
+      'payment_request': 'Requests a payment',
+      'urgency': 'Pressures you to act',
+      'impersonation': 'Possible impersonation',
+      'prize': 'Promises a prize',
+      'suspicious_link': 'Questionable link context',
+      'other': 'AI warning sign',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String aiAdvice(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'dont_share_secrets':
+          'Do not share OTPs, passwords or PINs with anyone requesting them.',
+      'pause_payment':
+          'Pause the payment. Confirm the recipient and reason independently.',
+      'contact_provider_if_shared': 'If you already shared details, contact your provider through its official app or your own trusted records.',
+      'other': 'Verify through the official app or a trusted channel you opened yourself.',
+    });
+    return '$_temp0';
+  }
+
+  @override
   String get deletedScan => 'Saved scan deleted';
 
   @override

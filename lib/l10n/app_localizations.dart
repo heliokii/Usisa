@@ -98,6 +98,144 @@ abstract class AppLocalizations {
     Locale('fil'),
   ];
 
+  /// No description provided for @analysisMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis'**
+  String get analysisMode;
+
+  /// No description provided for @onDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'On-device'**
+  String get onDevice;
+
+  /// No description provided for @aiAssisted.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assisted'**
+  String get aiAssisted;
+
+  /// No description provided for @aiManualOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'AI sends text only after you review and confirm.'**
+  String get aiManualOnly;
+
+  /// No description provided for @aiReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review for AI check'**
+  String get aiReviewTitle;
+
+  /// No description provided for @aiDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'This exact text will be sent to Usisa’s server and Groq for an AI assessment. Remove any codes or personal details you do not want to share. Names, numbers and links in this text are included. Your screenshot and separate sender details stay on your device. Groq may retain requests for reliability or abuse monitoring, depending on account settings. AI can make mistakes; it does not verify the sender or visit links.'**
+  String get aiDisclosure;
+
+  /// No description provided for @aiTextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Text to send'**
+  String get aiTextLabel;
+
+  /// No description provided for @sendAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Send this text for AI check'**
+  String get sendAi;
+
+  /// No description provided for @keepOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep on device'**
+  String get keepOnDevice;
+
+  /// No description provided for @aiAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'AI assessment'**
+  String get aiAssessment;
+
+  /// No description provided for @onDeviceFindings.
+  ///
+  /// In en, this message translates to:
+  /// **'On-device findings'**
+  String get onDeviceFindings;
+
+  /// No description provided for @aiChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'On-device checks complete. AI is checking…'**
+  String get aiChecking;
+
+  /// No description provided for @aiUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'AI could not assess this message. Use the local findings and verify independently.'**
+  String get aiUnknown;
+
+  /// No description provided for @aiUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'On-device checks complete; AI assessment unavailable. Your text is preserved. You can review it and try again.'**
+  String get aiUnavailable;
+
+  /// No description provided for @aiCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'AI check cancelled. Local findings remain available. A request already sent may have been processed.'**
+  String get aiCancelled;
+
+  /// No description provided for @aiNotRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'AI was not requested. Review the text to add an optional online assessment.'**
+  String get aiNotRequested;
+
+  /// No description provided for @aiDisagreement.
+  ///
+  /// In en, this message translates to:
+  /// **'The assessments differ. The stronger warning is kept; neither assessment proves the message is safe.'**
+  String get aiDisagreement;
+
+  /// No description provided for @aiReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'This result uses the text reviewed for AI.'**
+  String get aiReviewed;
+
+  /// No description provided for @aiRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and retry AI'**
+  String get aiRetry;
+
+  /// No description provided for @aiLimitations.
+  ///
+  /// In en, this message translates to:
+  /// **'AI adds context, but may miss scams or flag legitimate messages. Quotes show the text it used; they do not prove its conclusion.'**
+  String get aiLimitations;
+
+  /// No description provided for @aiSettingsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional online help for text, links and reviewed screenshot text. You review and confirm each upload to Usisa’s server and Groq. Automatic SMS checks stay on-device. Online link-check consent does not enable AI.'**
+  String get aiSettingsBody;
+
+  /// No description provided for @aiFindingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} other{AI warning sign}}'**
+  String aiFindingTitle(String code);
+
+  /// No description provided for @aiAdvice.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, dont_share_secrets{Do not share OTPs, passwords or PINs with anyone requesting them.} pause_payment{Pause the payment. Confirm the recipient and reason independently.} contact_provider_if_shared{If you already shared details, contact your provider through its official app or your own trusted records.} other{Verify through the official app or a trusted channel you opened yourself.}}'**
+  String aiAdvice(String code);
+
   /// No description provided for @deletedScan.
   ///
   /// In en, this message translates to:

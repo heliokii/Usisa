@@ -14,6 +14,9 @@ import 'result_screen.dart';
 import 'ocr_service.dart';
 import 'ocr_models.dart';
 import 'screenshot_review_screen.dart';
+import 'ai_models.dart';
+import 'ai_scan_client.dart';
+import 'ai_review_screen.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({
@@ -24,6 +27,7 @@ class ScanScreen extends StatefulWidget {
     this.onManageSms,
     this.onReviewSms,
     this.ocr,
+    this.aiFactory,
   });
   final HistoryStore history;
   final SettingsStore settings;
@@ -31,6 +35,7 @@ class ScanScreen extends StatefulWidget {
   final VoidCallback? onManageSms;
   final VoidCallback? onReviewSms;
   final OcrService? ocr;
+  final AiScanClient Function()? aiFactory;
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
@@ -44,6 +49,8 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   int _ocrRevision = 0;
   int _mode = 0;
   bool _opening = false;
+  bool _aiAssisted = false;
+  int _aiRevision = 0;
   Timer? _draftTimer;
   int _draftRevision = 0;
   @override
@@ -128,13 +135,27 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     FocusScope.of(context).unfocus();
     final generation = widget.history.generation;
     final retain = widget.history.enabled;
-    await _scan.check(
-      reviewed ??
-          ScanInput(
-            _inputs[_mode].text,
-            source: _mode == 1 ? ScanSource.link : ScanSource.text,
-          ),
-    );
+    var value =
+        reviewed ??
+        ScanInput(
+          _inputs[_mode].text,
+          source: _mode == 1 ? ScanSource.link : ScanSource.text,
+        );
+    var sendAi = false;
+    if (_aiAssisted) {
+      _opening = true;
+      final choice = await Navigator.of(context).push<AiReviewChoice>(
+        MaterialPageRoute(builder: (_) => AiReviewScreen(input: value)),
+      );
+      _opening = false;
+      if (!mounted || choice == null || generation != widget.history.generation) {
+        return;
+      }
+      value = ScanInput(choice.text, source: value.source);
+      sendAi = choice.send;
+      if (reviewed == null) _inputs[_mode].text = value.text;
+    }
+    await _scan.check(value);
     if (!mounted || _scan.result == null) {
       return;
     }
@@ -158,6 +179,19 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
           saved: saved,
           history: widget.history,
           settings: widget.settings,
+          aiFactory: widget.aiFactory,
+          initialAiInput: sendAi
+              ? ReviewedAiInput(
+                  text: result.text,
+                  source: result.source,
+                  responseLanguage:
+                      Localizations.localeOf(context).languageCode == 'fil'
+                      ? 'fil'
+                      : 'en',
+                  inputRevision: ++_aiRevision,
+                  privacyGeneration: generation,
+                )
+              : null,
         ),
       ),
     );
@@ -279,7 +313,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l.localPrivate,
+                    _aiAssisted ? l.aiManualOnly : l.localPrivate,
                     style: theme.textTheme.bodyMedium,
                   ),
                 ),
@@ -321,6 +355,31 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                     ),
                   )
                   .toList(),
+            ),
+            const SizedBox(height: 20),
+            Text(l.analysisMode, style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  label: Text(l.onDevice),
+                  selected: !_aiAssisted,
+                  showCheckmark: false,
+                  onSelected: _scan.busy || _reading
+                      ? null
+                      : (_) => setState(() => _aiAssisted = false),
+                ),
+                ChoiceChip(
+                  label: Text(l.aiAssisted),
+                  selected: _aiAssisted,
+                  showCheckmark: false,
+                  onSelected: _scan.busy || _reading
+                      ? null
+                      : (_) => setState(() => _aiAssisted = true),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             if (_mode < 2) ...[
@@ -396,6 +455,8 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                 label: Text(
                   _scan.busy
                       ? l.checking
+                      : _aiAssisted
+                      ? l.aiReviewTitle
                       : _mode == 1
                       ? l.checkLink
                       : l.checkMessage,

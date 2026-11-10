@@ -90,6 +90,7 @@ void main() {
       expect(result.source, ScanSource.sms);
       expect(result.id, 'event-123');
       expect(result.risk, RiskLevel.high);
+      expect(result.aiAssessment, isNull);
       expect(
         result.links.every((l) => l.reputation == ReputationState.notRequested),
         isTrue,

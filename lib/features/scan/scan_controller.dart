@@ -30,8 +30,9 @@ class ScanController extends ChangeNotifier {
   }) async {
     if (busy ||
         _disposed ||
-        history != null && history.generation != value.privacyGeneration)
+        history != null && history.generation != value.privacyGeneration) {
       return;
+    }
     input = ScanInput(value.text, source: value.source);
     error = null;
     try {
@@ -121,8 +122,9 @@ class ScanController extends ChangeNotifier {
     _revision++;
     _aiClient?.close();
     _aiClient = null;
-    if (result?.aiAssessment?.state == AiScanState.checking)
+    if (result?.aiAssessment?.state == AiScanState.checking) {
       result = result!.withAi(const AiAssessment(AiScanState.cancelled));
+    }
     busy = false;
     if (!_disposed) {
       notifyListeners();

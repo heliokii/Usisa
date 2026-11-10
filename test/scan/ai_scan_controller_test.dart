@@ -66,13 +66,14 @@ void main() {
           expect(history.entries.single.reviewedForAi, isTrue);
         } else {
           expect(history.entries, isEmpty);
-          if (action == 'edit')
+          if (action == 'edit') {
             expect(controller.result?.text, 'A newer message');
-          else if (action != 'dispose')
+          } else if (action != 'dispose') {
             expect(
               controller.result?.aiAssessment?.state,
               AiScanState.cancelled,
             );
+          }
         }
         if (action != 'dispose') controller.dispose();
         history.dispose();
