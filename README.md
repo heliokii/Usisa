@@ -2,11 +2,12 @@
 
 Flutter/Dart scam checks for messages and links in the Philippines. The app explains potential warning signs in English and Filipino and accepts English, Filipino and Taglish input.
 
-The local manual app and sideloaded SMS Lab are implemented and tested on an Android emulator. Live URL checks use Google Safe Browsing for the confirmed noncommercial research scope. Physical-phone validation remains open; AI assistance is planned separately. No detection method guarantees authenticity or catches every scam.
+The local manual app, sideloaded SMS Lab and optional Groq AI assistance are implemented for the development MVP and tested on an Android emulator. Live URL checks use Google Safe Browsing for the confirmed noncommercial research scope. Physical-phone validation remains open. No detection method guarantees authenticity or catches every scam.
 
 ## Current capabilities
 
 - Local text and HTTP(S) URL checks with evidence and practical safety advice.
+- Optional AI assistance for reviewed text, links and OCR text. Every submission has an editable outbound preview and confirmation. Independent local/AI findings retain the stronger warning. AI failure/cancellation keeps local checks usable; automatic SMS stays local.
 - Android/iOS screenshot selection, bundled on-device Latin OCR and editable review before scanning. Offline Android emulator tests cover image bounds, failures and picker Activity recovery; physical-phone and iOS runtime validation remain open.
 - Optional encrypted history (latest 100 scans, review access expires after 30 days), a separate draft restorable within 24 hours, local search/filters and protected deletion. Both start off. Expired files are cleaned while the app runs or on next use; closed/stopped apps cannot erase at an exact deadline. Cleanup failures are shown.
 - English/Filipino interface, system/light/dark appearance, compact bottom navigation and wider navigation rail using the 60:30:10 palette.
@@ -75,7 +76,15 @@ flutter run -d chrome --dart-define=USISA_GATEWAY_URL=http://127.0.0.1:8787
 
 For Android emulator development, run `flutter run --flavor manual --no-pub --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787`. Release gateways must use HTTPS. Standard APK exports omit a gateway URL and honestly show that configuration is needed; provide the deployment URL when building an online-enabled APK. The server's allowed browser origin and this gateway URL are different settings.
 
-`GROQ_API_KEY` remains server-only. The planned AI feature recommends `GROQ_MODEL=openai/gpt-oss-120b`; no AI endpoint or model call is implemented yet. Never add `.env` to Flutter assets or pass keys through Dart defines. See `DESIGN.md` and the AI plan under `docs/superpowers/plans/`.
+## Optional AI assistance
+
+Set server-only `GROQ_API_KEY` and `GROQ_MODEL=openai/gpt-oss-120b` in the worktree-root `.env`, then use the same gateway URL above. The current local configuration has passed synthetic live inference and native Android review/confirmation. `/v1/capabilities` advertises AI independently of URL reputation; missing or unsupported model configuration remains unavailable. No automatic model switch occurs. Never add `.env` to Flutter assets or pass keys through Dart defines. The user-owned `.env.example` is left untouched.
+
+Choose **AI assisted**, review/edit the exact text, then confirm **Send this text for AI check**. Only that text and response language go to Usisa’s gateway and Groq. Names, codes, numbers and links inside the text are included unless edited out. Images and separately collected sender metadata are excluded. URL-check consent does not authorize AI. Groq retention depends on account data controls; zero retention is not assumed. See [Groq data controls](https://console.groq.com/docs/your-data).
+
+The gateway validates exact evidence quotes and approved action codes. It makes no tool calls, fetches no submitted links and keeps no raw-message logs or completed-result cache. AI has a 15-second upstream deadline, four-call concurrency cap, ten requests/minute/socket IP and a default 50-call/day/process cap (`AI_DAILY_LIMIT`). In-flight matching submission keys coalesce; conflicts reject. Cancellation attempts to abort work but does not reverse an upload or refund consumed tokens. Mobile timeouts, backgrounding and stale responses do not erase local findings or recreate cleared history. Retries require review and confirmation again.
+
+These local controls reset on restart and do not replace organization spending limits, authentication or trusted public ingress. Public hosting, verified account retention/spend settings and real-world PH evaluation remain release gates. No endpoint has been published. A 20-message synthetic comparison with separate development examples lives in `docs/ai-evaluation.md`; unavailable and unassessed responses are counted, and no accuracy claim follows.
 
 ## Checks
 
@@ -85,11 +94,14 @@ flutter test --no-pub
 flutter test integration_test/manual_scan_test.dart -d emulator-5556 --flavor manual --no-pub
 flutter test integration_test/ocr_native_test.dart -d emulator-5556 --flavor manual --no-pub
 flutter test integration_test/reputation_native_test.dart -d emulator-5556 --flavor manual --no-pub --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
-node --test server/reputation.test.mjs
+flutter test integration_test/ai_native_test.dart -d emulator-5556 --flavor manual --no-pub --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
+node --test server/*.test.mjs
 dart run tool/evaluate.dart
 dart compile js tool/web_scanner_check.dart -o .verification/web_scanner_check.cjs
 node -e "globalThis.self = globalThis; require('./.verification/web_scanner_check.cjs');"
 ```
+
+Opt-in synthetic AI checks send fixture text to Groq and consume account quota. From `server`, set `USISA_RUN_AI_SMOKE=1` and run `node --env-file=../.env ai_smoke.mjs` for one call. For the frozen 20-message diagnostic, run `dart run tool/ai_local_evaluate.dart` from the project root, then set `USISA_RUN_AI_EVAL=1` and run `node --env-file=../.env ai_evaluate.mjs` from `server`. Neither script retries failed calls.
 
 The JavaScript check covers the real scanner, including ID generation; VM tests alone did not catch a browser bit-shift issue. Create `.verification` first on a fresh checkout. Windows desktop plugin builds may require Developer Mode/symlink support; Android and web evidence are recorded separately.
 
@@ -99,8 +111,8 @@ Integration-test runs build a test entrypoint. Rebuild with `flutter build apk -
 
 Messages are processed locally unless the user explicitly requests a disclosed external check. No background clipboard reads, automatic link opening, third-party chat scraping or SMS sending/deletion is implemented. Suspicious URLs are displayed as text.
 
-The first rules are versioned Dart constants shared by manual/OCR and the SMS worker. Rule changes require an app release. They are heuristics, not calibrated probabilities. A 36-example synthetic diagnostic set lives in `test/fixtures/evaluation_messages.json`; `dart run tool/evaluate.dart` generates `docs/evaluation.md`. Five of 20 labeled scams were missed in that small set; no accuracy claim is appropriate. Paraphrases/obfuscation remain a limitation and motivate the planned AI assessment.
+The first rules are versioned Dart constants shared by manual/OCR and the SMS worker. Rule changes require an app release. They are heuristics, not calibrated probabilities. A 36-example synthetic diagnostic set lives in `test/fixtures/evaluation_messages.json`; `dart run tool/evaluate.dart` generates `docs/evaluation.md`. Five of 20 labeled scams were missed in that small set; no accuracy claim is appropriate. Paraphrases/obfuscation remain limitations of both approaches; AI adds a separately attributed assessment.
 
-API35 emulator evidence includes incoming SMS after process removal, generic notification content, cold notification routing, offline OCR with editable review and picker Activity recreation, native secure-storage/manual integration, and consented live Safe Browsing threat/no-match results. Native policy/encryption instrumentation and Dart race/permission tests are included. Real carrier/dual-SIM behavior, device-maker battery restrictions, TalkBack and human Filipino review still require physical-device/release validation. No Groq inference was called. See `docs/feasibility.md`, `docs/completion-audit.md`, `docs/provider-validation.md` and `docs/release-checklist.md` for the detailed evidence boundary.
+API35 emulator evidence includes incoming SMS after process removal, generic notification content, cold notification routing, offline OCR with editable review and picker Activity recreation, native secure-storage/manual integration, consented live Safe Browsing results, and reviewed manual Groq assessment. Native policy/encryption instrumentation and Dart race/permission tests are included. Real carrier/dual-SIM behavior, device-maker battery restrictions, TalkBack and human Filipino review still require physical-device/release validation. See `docs/feasibility.md`, `docs/completion-audit.md`, `docs/provider-validation.md`, `docs/ai-evaluation.md` and `docs/release-checklist.md` for the detailed evidence boundary.
 
 Learn guidance draws on the [BSP fraud/scam primer](https://www.bsp.gov.ph/Media_and_Research/Primers%20Faqs/How_much_do_you_know_about_Fraud_and_Scam.pdf), [GCash account protection](https://help.gcash.com/hc/en-us/articles/19578518834457-How-can-I-protect-my-GCash-account), and [BPI social-engineering guidance](https://www.bpi.com.ph/personal/bank/digital-banking/online/cybersecurity/social-engineering-attacks). The app has no affiliation with these organizations.

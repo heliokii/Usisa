@@ -1,6 +1,6 @@
 # Usisa design specification
 
-Status: approved direction; manual flows and the sideloaded Android SMS Lab are implemented. Groq AI is planned only. See README for current validation and release limits.
+Status: manual flows, the sideloaded Android SMS Lab and optional Groq AI assistance are implemented for the development MVP. Live reviewed-text AI has Android emulator evidence. See README for current validation and release limits.
 Date: 9 November 2026.
 Companion: [implementation plan](docs/superpowers/plans/2026-11-09-usisa-implementation.md).
 
@@ -332,7 +332,7 @@ Release decisions with external dependencies: SMS distribution/permission eligib
 
 ## 12. Groq AI-assisted scanning
 
-Added at the user's request on 9 November 2026. Detailed delivery plan: [Groq AI scanning](docs/superpowers/plans/2026-11-09-groq-ai-scanning.md).
+Planned on 9 November and explicitly included in the MVP by the user on 10 November 2026. Implemented with server-only Groq calls, editable review, per-submission confirmation and separate local/AI evidence. Detailed delivery plan: [Groq AI scanning](docs/superpowers/plans/2026-11-09-groq-ai-scanning.md).
 
 ### Purpose and analysis modes
 
@@ -361,10 +361,12 @@ Require short quoted evidence that appears exactly in the submitted reviewed tex
 
 The existing 60:30:10 palette, accessible risk colors, type scale, loading states, reduced motion and 48-pixel hit targets apply. AI uses the same teal action system; it does not add a competing color palette, animated mascot, chat UI or fake thinking progress.
 
-### Model and configuration proposal
+### Model and configuration
 
-Recommend `openai/gpt-oss-120b` on Groq as the initial evaluation model. Compare `openai/gpt-oss-20b` for latency/cost before changing the default; neither has measured Philippine scam accuracy in this project. Both are currently listed as production models and support strict structured outputs. [Models](https://console.groq.com/docs/models), [structured outputs](https://console.groq.com/docs/structured-outputs)
+The configured development model is `openai/gpt-oss-120b`, with prompt `ph-scam-v1`, low reasoning effort, strict structured output and suppressed reasoning output. Compare `openai/gpt-oss-20b` for latency/cost before changing the default. Both support strict structured outputs; there is no automatic fallback model. A 20-message held-out synthetic diagnostic is recorded in `docs/ai-evaluation.md`; it does not establish real-world Philippine scam accuracy. [Models](https://console.groq.com/docs/models), [structured outputs](https://console.groq.com/docs/structured-outputs)
 
-Use server-only `GROQ_API_KEY` and a new `GROQ_MODEL` setting. The current worktree-root `.env` contains the key name and no model setting; it is ignored by Git. Do not copy the key into Flutter assets, Dart defines, source, logs, or browser bundles. The recommendation has not been written into the user's real `.env` and no inference request was made for this plan.
+Use server-only `GROQ_API_KEY` and `GROQ_MODEL`. The ignored worktree-root `.env` already contains both; implementation changed neither value. No key belongs in Flutter assets, Dart defines, source, logs or browser bundles. Only synthetic fixtures were used for live verification. Standard APKs need a configured public gateway URL to use AI; emulator development uses `http://10.0.2.2:8787`.
+
+The loopback gateway limits AI to ten requests/minute/socket IP, four concurrent calls and 50 calls/day/process by default (`AI_DAILY_LIMIT`). Its daily counter resets on restart and is not an account spending limit. It coalesces matching in-flight submission keys and aborts disconnected work where possible, with a 15-second provider deadline and no automatic retries. Mobile requests time out after 18 seconds; cancellation or backgrounding makes late responses inert. Reopening history never resumes an upload. Public deployment needs trusted ingress and verified account spending controls.
 
 Review Groq account data controls before release. Provider retention depends on those controls and service conditions; do not promise zero retention from an API key alone. The app gateway does not retain raw prompts or responses in logs, caches, traces, or analytics. [Groq data controls](https://console.groq.com/docs/your-data)

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/features/scan/scan_models.dart';
@@ -82,7 +84,18 @@ void main() {
         }
         throw StateError('unexpected worker method');
       });
-      await runSmsBackground(channel: worker);
+      var networkClients = 0;
+      await HttpOverrides.runZoned(
+        () async {
+          await runSmsBackground(channel: worker);
+          await runSmsBackground(channel: worker);
+        },
+        createHttpClient: (_) {
+          networkClients++;
+          throw StateError('Background SMS must not upload');
+        },
+      );
+      expect(networkClients, 0);
       expect(completion?['risk'], 'high');
       final result = ScanResult.fromJson(
         Map<String, dynamic>.from(completion!['result'] as Map),
