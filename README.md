@@ -19,6 +19,8 @@ Browser previews use memory only. OCR and automatic SMS are native capabilities;
 
 Use Flutter 3.47.5 / Dart 3.13.4 or a compatible newer toolchain. Android minimum SDK is 24; the resolved OCR wrapper bundles the Latin recognizer. Keep the checked-in lockfile.
 
+Runtime checks now cover API24 and API35 emulators. On Android 7.0/API24, encrypted storage/manual scanning, offline OCR, three encrypted SMS queue tests, an incoming SMS after process removal, cold notification routing and manually confirmed live AI all passed. These checks do not replace carrier, physical-phone or human accessibility validation.
+
 ```powershell
 flutter pub get
 flutter gen-l10n
