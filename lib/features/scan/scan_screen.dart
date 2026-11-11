@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/glass_surface.dart';
 import '../history/history_store.dart';
 import '../settings/settings_store.dart';
 import '../sms/sms_service.dart';
@@ -28,6 +29,9 @@ class ScanScreen extends StatefulWidget {
     this.onReviewSms,
     this.ocr,
     this.aiFactory,
+    this.initialMode = 0,
+    this.singleMode = true,
+    this.aiAssisted = false,
   });
   final HistoryStore history;
   final SettingsStore settings;
@@ -36,6 +40,9 @@ class ScanScreen extends StatefulWidget {
   final VoidCallback? onReviewSms;
   final OcrService? ocr;
   final AiScanClient Function()? aiFactory;
+  final int initialMode;
+  final bool singleMode;
+  final bool aiAssisted;
   @override
   State<ScanScreen> createState() => _ScanScreenState();
 }
@@ -47,9 +54,9 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   bool _reading = false;
   OcrDraft? _recovered;
   int _ocrRevision = 0;
-  int _mode = 0;
+  late int _mode = widget.initialMode;
   bool _opening = false;
-  bool _aiAssisted = false;
+  late bool _aiAssisted = widget.aiAssisted;
   int _aiRevision = 0;
   Timer? _draftTimer;
   int _draftRevision = 0;
@@ -148,7 +155,9 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
         MaterialPageRoute(builder: (_) => AiReviewScreen(input: value)),
       );
       _opening = false;
-      if (!mounted || choice == null || generation != widget.history.generation) {
+      if (!mounted ||
+          choice == null ||
+          generation != widget.history.generation) {
         return;
       }
       value = ScanInput(choice.text, source: value.source);
@@ -295,253 +304,272 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     builder: (context, _) {
       final l = AppLocalizations.of(context);
       final theme = Theme.of(context);
-      return PageBody(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l.scanHeading, style: theme.textTheme.headlineLarge),
-            const SizedBox(height: 12),
-            Text(l.scanIntro, style: theme.textTheme.bodyLarge),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Icon(
-                  Icons.lock_outline_rounded,
-                  size: 18,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _aiAssisted ? l.aiManualOnly : l.localPrivate,
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            if (_recovered != null) ...[
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.image_outlined),
-                title: Text(l.reviewRecoveredScreenshot),
-                onTap: _reading
-                    ? null
-                    : () => _importScreenshot(recovered: _recovered),
-                trailing: IconButton(
-                  tooltip: l.discardRecoveredScreenshot,
-                  onPressed: _reading
-                      ? null
-                      : () => setState(() => _recovered = null),
-                  icon: const Icon(Icons.close),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [l.message, l.link, l.screenshot]
-                  .asMap()
-                  .entries
-                  .map(
-                    (e) => ChoiceChip(
-                      label: Text(e.value),
-                      selected: _mode == e.key,
-                      showCheckmark: false,
-                      onSelected: _scan.busy || _reading
-                          ? null
-                          : (_) => setState(() => _mode = e.key),
+      final title = widget.aiAssisted
+          ? l.aiScan
+          : _mode == 1
+          ? l.linkCheckerTitle
+          : _mode == 2
+          ? l.scanScreenshotCard
+          : l.scanMessageCard;
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+          actions: widget.aiAssisted
+              ? [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Center(
+                      child: Text(
+                        l.aiBeta,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: 20),
-            Text(l.analysisMode, style: theme.textTheme.titleSmall),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+                  ),
+                ]
+              : null,
+        ),
+        body: SafeArea(
+          top: false,
+          child: PageBody(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ChoiceChip(
-                  label: Text(l.onDevice),
-                  selected: !_aiAssisted,
-                  showCheckmark: false,
-                  onSelected: _scan.busy || _reading
-                      ? null
-                      : (_) => setState(() => _aiAssisted = false),
-                ),
-                ChoiceChip(
-                  label: Text(l.aiAssisted),
-                  selected: _aiAssisted,
-                  showCheckmark: false,
-                  onSelected: _scan.busy || _reading
-                      ? null
-                      : (_) => setState(() => _aiAssisted = true),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (_mode < 2) ...[
-              TextField(
-                controller: _inputs[_mode],
-                key: ValueKey(_mode),
-                enabled: !_scan.busy,
-                minLines: _mode == 1 ? 2 : 6,
-                maxLines: _mode == 1 ? 5 : 12,
-                style: theme.textTheme.bodyLarge,
-                keyboardType: _mode == 1
-                    ? TextInputType.url
-                    : TextInputType.multiline,
-                autocorrect: false,
-                enableSuggestions: false,
-                decoration: InputDecoration(
-                  labelText: _mode == 1 ? l.link : l.message,
-                  hintText: _mode == 1 ? 'https://example.com' : l.inputHint,
-                  errorText: _scan.error == null
-                      ? null
-                      : l.errorMessage(_scan.error!),
-                  errorMaxLines: 5,
-                ),
-                onChanged: (_) {
-                  if (_mode == 0) {
-                    _scheduleDraft();
-                  }
-                  if (_scan.error != null) {
-                    setState(() => _scan.error = null);
-                  }
-                },
-              ),
-              const SizedBox(height: 4),
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                children: [
-                  TextButton.icon(
-                    onPressed: _scan.busy ? null : _paste,
-                    icon: const Icon(Icons.content_paste_rounded, size: 18),
-                    label: Text(_mode == 1 ? l.pasteLink : l.pasteText),
+                if (_mode != 1) ...[
+                  Text(l.scanHeading, style: theme.textTheme.headlineLarge),
+                  const SizedBox(height: 12),
+                  Text(l.scanIntro, style: theme.textTheme.bodyLarge),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _aiAssisted ? l.aiManualOnly : l.localPrivate,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: _scan.busy
-                        ? null
-                        : () async {
-                            _inputs[_mode].clear();
-                            if (_mode == 0) {
-                              _draftTimer?.cancel();
-                              _draftRevision++;
-                              try {
-                                await widget.history.clearDraft();
-                              } catch (_) {
-                                _draftError();
-                              }
-                            }
-                            if (!mounted) return;
-                            setState(() => _scan.error = null);
-                          },
-                    child: Text(l.clear),
+                  const SizedBox(height: 24),
+                ] else
+                  const SizedBox(height: 8),
+                if (_recovered != null) ...[
+                  GlassSurface(
+                    child: ListTile(
+                      leading: const Icon(Icons.image_outlined),
+                      title: Text(l.reviewRecoveredScreenshot),
+                      onTap: _reading
+                          ? null
+                          : () => _importScreenshot(recovered: _recovered),
+                      trailing: IconButton(
+                        tooltip: l.discardRecoveredScreenshot,
+                        onPressed: _reading
+                            ? null
+                            : () => setState(() => _recovered = null),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 16),
                 ],
-              ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: _scan.busy ? null : _check,
-                icon: _scan.busy
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.search_rounded),
-                label: Text(
-                  _scan.busy
-                      ? l.checking
-                      : _aiAssisted
-                      ? l.aiReviewTitle
-                      : _mode == 1
-                      ? l.checkLink
-                      : l.checkMessage,
-                ),
-              ),
-              if (_scan.busy)
-                TextButton(onPressed: _scan.cancel, child: Text(l.cancel)),
-            ] else ...[
-              Text(l.screenshotIntro, style: theme.textTheme.bodyLarge),
-              const SizedBox(height: 16),
-              if (!_ocr.available) Text(l.ocrNativeOnly),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: !_ocr.available || _reading
-                    ? null
-                    : _importScreenshot,
-                icon: const Icon(Icons.image_outlined),
-                label: Text(_reading ? l.readingImage : l.chooseScreenshot),
-              ),
-              if (_reading)
-                TextButton(
-                  onPressed: () => setState(() {
-                    _ocrRevision++;
-                    _mode = 0;
-                  }),
-                  child: Text(l.cancel),
-                ),
-            ],
-            const SizedBox(height: 32),
-            const Divider(),
-            const SizedBox(height: 16),
-            ListenableBuilder(
-              listenable: widget.sms ?? widget.settings,
-              builder: (context, _) => Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.sms_outlined, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.sms?.supported == true
-                              ? widget.sms!.enabled
-                                    ? l.smsEnabled
-                                    : l.smsDisabled
-                              : l.smsOff,
-                          style: theme.textTheme.titleSmall,
+                if (!widget.singleMode) ...[
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [l.message, l.link, l.screenshot]
+                        .asMap()
+                        .entries
+                        .map(
+                          (e) => ChoiceChip(
+                            label: Text(e.value),
+                            selected: _mode == e.key,
+                            showCheckmark: false,
+                            onSelected: _scan.busy || _reading
+                                ? null
+                                : (_) => setState(() => _mode = e.key),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                if (!widget.aiAssisted && !widget.singleMode) ...[
+                  Text(l.analysisMode, style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ChoiceChip(
+                        label: Text(l.onDevice),
+                        selected: !_aiAssisted,
+                        showCheckmark: false,
+                        onSelected: _scan.busy || _reading
+                            ? null
+                            : (_) => setState(() => _aiAssisted = false),
+                      ),
+                      ChoiceChip(
+                        label: Text(l.aiAssisted),
+                        selected: _aiAssisted,
+                        showCheckmark: false,
+                        onSelected: _scan.busy || _reading
+                            ? null
+                            : (_) => setState(() => _aiAssisted = true),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                if (_mode < 2) ...[
+                  GlassSurface(
+                    focusHighlight: true,
+                    child: TextField(
+                      controller: _inputs[_mode],
+                      key: ValueKey(_mode),
+                      enabled: !_scan.busy,
+                      minLines: _mode == 1 ? 1 : 6,
+                      maxLines: _mode == 1 ? 1 : 12,
+                      style: theme.textTheme.bodyLarge,
+                      keyboardType: _mode == 1
+                          ? TextInputType.url
+                          : TextInputType.multiline,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      decoration: InputDecoration(
+                        labelText: _mode == 1 ? null : l.message,
+                        hintText: _mode == 1
+                            ? 'https://example.com'
+                            : l.inputHint,
+                        errorText: _scan.error == null
+                            ? null
+                            : l.errorMessage(_scan.error!),
+                        errorMaxLines: 5,
+                        prefixIcon: _mode == 1
+                            ? const Icon(Icons.link_rounded)
+                            : null,
+                        suffixIcon: _mode == 1
+                            ? IconButton(
+                                tooltip: l.clear,
+                                onPressed: _scan.busy
+                                    ? null
+                                    : () {
+                                        _inputs[_mode].clear();
+                                        setState(() => _scan.error = null);
+                                      },
+                                icon: const Icon(Icons.close_rounded),
+                              )
+                            : null,
+                      ),
+                      onChanged: (_) {
+                        if (_mode == 0) _scheduleDraft();
+                        if (_scan.error != null) {
+                          setState(() => _scan.error = null);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: _scan.busy ? null : _paste,
+                        icon: const Icon(Icons.content_paste_rounded, size: 18),
+                        label: Text(_mode == 1 ? l.pasteLink : l.pasteText),
+                      ),
+                      if (_mode == 0)
+                        TextButton(
+                          onPressed: _scan.busy
+                              ? null
+                              : () async {
+                                  _inputs[_mode].clear();
+                                  _draftTimer?.cancel();
+                                  _draftRevision++;
+                                  try {
+                                    await widget.history.clearDraft();
+                                  } catch (_) {
+                                    _draftError();
+                                  }
+                                  if (!mounted) return;
+                                  setState(() => _scan.error = null);
+                                },
+                          child: Text(l.clear),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          widget.sms?.supported == true
-                              ? widget.sms!.degraded
-                                    ? l.smsDegraded
-                                    : l.smsLimits
-                              : l.smsDetail,
-                        ),
-                        if (widget.sms?.supported == true) ...[
-                          if (!widget.sms!.notifications) Text(l.smsAlertsOff),
-                          Wrap(
-                            spacing: 8,
-                            children: [
-                              TextButton(
-                                onPressed: widget.onManageSms,
-                                child: Text(l.manageSms),
-                              ),
-                              TextButton(
-                                onPressed: widget.onReviewSms,
-                                child: Text(l.recentSms),
-                              ),
-                            ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: _scan.busy ? null : _check,
+                    icon: _scan.busy
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.search_rounded),
+                    label: Text(
+                      _scan.busy
+                          ? l.checking
+                          : _aiAssisted
+                          ? l.aiReviewTitle
+                          : _mode == 1
+                          ? l.checkLink
+                          : l.checkMessage,
+                    ),
+                  ),
+                  if (_scan.busy)
+                    TextButton(onPressed: _scan.cancel, child: Text(l.cancel)),
+                ] else ...[
+                  GlassSurface(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.image_search_outlined,
+                            size: 56,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            l.screenshotIntro,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyLarge,
                           ),
                         ],
-                      ],
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  if (!_ocr.available) Text(l.ocrNativeOnly),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: !_ocr.available || _reading
+                        ? null
+                        : _importScreenshot,
+                    icon: const Icon(Icons.image_outlined),
+                    label: Text(_reading ? l.readingImage : l.chooseScreenshot),
+                  ),
+                  if (_reading)
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _ocrRevision++;
+                        _mode = 0;
+                      }),
+                      child: Text(l.cancel),
+                    ),
                 ],
-              ),
+              ],
             ),
-            const SizedBox(height: 28),
-            Text(l.reminderTitle, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(l.reminderBody),
-          ],
+          ),
         ),
       );
     },

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import 'gateway_readiness.dart';
 import 'scan_models.dart';
 
 class ReputationCheck {
@@ -28,6 +29,7 @@ class ReputationClient {
       _client = client ?? http.Client();
   final Uri? baseUri;
   final http.Client _client;
+  bool _closed = false;
   bool get configured {
     final uri = baseUri;
     return uri != null &&
@@ -49,6 +51,9 @@ class ReputationClient {
     if (!configured ||
         !['http', 'https'].contains(uri.scheme) ||
         uri.host.isEmpty) {
+      return unavailable;
+    }
+    if (!await waitForGateway(_client, baseUri!, cancelled: () => _closed)) {
       return unavailable;
     }
     try {
@@ -114,5 +119,8 @@ class ReputationClient {
     }
   }
 
-  void close() => _client.close();
+  void close() {
+    _closed = true;
+    _client.close();
+  }
 }

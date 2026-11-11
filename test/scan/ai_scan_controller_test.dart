@@ -11,6 +11,7 @@ import 'package:usisa/features/scan/scan_controller.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 
 import 'ai_models_test.dart' show assessment;
+import 'gateway_test_helpers.dart';
 
 void main() {
   for (final action in ['complete', 'cancel', 'edit', 'clear', 'dispose']) {
@@ -25,6 +26,8 @@ void main() {
         final client = AiScanClient(
           baseUri: Uri.parse('https://gateway.test'),
           client: MockClient((request) {
+            final health = gatewayHealthResponse(request);
+            if (health != null) return Future.value(health);
             calls++;
             expect(jsonDecode(request.body)['text'], 'Send your OTP');
             return wait.future;

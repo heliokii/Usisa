@@ -46,6 +46,7 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
       res.setHeader('Access-Control-Allow-Headers','Content-Type, Idempotency-Key');
     }
     if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+    if (req.url === '/healthz' && req.method === 'GET') { send(200,{status:'ok'}); return; }
     if (req.url === '/v1/capabilities' && req.method === 'GET') {
       send(200,{urlReputation:configured,aiScanning:aiConfigured}); return;
     }
@@ -123,7 +124,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env.PORT ?? 8787);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
-  createGateway().listen(port,'127.0.0.1',() => {
-    console.log(`Usisa gateway listening on http://127.0.0.1:${port}; URL checks ${process.env.SAFE_BROWSING_API_KEY ? 'configured' : 'unavailable'}`);
+  const host = process.env.HOST ?? '127.0.0.1';
+  createGateway().listen(port,host,() => {
+    console.log(`Usisa gateway listening on http://${host}:${port}; URL checks ${process.env.SAFE_BROWSING_API_KEY ? 'configured' : 'unavailable'}`);
   });
 }

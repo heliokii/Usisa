@@ -67,6 +67,7 @@ test('gateway validates trust boundaries, method, rate limit and capabilities', 
   await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
+    assert.deepEqual(await (await fetch(`${base}/healthz`)).json(), {status:'ok'});
     assert.deepEqual(await (await fetch(`${base}/v1/capabilities`)).json(), {urlReputation:true,aiScanning:false});
     for (const [body, status] of [['{broken', 400], [' '.repeat(8193), 413]]) {
       const response = await fetch(`${base}/v1/link-check`, {method:'POST', headers:{'Content-Type':'application/json'}, body});

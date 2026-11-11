@@ -433,18 +433,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacy => 'Privacy and storage';
 
   @override
-  String get appearance => 'Appearance';
-
-  @override
-  String get systemTheme => 'Use device setting';
-
-  @override
-  String get lightTheme => 'Light';
-
-  @override
-  String get darkTheme => 'Dark';
-
-  @override
   String get language => 'Language';
 
   @override
@@ -693,4 +681,201 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get homeHeading => 'Stay one step ahead of scams.';
+
+  @override
+  String get homeBrand => 'Usisa';
+
+  @override
+  String get homeBody =>
+      'Scan messages, links, or screenshots and get an instant risk analysis.';
+
+  @override
+  String get scanMessageCard => 'Scan Message';
+
+  @override
+  String get scanMessageDescription => 'Paste or type a message';
+
+  @override
+  String get checkLinkCard => 'Check a Link';
+
+  @override
+  String get checkLinkDescription => 'Check if a URL is safe';
+
+  @override
+  String get scanScreenshotCard => 'Scan Screenshot';
+
+  @override
+  String get scanScreenshotDescription => 'Use OCR to read text';
+
+  @override
+  String get aiScan => 'AI Scan';
+
+  @override
+  String get aiBeta => 'Beta';
+
+  @override
+  String get aiHomeDescription => 'Get a deeper AI analysis';
+
+  @override
+  String get homeAiBadge => 'New';
+
+  @override
+  String get autoSmsCard => 'Auto SMS Detection';
+
+  @override
+  String get autoSmsDescription => 'Check incoming SMS for potential scams';
+
+  @override
+  String get aiIntroTitle => 'AI-Powered Scam Analysis';
+
+  @override
+  String get aiIntroBody =>
+      'Analyze a message, link, or screenshot with AI to explain possible risks and suggest safe next steps.';
+
+  @override
+  String get aiMultiInput => 'Multi-input';
+
+  @override
+  String get aiMultiInputBody => 'Text, links, or screenshots with OCR';
+
+  @override
+  String get aiContextAware => 'Context-aware';
+
+  @override
+  String get aiContextAwareBody => 'Looks for common scam patterns in PH';
+
+  @override
+  String get aiActionable => 'Actionable results';
+
+  @override
+  String get aiActionableBody => 'Risk level, explanations, and next steps';
+
+  @override
+  String get startAiScan => 'Start AI Scan';
+
+  @override
+  String get aiInputQuestion => 'What do you want to analyze?';
+
+  @override
+  String get aiTextOption => 'Text / Message';
+
+  @override
+  String get aiTextOptionBody => 'Paste or type a suspicious message';
+
+  @override
+  String get aiLinkOption => 'URL / Link';
+
+  @override
+  String get aiLinkOptionBody => 'Check a link for scam context';
+
+  @override
+  String get aiScreenshotOption => 'Screenshot / Image';
+
+  @override
+  String get aiScreenshotOptionBody => 'Use OCR to read and review text';
+
+  @override
+  String get aiProgressTitle => 'Analyzing with AI…';
+
+  @override
+  String get aiStageReviewed => 'Text review confirmed';
+
+  @override
+  String get aiStageLocal => 'On-device checks complete';
+
+  @override
+  String get aiStageRequest => 'Requesting AI assessment';
+
+  @override
+  String get aiStageResult => 'Preparing your result';
+
+  @override
+  String get smsDetectionTitle => 'SMS Detection';
+
+  @override
+  String get smsDetectionBody =>
+      'Automatically checks incoming SMS for potential scams and alerts you if something looks suspicious.';
+
+  @override
+  String get smsRecentDetections => 'Recent Detections';
+
+  @override
+  String get warningSigns => 'Detected Warning Signs';
+
+  @override
+  String get safetyRecommendations => 'Safety Recommendations';
+
+  @override
+  String get linkWhyRisky => 'Why is it risky?';
+
+  @override
+  String get learnScamTips => 'Scam Safety Tips';
+
+  @override
+  String get learnScamTipsBody =>
+      'Simple ways to avoid common scams in the Philippines.';
+
+  @override
+  String get learnCommonScams => 'Common Scams in PH';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get onboardingSecondTitle => 'See why a message was flagged.';
+
+  @override
+  String get onboardingSecondBody =>
+      'Usisa shows the words, links, and requests that need a closer look.';
+
+  @override
+  String get onboardingThirdTitle => 'Choose what stays on your device.';
+
+  @override
+  String get onboardingThirdBody =>
+      'Manual scans stay local. AI and online link checks only run after review and consent.';
+
+  @override
+  String get linkCheckerTitle => 'Link Checker';
+
+  @override
+  String get aiScanResult => 'AI Scan Result';
+
+  @override
+  String get learnStaySafeTitle => 'Learn & Stay Safe';
+
+  @override
+  String get detection => 'Detection';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get aiScanToggleBody =>
+      'Use AI-assisted scans for deeper context. Each upload still needs your review and confirmation.';
+
+  @override
+  String get smsNotificationsEnabled => 'Generic SMS alerts are enabled.';
+
+  @override
+  String smsRecentTab(int count) {
+    return 'Recent ($count)';
+  }
+
+  @override
+  String smsFlaggedTab(int count) {
+    return 'Flagged ($count)';
+  }
+
+  @override
+  String get smsFlaggedEmpty => 'No flagged messages among recent SMS checks.';
+
+  @override
+  String get home => 'Home';
 }

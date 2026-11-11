@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/glass_surface.dart';
 import 'ocr_models.dart';
 
 class ScreenshotReviewScreen extends StatefulWidget {
@@ -62,16 +63,19 @@ class _ScreenshotReviewScreenState extends State<ScreenshotReviewScreen> {
                 Text(l.noOcrText),
                 const SizedBox(height: 16),
               ],
-              TextField(
-                controller: _text,
-                minLines: 6,
-                maxLines: 14,
-                autocorrect: false,
-                style: Theme.of(context).textTheme.bodyLarge,
-                decoration: InputDecoration(
-                  labelText: l.message,
-                  errorText: _error == null ? null : l.errorMessage(_error!),
-                  errorMaxLines: 4,
+              GlassSurface(
+                focusHighlight: true,
+                child: TextField(
+                  controller: _text,
+                  minLines: 6,
+                  maxLines: 14,
+                  autocorrect: false,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  decoration: InputDecoration(
+                    labelText: l.message,
+                    errorText: _error == null ? null : l.errorMessage(_error!),
+                    errorMaxLines: 4,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),

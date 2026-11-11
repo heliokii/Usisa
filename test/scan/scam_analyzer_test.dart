@@ -25,7 +25,7 @@ void main() {
         );
         expect(result.links.single.uri.toString(), 'https://bit.ly/example');
         expect(result.links.single.original, 'bit.ly/example');
-        expect(result.risk, RiskLevel.caution);
+        expect(result.risk, RiskLevel.low);
         expect(result.hasUncheckedLinks, isTrue);
       }
       expect(
@@ -38,6 +38,28 @@ void main() {
       );
     },
   );
+  test('shorteners stay unverified without creating a false scam alert', () {
+    final result = check('https://bit.ly/example');
+    expect(result.risk, RiskLevel.low);
+    expect(
+      result.links.single.findings.map((finding) => finding.code),
+      contains('shortLink'),
+    );
+    final onlineNoMatch = result.withLinks([
+      result.links.single.withReputation(
+        ReputationState.noMatch,
+        at: DateTime.now(),
+        provider: safeBrowsingProvider,
+      ),
+    ]);
+    expect(onlineNoMatch.risk, RiskLevel.low);
+    expect(onlineNoMatch.hasUncheckedLinks, isTrue);
+    expect(
+      check('GCash account suspended. Send your OTP now: https://bit.ly/x')
+          .risk,
+      RiskLevel.high,
+    );
+  });
 
   test('bank impersonation plus OTP disclosure is high', () {
     final result = check(

@@ -21,6 +21,7 @@ import 'package:usisa/l10n/app_localizations.dart';
 import 'package:usisa/theme/usisa_theme.dart';
 
 import 'ai_models_test.dart' show assessment;
+import 'gateway_test_helpers.dart';
 
 Future<void> tap(WidgetTester tester, String text) async {
   await tester.ensureVisible(find.text(text).last);
@@ -34,8 +35,6 @@ Widget app(
   double scale = 1,
 }) => MaterialApp(
   theme: UsisaTheme.light,
-  darkTheme: UsisaTheme.dark,
-  themeMode: ThemeMode.dark,
   locale: locale,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
@@ -77,7 +76,9 @@ void main() {
             aiFactory: () => AiScanClient(
               baseUri: Uri.parse('https://gateway.test'),
               client: MockClient(
-                (_) async => http.Response(jsonEncode(assessment()), 200),
+                (request) async =>
+                    gatewayHealthResponse(request) ??
+                    http.Response(jsonEncode(assessment()), 200),
               ),
             ),
           ),
@@ -144,7 +145,9 @@ void main() {
             history: history,
             aiFactory: () => AiScanClient(
               baseUri: Uri.parse('https://gateway.test'),
-              client: MockClient((_) async {
+              client: MockClient((request) async {
+                final health = gatewayHealthResponse(request);
+                if (health != null) return health;
                 calls++;
                 return calls == 1 ? http.Response('{}', 503) : pending.future;
               }),
@@ -196,10 +199,13 @@ void main() {
             ScanScreen(
               history: history,
               settings: settings,
+              singleMode: false,
               ocr: ScreenshotOcr(),
               aiFactory: () => AiScanClient(
                 baseUri: Uri.parse('https://gateway.test'),
                 client: MockClient((request) {
+                  final health = gatewayHealthResponse(request);
+                  if (health != null) return Future.value(health);
                   calls++;
                   expect(jsonDecode(request.body), {
                     'text': 'GCash: Send your OTP immediately.',
@@ -240,17 +246,14 @@ void main() {
         await tester.pump(const Duration(milliseconds: 400));
         for (
           var frame = 0;
-          frame < 10 && find.text('Scan result').evaluate().isEmpty;
+          frame < 10 && find.text('AI Scan Result').evaluate().isEmpty;
           frame++
         ) {
           await tester.pump(const Duration(milliseconds: 100));
         }
         expect(calls, 1);
-        expect(find.text('High risk'), findsWidgets);
-        expect(
-          find.text('On-device checks complete. AI is checking…'),
-          findsOneWidget,
-        );
+        expect(find.text('Analyzing with AI…'), findsOneWidget);
+        expect(find.text('On-device checks complete'), findsOneWidget);
         wait.complete(http.Response(jsonEncode(assessment(risk: 'low')), 200));
         await tester.pumpAndSettle();
         expect(find.text('High risk'), findsWidgets);
@@ -275,9 +278,12 @@ void main() {
           ScanScreen(
             history: history,
             settings: settings,
+            singleMode: false,
             aiFactory: () => AiScanClient(
               baseUri: Uri.parse('https://gateway.test'),
-              client: MockClient((_) async {
+              client: MockClient((request) async {
+                final health = gatewayHealthResponse(request);
+                if (health != null) return health;
                 calls++;
                 return http.Response('{}', 503);
               }),

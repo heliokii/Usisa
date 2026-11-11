@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/glass_surface.dart';
 import 'scan_models.dart';
 import 'scam_analyzer.dart';
 
@@ -58,28 +59,31 @@ class _AiReviewScreenState extends State<AiReviewScreen> {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
-                TextFormField(
-                  controller: _text,
-                  minLines: 5,
-                  maxLines: 12,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  keyboardType: TextInputType.multiline,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  decoration: InputDecoration(
-                    labelText: l.aiTextLabel,
-                    errorMaxLines: 5,
+                GlassSurface(
+                  focusHighlight: true,
+                  child: TextFormField(
+                    controller: _text,
+                    minLines: 5,
+                    maxLines: 12,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    keyboardType: TextInputType.multiline,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    decoration: InputDecoration(
+                      labelText: l.aiTextLabel,
+                      errorMaxLines: 5,
+                    ),
+                    validator: (text) {
+                      try {
+                        ScamAnalyzer().analyze(
+                          ScanInput(text ?? '', source: widget.input.source),
+                        );
+                        return null;
+                      } on ScanException catch (e) {
+                        return l.errorMessage(e.code);
+                      }
+                    },
                   ),
-                  validator: (text) {
-                    try {
-                      ScamAnalyzer().analyze(
-                        ScanInput(text ?? '', source: widget.input.source),
-                      );
-                      return null;
-                    } on ScanException catch (e) {
-                      return l.errorMessage(e.code);
-                    }
-                  },
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'ai_models.dart';
+import 'gateway_readiness.dart';
 
 class AiScanClient {
   AiScanClient({
@@ -38,6 +39,13 @@ class AiScanClient {
         input.text.trim().isEmpty ||
         input.text.runes.length > 10000 ||
         !['en', 'fil'].contains(input.responseLanguage)) {
+      return unavailable;
+    }
+    if (!await waitForGateway(
+      _client,
+      baseUri!,
+      cancelled: () => _abort.isCompleted,
+    )) {
       return unavailable;
     }
     try {

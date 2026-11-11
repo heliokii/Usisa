@@ -9,22 +9,28 @@ import 'package:usisa/features/scan/scan_models.dart';
 import 'package:usisa/features/scan/result_screen.dart';
 import 'package:usisa/l10n/app_localizations.dart';
 
+import 'gateway_test_helpers.dart';
+
 void main() {
   test('small gateway clock skew does not hide a fresh advisory or extend its lifetime', () async {
     final at = DateTime.now().toUtc().add(const Duration(seconds: 2));
     final client = ReputationClient(
       baseUri: Uri.parse('https://gateway.example'),
       client: MockClient(
-        (_) async => http.Response(
-          jsonEncode({
-            'status': 'matched',
-            'threatTypes': ['MALWARE'],
-            'checkedAt': at.toIso8601String(),
-            'expiresAt': at.add(const Duration(seconds: 60)).toIso8601String(),
-            'provider': 'Google Safe Browsing',
-          }),
-          200,
-        ),
+        (request) async =>
+            gatewayHealthResponse(request) ??
+            http.Response(
+              jsonEncode({
+                'status': 'matched',
+                'threatTypes': ['MALWARE'],
+                'checkedAt': at.toIso8601String(),
+                'expiresAt': at
+                    .add(const Duration(seconds: 60))
+                    .toIso8601String(),
+                'provider': 'Google Safe Browsing',
+              }),
+              200,
+            ),
       ),
     );
     final check = await client.check(Uri.parse('https://example.test'));
@@ -119,6 +125,8 @@ void main() {
       final client = ReputationClient(
         baseUri: Uri.parse('https://gateway.example'),
         client: MockClient((request) async {
+          final health = gatewayHealthResponse(request);
+          if (health != null) return health;
           expect(request.url.path, '/v1/link-check');
           expect(jsonDecode(request.body), {
             'url': 'https://example.test/private?q=1',
@@ -166,7 +174,9 @@ void main() {
     ]) {
       final client = ReputationClient(
         baseUri: Uri.parse('https://gateway.example'),
-        client: MockClient((_) async => response),
+        client: MockClient(
+          (request) async => gatewayHealthResponse(request) ?? response,
+        ),
       );
       expect(
         (await client.check(Uri.parse('https://example.test'))).state,
@@ -182,19 +192,21 @@ void main() {
         final client = ReputationClient(
           baseUri: Uri.parse('https://gateway.example'),
           client: MockClient(
-            (_) async => http.Response(
-              jsonEncode({
-                'status': 'matched',
-                'threatTypes': ['MALWARE'],
-                'checkedAt': DateTime.now().toUtc().toIso8601String(),
-                'expiresAt': DateTime.now()
-                    .toUtc()
-                    .add(Duration(hours: expired ? -1 : 1))
-                    .toIso8601String(),
-                'provider': 'Google Safe Browsing',
-              }),
-              200,
-            ),
+            (request) async =>
+                gatewayHealthResponse(request) ??
+                http.Response(
+                  jsonEncode({
+                    'status': 'matched',
+                    'threatTypes': ['MALWARE'],
+                    'checkedAt': DateTime.now().toUtc().toIso8601String(),
+                    'expiresAt': DateTime.now()
+                        .toUtc()
+                        .add(Duration(hours: expired ? -1 : 1))
+                        .toIso8601String(),
+                    'provider': 'Google Safe Browsing',
+                  }),
+                  200,
+                ),
           ),
         );
         expect(

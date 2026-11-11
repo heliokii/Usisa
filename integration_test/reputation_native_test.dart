@@ -14,17 +14,22 @@ void main() {
       final gateway = Uri.parse(
         const String.fromEnvironment('USISA_GATEWAY_URL'),
       );
-      final capabilities = await http
-          .get(gateway.resolve('/v1/capabilities'))
-          .timeout(const Duration(seconds: 5));
+      final capabilities = await tester.runAsync(
+        () => http
+            .get(gateway.resolve('/v1/capabilities'))
+            .timeout(const Duration(seconds: 5)),
+      );
       expect(
-        capabilities.statusCode,
+        capabilities?.statusCode,
         200,
-        reason: 'The emulator must reach the development gateway.',
+        reason:
+            'The phone must reach the public gateway over its own internet.',
       );
       final storage = MemoryStorage();
       await SettingsStore(storage).update(onboarded: true);
       await tester.pumpWidget(UsisaApp(storage: storage));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Scan Message'));
       await tester.pumpAndSettle();
       for (final threat in [true, false]) {
         await tester.enterText(

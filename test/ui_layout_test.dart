@@ -31,6 +31,9 @@ void main() {
       await SettingsStore(storage).update(onboarded: true);
       await tester.pumpWidget(UsisaApp(storage: storage));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Scan Message').last);
+      await tester.tap(find.text('Scan Message').last);
+      await tester.pumpAndSettle();
       const text = 'GCash: Send your OTP immediately.\nKeep this draft.';
       await tester.enterText(find.byType(TextField).first, text);
       await tester.ensureVisible(find.text('Check message'));
@@ -71,7 +74,7 @@ void main() {
     }
   });
 
-  testWidgets('both themes keep body and risk text above 4.5:1 contrast', (
+  testWidgets('brand palette keeps body and risk text above 4.5:1 contrast', (
     tester,
   ) async {
     double contrast(Color a, Color b) {
@@ -79,7 +82,7 @@ void main() {
       return x > y ? (x + .05) / (y + .05) : (y + .05) / (x + .05);
     }
 
-    for (final theme in [UsisaTheme.light, UsisaTheme.dark]) {
+    for (final theme in [UsisaTheme.light]) {
       final scheme = theme.colorScheme;
       for (final background in [
         theme.scaffoldBackgroundColor,
@@ -121,9 +124,9 @@ void main() {
     }
   });
   for (final width in [320.0, 390.0, 600.0, 840.0]) {
-    for (final dark in [false, true]) {
+    for (final filipino in [false, true]) {
       testWidgets(
-        'core screens at ${width}px / ${dark ? 'dark' : 'light'} / 200% text',
+        'core screens at ${width}px / ${filipino ? 'Filipino' : 'English'} / 200% text',
         (tester) async {
           tester.view.physicalSize = Size(width, 740);
           tester.view.devicePixelRatio = 1;
@@ -135,8 +138,7 @@ void main() {
           await SettingsStore(storage).update(
             onboarded: true,
             saveHistory: true,
-            theme: dark ? ThemeMode.dark : ThemeMode.light,
-            language: dark ? 'fil' : 'en',
+            language: filipino ? 'fil' : 'en',
           );
           final sample = ScamAnalyzer().analyze(
             const ScanInput(
@@ -152,12 +154,10 @@ void main() {
           await tester.pumpWidget(UsisaApp(storage: storage));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          await tester.tap(find.byIcon(Icons.history_rounded).last);
+          final l = AppLocalizations.of(tester.element(find.text('Usisa')));
+          await tester.tap(find.text(l.history).last);
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          final l = AppLocalizations.of(
-            tester.element(find.byType(HistoryScreen)),
-          );
           await tester.scrollUntilVisible(
             find.byIcon(Icons.tune_rounded),
             150,
@@ -178,19 +178,27 @@ void main() {
           await tester.tap(find.text(l.select));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          await tester.tap(find.byIcon(Icons.menu_book_outlined).last);
+          await tester.tap(find.text(l.home).last);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(l.learn).last);
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          await tester.tap(find.byIcon(Icons.settings_outlined));
+          await tester.tap(find.text(l.home).last);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(l.settings).last);
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          await tester.binding.handlePopRoute();
+          await tester.tap(find.text(l.home).last);
           await tester.pumpAndSettle();
-          await tester.tap(find.byIcon(Icons.search_rounded).last);
+          final scanCard = find.text(l.scanMessageCard).last;
+          await tester.ensureVisible(scanCard);
+          await tester.pumpAndSettle();
+          await tester.tap(scanCard);
           await tester.pumpAndSettle();
           await tester.enterText(find.byType(TextField).first, sample.text);
-          await tester.ensureVisible(find.text(l.checkMessage));
-          await tester.tap(find.text(l.checkMessage));
+          final checkButton = find.widgetWithText(FilledButton, l.checkMessage);
+          await tester.ensureVisible(checkButton);
+          await tester.tap(checkButton);
           await tester.pumpAndSettle();
           expect(find.text(l.riskLabel('high')), findsWidgets);
           expect(tester.takeException(), isNull);

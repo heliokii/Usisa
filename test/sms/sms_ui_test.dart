@@ -57,9 +57,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(permissionRequests, 0);
-      await tester.ensureVisible(find.text('Incoming SMS checks'));
+      await tester.ensureVisible(find.text('Auto SMS Detection'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Incoming SMS checks'));
+      await tester.tap(find.text('Auto SMS Detection'));
       await tester.pumpAndSettle();
       expect(find.text('Enable incoming SMS checks?'), findsOneWidget);
       expect(

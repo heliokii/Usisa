@@ -8,6 +8,7 @@ import 'package:usisa/features/scan/ai_scan_client.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 
 import 'ai_models_test.dart' show assessment;
+import 'gateway_test_helpers.dart';
 
 const reviewed = ReviewedAiInput(
   text: 'Send your OTP',
@@ -24,6 +25,8 @@ void main() {
       final client = AiScanClient(
         baseUri: Uri.parse('https://gateway.test'),
         client: MockClient((request) async {
+          final health = gatewayHealthResponse(request);
+          if (health != null) return health;
           calls++;
           expect(request.url.toString(), 'https://gateway.test/v1/ai-scan');
           expect(jsonDecode(request.body), {
@@ -78,7 +81,9 @@ void main() {
     ]) {
       final client = AiScanClient(
         baseUri: Uri.parse('https://gateway.test'),
-        client: MockClient((_) async => response),
+        client: MockClient(
+          (request) async => gatewayHealthResponse(request) ?? response,
+        ),
       );
       expect((await client.check(reviewed)).state, AiScanState.unavailable);
       client.close();
@@ -95,7 +100,9 @@ void main() {
     final client = AiScanClient(
       baseUri: Uri.parse('https://gateway.test'),
       timeout: const Duration(milliseconds: 10),
-      client: MockClient((_) async {
+      client: MockClient((request) async {
+        final health = gatewayHealthResponse(request);
+        if (health != null) return health;
         calls++;
         await Future<void>.delayed(const Duration(milliseconds: 40));
         return http.Response(jsonEncode(assessment()), 200);

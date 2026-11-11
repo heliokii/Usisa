@@ -168,6 +168,6 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.text('High risk'), findsNothing);
-    expect(find.text('Check before you tap.'), findsOneWidget);
+    expect(find.text('Stay one step ahead of scams.'), findsOneWidget);
   });
 }

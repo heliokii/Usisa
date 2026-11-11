@@ -10,7 +10,7 @@ The local manual app, sideloaded SMS Lab and optional Groq AI assistance are imp
 - Optional AI assistance for reviewed text, links and OCR text. Every submission has an editable outbound preview and confirmation. Independent local/AI findings retain the stronger warning. AI failure/cancellation keeps local checks usable; automatic SMS stays local.
 - Android/iOS screenshot selection, bundled on-device Latin OCR and editable review before scanning. Offline Android emulator tests cover image bounds, failures and picker Activity recovery; physical-phone and iOS runtime validation remain open.
 - Optional encrypted history (latest 100 scans, review access expires after 30 days), a separate draft restorable within 24 hours, local search/filters and protected deletion. Both start off. Expired files are cleaned while the app runs or on next use; closed/stopped apps cannot erase at an exact deadline. Cleanup failures are shown.
-- English/Filipino interface, system/light/dark appearance, compact bottom navigation and wider navigation rail using the 60:30:10 palette.
+- English/Filipino interface, fixed cream/forest/coral light appearance using the 60:30:10 palette, compact bottom navigation and wider navigation rail.
 - Optional URL-reputation gateway with separate consent, Google attribution, expiry-aware warnings and no provider key in the app. Live threat/no-match checks have passed through the Android emulator and gateway. Saved history keeps local findings and check metadata without caching Safe Browsing verdicts.
 
 Browser previews use memory only. OCR and automatic SMS are native capabilities; a browser render does not prove them.
@@ -68,7 +68,7 @@ cd server
 npm start
 ```
 
-The server binds to loopback on port 8787 by default and explicitly loads `../.env` if present. A public deployment needs TLS, trusted ingress abuse controls and suitable quotas; none is deployed by this change.
+The server binds to loopback on port 8787 by default and explicitly loads `../.env` if present. The school/research gateway is deployed at `https://usisa-gateway.onrender.com` from the isolated `codex/usisa-gateway` branch; its Groq and Safe Browsing keys are Render environment secrets, not APK assets. It uses Render Free, so it sleeps after 15 minutes without traffic and can take about a minute to wake. This is a demo endpoint, not a production availability commitment.
 
 The free-provider migration is implemented; see `docs/free-url-providers.md` and `docs/provider-validation.md`. Existing Web Risk consent is reset for re-consent. Current Google warnings expire within the returned lifetime or five minutes, whichever is sooner. Small server/device clock differences are handled without extending the lifetime. Legacy Web Risk records retain their original source; no Web Risk calls remain.
 
@@ -88,13 +88,19 @@ Choose **AI assisted**, review/edit the exact text, then confirm **Send this tex
 
 The combined development handoff is `build/mvp/Usisa-MVP-SMS-AI.apk`, with local SMS plus manual AI and URL reputation. It uses `http://127.0.0.1:8787` through `adb reverse tcp:8787 tcp:8787`, allowing emulator or USB-connected phone development while the gateway stays on the computer. Setup and feature walkthrough: `build/mvp/HANDOFF.md`. Rebuild with `flutter build apk --debug --flavor smsLab --no-pub --dart-define=USISA_GATEWAY_URL=http://127.0.0.1:8787`.
 
-The older emulator-enabled builds are `build/mvp/app-smslab-ai-dev-debug.apk` (automatic local SMS plus manual AI) and `build/mvp/app-manual-ai-dev-debug.apk` (manual only). They use `http://10.0.2.2:8787`. Phone use away from an ADB tunnel requires a configured HTTPS gateway; no public endpoint is deployed.
+The older emulator-enabled builds are `build/mvp/app-smslab-ai-dev-debug.apk` (automatic local SMS plus manual AI) and `build/mvp/app-manual-ai-dev-debug.apk` (manual only). They use `http://10.0.2.2:8787`. To build an Android APK that works without USB/ADB port forwarding, use the public HTTPS gateway:
+
+```powershell
+flutter build apk --release --flavor smsLab --no-pub --dart-define=USISA_GATEWAY_URL=https://usisa-gateway.onrender.com
+```
+
+Automatic SMS alerts, OCR, and rule-based message checks run on-device and remain available offline. AI scans and live URL reputation require the phone's Wi-Fi or mobile data; without internet the app keeps local findings and reports online checks as unavailable. Review and confirm text before AI submission, and explicitly enable online URL checks before sending links.
 
 The gateway validates exact evidence quotes and approved action codes. It makes no tool calls, fetches no submitted links and keeps no raw-message logs or completed-result cache. AI has a 15-second upstream deadline, four-call concurrency cap, ten requests/minute/socket IP and a default 50-call/day/process cap (`AI_DAILY_LIMIT`). In-flight matching submission keys coalesce; conflicts reject. Cancellation attempts to abort work but does not reverse an upload or refund consumed tokens. Mobile timeouts, backgrounding and stale responses do not erase local findings or recreate cleared history. Retries require review and confirmation again.
 
 Free-form model summaries are discarded at the gateway. The app explains the risk and approved warning/action codes in reviewed English/Filipino copy. Exact evidence quotes remain visible, and invented contact details or links in model prose cannot become recommendations. Editing a saved scan replaces its reviewed version under the same scan identity.
 
-These local controls reset on restart and do not replace organization spending limits, authentication or trusted public ingress. Public hosting, verified account retention/spend settings and real-world PH evaluation remain release gates. No endpoint has been published. A 20-message synthetic comparison with separate development examples lives in `docs/ai-evaluation.md`; unavailable and unassessed responses are counted, and no accuracy claim follows.
+These local controls reset on restart and do not replace organization spending limits, authentication or trusted public ingress. Render Free restarts also reset the gateway's process-local AI daily counter; configure provider-side budget/retention controls before wider use. Real-world PH evaluation remains a release gate. A 20-message synthetic comparison with separate development examples lives in `docs/ai-evaluation.md`; unavailable and unassessed responses are counted, and no accuracy claim follows.
 
 ## Checks
 

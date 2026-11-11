@@ -205,7 +205,7 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(find.text('Scan result'), findsOneWidget);
+        expect(find.text('Link Checker'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -224,7 +224,7 @@ void main() {
         var opened = false;
         await tester.pumpWidget(
           MaterialApp(
-            theme: width == 320 ? UsisaTheme.dark : UsisaTheme.light,
+            theme: UsisaTheme.light,
             locale: const Locale('fil'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,

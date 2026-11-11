@@ -16,10 +16,12 @@ void main() {
       final gateway = Uri.parse(
         const String.fromEnvironment('USISA_GATEWAY_URL'),
       );
-      final capabilities = await http
-          .get(gateway.resolve('/v1/capabilities'))
-          .timeout(const Duration(seconds: 5));
-      expect(jsonDecode(capabilities.body)['aiScanning'], true);
+      final capabilities = await tester.runAsync(
+        () => http
+            .get(gateway.resolve('/v1/capabilities'))
+            .timeout(const Duration(seconds: 5)),
+      );
+      expect(jsonDecode(capabilities!.body)['aiScanning'], true);
       final storage = MemoryStorage();
       await SettingsStore(storage).update(onboarded: true);
       await tester.pumpWidget(UsisaApp(storage: storage));

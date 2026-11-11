@@ -111,7 +111,9 @@ class UrlChecker {
       findings.add(Finding('ipHost', evidence: host));
     }
     if (shorteners.contains(host)) {
-      findings.add(Finding('shortLink', evidence: host));
+      findings.add(
+        Finding('shortLink', severity: RiskLevel.low, evidence: host),
+      );
     }
     if (host.contains('xn--') || RegExp(r'[^\x00-\x7F]').hasMatch(host)) {
       findings.add(Finding('unusualHost', evidence: host));

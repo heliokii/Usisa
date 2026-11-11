@@ -44,6 +44,8 @@ dependencies:
   url_launcher: ^6.3.3
 
   intl: ^0.20.3
+  flutter_svg: ^2.3.2
+  hugeicons: ^4.4.0
 dev_dependencies:
   integration_test:
     sdk: flutter
@@ -64,6 +66,9 @@ dev_dependencies:
 flutter:
   generate: true
   default-flavor: manual
+
+  assets:
+    - assets/illustrations/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

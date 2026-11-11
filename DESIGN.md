@@ -1,8 +1,9 @@
 # Usisa design specification
 
-Status: manual flows, the sideloaded Android SMS Lab and optional Groq AI assistance are implemented for the development MVP. Live reviewed-text AI has Android emulator evidence. See README for current validation and release limits.
-Date: 9 November 2026.
+Status: the screenshot-led light UI is implemented across the Flutter app. The cream/forest/coral palette is the sole appearance; visual parity still needs review on Android hardware. See README for validation and release limits.
+Date: 10 November 2026.
 Implementation/evidence update: 10 November 2026.
+Visual redesign revision: 10 November 2026.
 Companion: [implementation plan](docs/superpowers/plans/2026-11-09-usisa-implementation.md).
 
 ## 1. Product and audience
@@ -38,7 +39,7 @@ The following decisions define the approved implementation direction:
 | Language | English and Filipino UI; analyze English, Filipino, and mixed Taglish without asking users to identify the language. Human review of Filipino copy is a release requirement. |
 | Analysis | Deterministic rules locally for every scan and automatic SMS. Manual users may additionally request an independent Groq AI assessment after reviewing the text to send. URL reputation remains a separate consented service. |
 | Retention | Session-only by default. Persistent history and draft restoration are separate opt-ins. |
-| Visual identity | Calm deep teal, cool light surfaces, readable system type, evidence as the focal point. |
+| Visual identity | Screenshot-matched screen hierarchy, warm cream #EEE5D4 (60%), forest green #1D4A35 (30%), coral #F2452E (10%), readable system type, and evidence as the focal point. |
 
 ### Approaches considered
 
@@ -50,183 +51,166 @@ Do not present a paid tier, referral program, public dashboard, community blackl
 
 ## 3. Experience principles
 
-1. **Evidence before authority.** Say what was found, show the relevant words or host, and explain what to do. No “AI verified,” invented confidence percentages, or unexplained risk scores.
-2. **Calm urgency.** High risk is clear without flashing red screens, alarm animations, blame, or exaggerated protection claims.
-3. **One clear action.** Scan first; permissions, education, and retention choices appear in context.
-4. **Preserve work.** Navigation, keyboard changes, retry, and recoverable errors preserve the current input in memory.
-5. **Private by default.** Explicit paste, system image selection, local OCR, hidden notification previews, and disclosed online URL requests.
-6. **Native expectations.** Material controls, Android system Back, visible labels, safe areas, large text, and accessible alternatives to gestures.
+Apply Apple’s design principles to this safety tool as concrete interface behavior:
+
+1. **Purpose.** Every screen helps a person decide what to do before tapping, paying, replying, or sharing information. Keep the first action obvious and avoid decorative features that slow a scan.
+2. **Agency.** Keep users in control of input, AI uploads, online URL checks, SMS consent, retention, cancellation, and deletion. Make Back and Cancel predictable; preserve recoverable work.
+3. **Responsibility.** Show the evidence and limits of each check. Ask permission in context, disclose what leaves the device, and never describe an unknown or no-match result as safe.
+4. **Familiarity.** Use a consistent header, Back behavior, labeled root navigation, Material controls, platform status bars, and system gestures.
+5. **Flexibility.** Support English and Filipino, Taglish content, screen readers, large text, one-handed phone use, landscape, and wider tablet layouts without hiding content.
+6. **Simplicity.** Put the common manual scan first. Keep AI, URL reputation, SMS, and privacy decisions visible at the moment they matter without crowding the Home screen.
+7. **Craft.** Align card edges and icon baselines, maintain a consistent spacing rhythm, use legible type and measured contrast, and make the same control behave the same on every screen.
+8. **Delight.** Aim for calm confidence through fast feedback, helpful explanations, and a small, consistent shield/link/OCR illustration system. No alarm theatrics or celebratory effects.
+
+Interaction follows the user's movement: pressed feedback begins on touch-down; scroll and onboarding swipes track the finger; Back gestures retrace the forward route; animations begin from their current visible position and can be interrupted. Use native Flutter transitions for navigation. Avoid overshoot except where a user gesture carries momentum. Reduced-motion settings replace spatial movement with a short opacity change while retaining immediate state feedback.
+
+Every screen answers where the user is, what they can do, and how to leave. Put field errors beside the field, status near the action it describes, and safety advice beside the finding that triggered it. Color, haptics, and motion supplement plain-language labels; they never carry risk meaning alone.
 
 ## 4. Information architecture and primary journeys
 
-Three persistent destinations: **Scan**, **History**, and **Learn**. Settings opens from the top app bar. Results, screenshot review, and settings are secondary routes; Back returns to the previous input and destination.
+The four labeled root destinations follow the reference Home screen: **Home**, **History**, **Learn**, and **Settings**. Show the floating rounded navigation pill only on Home; the selected destination uses a coral icon and label with no filled indicator. On wider screens, show the navigation rail only on Home. History, Learn, and Settings provide a clear return-to-Home control and respond to system Back. Full-screen scan, result, SMS setup, and AI child flows retain their own Back controls and native Back behavior.
 
-```mermaid
-flowchart TD
-    A[Scan] --> B[Text or link input]
-    A --> C[Select screenshot]
-    C --> D[Review and edit extracted text]
-    D --> B
-    B --> E[Local warning and URL checks]
-    E --> F{Online link checks enabled?}
-    F -->|Enabled with disclosed consent| G[URL-only reputation lookup]
-    F -->|No| H[Local result with coverage notice]
-    G --> I[Result: risk, evidence, next steps]
-    H --> I
-    J[Consented Android SMS event] --> E
-    I --> K[Optional private history]
-    K --> L[History detail]
-```
+**Primary flow:** Welcome onboarding → Home → choose Scan Message, Check a Link, Scan Screenshot, AI Scan, or Auto SMS Detection → review any text that may leave the device → analysis → explained result → optional safety recommendations and private history.
 
-Online consent defaults off. **Enable online link checks** explains that this setting sends URLs for this and future manually submitted scans until disabled; the alternative is **Keep local only**. Store that decision and its disclosure version. Do not ask again on every scan unless the provider/data disclosure changes. Background SMS checks remain local; checking their links online requires a foreground action with this consent enabled.
+**AI flow:** AI Scan introduction → choose Text/Message, URL/Link, or Screenshot/Image → edit and review the exact text → confirm the AI submission → local checks and Groq request → attributed AI Scan Result.
 
-### First launch
+**SMS flow:** Home toggle → explain local processing and temporary storage → consent → request runtime permissions → show real enabled/denied/unavailable status → local detection → generic notification → user opens the app for the full result. Automatic SMS never calls AI or online reputation.
 
-Show a short explanation of what is checked, local processing, and the limits of a result. Primary action: **Start checking**. Offer language selection without requiring a profile. Save history and restore drafts default off. Do not request SMS or notification permissions on launch. People can reach a manual scan without granting either permission.
+Online link consent remains independent of AI consent. **Enable online link checks** explains that URLs will be sent to Usisa's gateway and the named provider for this and later manual checks until disabled. **Keep local only** remains available. Background SMS analysis stays local; a user can open an SMS result and separately request a foreground URL check or AI assessment after seeing the relevant disclosure and confirming that submission.
 
-### Scan
+### Welcome / onboarding
 
-- Heading: **Check before you tap.** Supporting text: “Paste a message, check a link, or choose a screenshot.”
-- Segmented modes: **Text**, **Link**, **Screenshot**. Each retains its own session input.
-- Text: visible “Message” label, multiline input, explicit **Paste text**, **Clear**, and **Check message** actions.
-- Link: “Link” label, URL keyboard, **Paste link**, and **Check link**. Accept one HTTP(S) URL; explain unsupported schemes or extra URLs. Offer text mode for multiple links.
-- Screenshot: **Choose screenshot** opens the system picker. Do not add camera capture or broad photo-library access for this requirement.
-- Secondary SMS status: “Incoming SMS checks off,” “Permission needed,” “Unavailable in this build,” or “Incoming SMS checks enabled.” Never “You are protected.”
-- Recent scans appear only when retention is enabled; otherwise show a small Learn suggestion rather than an empty dashboard of statistics.
+Match the supplied centered welcome layout: shield illustration in the upper half, Usisa name and short purpose statement centered below it, three-page indicator, and a large thumb-reachable **Get Started** action anchored near the bottom. Keep the status bar and safe areas clear. Explain that results are warnings, not proof of authenticity. Offer English/Filipino selection and disclose session-only default behavior; saved history and draft restore remain opt-in. Do not request SMS, notification, photo, or online-service permissions here. The three dots are real page indicators for a swipeable introduction, and every page has a visible skip/start action; reduced motion disables parallax and uses a crossfade.
 
-### Screenshot review
+### Home
 
-Show the selected image and editable extracted text with **Check this text**, **Choose another image**, and **Cancel**. Explain that OCR can misread characters and links. An image with no readable text offers another selection and manual typing. Never auto-submit an OCR result. Delete app-created temporary copies on completion/cancel; never alter the original image in the user's library.
+Match the supplied Home reference: pale cream background without the abstract wave; a red shield, **PH Scam Detector** brand, and notification affordance; a two-line headline with a coral emphasis, short supporting copy, and cropped green leaf artwork at the right edge. Follow with four lightly elevated action cards in a two-column grid (**Scan Message**, **Check a Link**, **Scan Screenshot**, **AI Scan**). Make Scan Message the primary forest-green card, keep the remaining cards cream with coral icons, and mark AI with a small **New** badge. Place the **Auto SMS Detection** row below them with a coral phone icon and an on-device switch; show permission status only when SMS is not enabled. The existing floating navigation pill appears on Home only.
 
-### Results
+The cards keep the reference icon-left, title/description-center, chevron-right composition. Each card is one accessible button; the icon and chevron are decorative to assistive technology when the same label is present. Home does not display fabricated protection scores or empty dashboard statistics. If recent scans are enabled, show only a compact recent list below the main actions.
 
-Read in this order:
+### Standard scan and screenshot review
 
-1. Risk label, icon, one-sentence meaning, and coverage notice when incomplete.
-2. The strongest actionable recommendation.
-3. **Why this was flagged:** flat evidence rows, each with a short explanation and an exact original-text excerpt when available.
-4. **Links in this message:** one row per distinct URL, its full host, local observations, reputation state, and checked time.
-5. **What you can do:** two or three recommendations matched to findings.
-6. Expandable original text, scan source, time, and analysis version.
+**Scan Message** opens a labeled, multiline input with explicit paste, clear, and **Check Message** actions. **Scan Screenshot** opens the system picker, runs OCR on device, then shows the selected image and editable recognized text with **Check This Text**, **Choose Another Image**, and **Cancel**. Explain that OCR may misread characters and URLs. Never auto-submit OCR text or send an image to AI. No camera capture or broad photo-library access is added.
 
-Low risk copy: **“No common warning signs found. This does not verify who sent the message.”**
-High risk example: **“This message asks for an OTP and pressures you to act. Do not share the code. Verify the request through the organization's official app or a contact you already trust.”**
+### Scan Result
 
-URLs are selectable text, without automatic opening, embedded browsers, previews, or clickable links in quoted messages. Show the real host for `user@host` URLs; never crop the host to make room for a path. Label demonstration messages as synthetic and use reserved `.test` or `.example` domains.
+Match the screenshot hierarchy: (1) top risk banner with icon, plain risk label, and one-sentence meaning plus the most urgent immediate action; (2) source-labeled message card containing the exact checked excerpt; (3) **Detected Warning Signs** with compact icon/title/explanation rows; (4) prominent **Safety Recommendations** action opening tailored next steps; then any coverage details, reputation result, and full original text below the main composition. Every warning row may expand to reveal its exact source excerpt. URLs remain non-clickable and display the full host; checking a link never opens it.
 
-### History
+Use a representative reserved-domain example such as bank-verify.example, not a real bank URL. State uncertainty and incomplete coverage near the risk label. A low result still says that no common warning signs were found and does not verify the sender.
 
-Use a flat reusable list row: risk label/icon, source, message preview, time, and coverage indicator. Preview truncation is acceptable here; detail preserves full content. Show a privacy explanation and **Enable private history** when retention is off, distinct from **No scans yet** when enabled.
+### Link Checker
 
-Local search is debounced by 300 ms. Filters: risk, source (text/link/screenshot/SMS), and date (all/7 days/30 days). Active filters appear as removable chips with result count and **Clear filters**. Search and filters combine with AND. **Select** enters accessible selection mode; long press is an additional path. “Select all” means all matching results and names the count, including those offscreen.
+Use the supplied vertically stacked layout: back/title row, URL field with link icon and clear control, full-width **Check Link** button, result banner, **Why Is It Risky?** heading, then short finding rows with icon, title, and explanation. Show the complete normalized host and the original URL. The result has a clear coverage/provider label and check time; the banner never claims certainty. Use reserved example domains in mock data.
 
-Confirm bulk deletion and clearing all history. Single deletion offers a five-second Undo before durable removal; clear-all never offers a misleading Undo after encryption keys or records have been destroyed. Deleting saved scans never deletes SMS from the phone's messaging app. Missing/deleted result routes offer **Go to history** and **Start a new scan**.
+### SMS Detection
 
-### Learn and settings
+Use a full-screen secondary route matching the supplied screen: title and current toggle in the header, short explanation, **Recent Detections** heading, then message rows with sender/source, short preview, risk label, time, and chevron. Alerts remain generic on the lock screen. Toggling on explains temporary processing and requests runtime permissions only after the user chooses to continue. Toggling off stops new processing and clears pending work. This screen does not imply access to conversations in other messaging apps.
 
-Learn uses short articles: OTP/password requests, impersonated banks and e-wallets, government messages, delivery fees, seller payments, and what to do after sharing information. Explain that displayed sender names can be spoofed. Avoid unverified official phone numbers, affiliation claims, or report submission flows.
+### Learn & Stay Safe
 
-Settings contains language, system/light/dark appearance, private history, restore drafts, clear saved data, online link checks, and Android SMS/notification controls. Each permission shows its real state and a relevant recovery action. Do not show unsupported SMS toggles on iOS.
+Use the supplied order: centered **Learn & Stay Safe** title; a large **Scam Safety Tips** feature card; **Common Scams in PH** heading; then cards for **Bank & E-Wallet Scams**, **Government Impersonation**, and **Online Selling Scams**. Each card has a distinct vector icon, concise explanation, and chevron. Article detail uses plain language and practical next steps, without unverified hotlines or affiliation claims.
 
-## 5. Screen sketches
+### History and Settings
 
-Structure only; these are not rendered UI or approved visual mockups.
+History uses flat accessible rows with risk, source, preview, time, and coverage; detail preserves the full content. When retention is off, show a privacy explanation and **Enable private history**, distinct from **No scans yet** when enabled. Search is debounced by 300 ms. Risk, source (text/link/screenshot/SMS), and date (all/7 days/30 days) filters combine with search using AND; show removable active-filter chips, result count, and **Clear filters**. Selection mode includes **Select**, **Select all matching** with the total count, and **Clear selection**. Confirm bulk deletion and clearing all history. Single deletion offers a five-second Undo; clearing all data offers no misleading Undo after keys/records are destroyed. Deleting a scan never deletes a phone SMS. Missing/deleted routes offer **Go to history** and **Start a new scan**. Root **Settings** contains language, AI and SMS detection, retention, online URL consent, and notification status. The light appearance is fixed to the product palette. Permission controls report actual OS access and offer a recovery path.
 
-```text
-SCAN                                  RESULT
-┌────────────────────────────┐        ┌────────────────────────────┐
-│ Usisa             Settings │        │ Back              Result   │
-│                            │        │                            │
-│ Check before you tap.      │        │ !  High risk               │
-│ Check a message or link.   │        │ Do not share your OTP.     │
-│                            │        │ Text checked · 1 link      │
-│ [Text] [Link] [Screenshot] │        │ reputation not checked     │
-│ Message                    │        │                            │
-│ ┌────────────────────────┐ │        │ Why this was flagged       │
-│ │ Paste or type here     │ │        │ Requests a security code   │
-│ │                        │ │        │ “send your OTP”            │
-│ └────────────────────────┘ │        │ Pressures you to act       │
-│ Paste text          Clear  │        │ “within 10 minutes”        │
-│                            │        │                            │
-│ [     Check message      ] │        │ Links in this message      │
-│                            │        │ bank-verify.example        │
-│ Incoming SMS checks off    │        │ Not checked online         │
-│                            │        │                            │
-│ Scan     History     Learn │        │ What you can do ...        │
-└────────────────────────────┘        └────────────────────────────┘
-```
+## 5. Reference layout specification
 
-The distinctive interaction is evidence selection: tapping a warning row expands the original message and highlights its exact excerpt without opening any embedded URL. Always offer a plain text equivalent for assistive technology. Invalid/missing spans fall back to the explanation, never highlight unrelated characters.
+The attached boards are the visual source of truth for screen composition, hierarchy, and card order. Recreate the phone-frame proportions and the following top-to-bottom arrangement. The requested palette replaces the boards' navy and purple color treatment. Keep the product name **Usisa** in the same brand positions; “PH Scam Detector” is descriptive reference copy, not a product rename.
+
+### Board 1: welcome, Home, standard result, link checker, SMS detection, Learn
+
+1. **Welcome:** status bar; large centered shield illustration; product name; two/three lines of centered explanatory copy; three small page dots; wide bottom **Get Started** button.
+2. **Home:** top brand row with icon/name and notification button; two-column hero composition with headline left and illustration right; four scan-action cards in a two-by-two grid (message, link, screenshot, AI scan); SMS detection card with right-aligned toggle; fixed bottom bar with Home, History, Learn, Settings.
+3. **Scan Result:** back/title row; full-width high/caution/low banner with icon and short explanation; rounded source/message panel; **Detected Warning Signs** title and one grouped list of evidence rows; wide **Safety Recommendations** button at the bottom of the visible content.
+4. **Link Checker:** back/title row; URL field with link icon and clear button; full-width **Check Link** button; risk banner; **Why Is It Risky?** heading; grouped explanation rows with icons.
+5. **SMS Detection:** back/title row and active toggle aligned to the right; short explanatory paragraph; **Recent Detections** heading; vertically stacked compact detection cards with source, truncated preview, risk chip, time, and chevron.
+6. **Learn & Stay Safe:** centered title; wide illustrated **Scam Safety Tips** card; **Common Scams in PH** heading; three full-width category cards for bank/e-wallet, government impersonation, and online selling.
+
+### Board 2: AI introduction, input choice, progress, AI result
+
+7. **AI Scan introduction:** back/title row with **Beta** pill; centered AI/document illustration; **AI-Powered Scam Analysis** heading and short description; three compact benefit rows (Multi-input, Context-aware, Actionable results); wide **Start AI Scan** button at the bottom.
+8. **AI input choice:** back/title row; **What do you want to analyze?** heading; three stacked cards for **Text / Message**, **URL / Link**, and **Screenshot / Image** with one-line descriptions and chevrons; decorative AI illustration near the lower edge.
+9. **Analyzing with AI:** back/title row; centered activity illustration; **Analyzing with AI…** status; compact stage list. A stage changes only when its real work starts or completes: reviewed text confirmed, on-device checks complete, AI request in flight, response validated. Do not imitate model thoughts or show a fabricated percentage; expose **Cancel** and preserve the reviewed text.
+10. **AI Scan Result:** back/title row; risk banner; separate **AI Analysis** panel with attribution; **Detected Warning Signs** list; wide **Safety Recommendations** button. Keep local findings and AI assessment clearly attributed and explain disagreement.
+
+The AI flow includes one necessary review/confirmation state between input selection and network analysis, even though that privacy step is absent from the reference board. Show the exact editable text and the destination before asking the user to confirm. AI screenshot input is OCR'd locally and reviewed as text. A URL entered here receives the separate online reputation check only with its own consent.
+
+### Board 3: Additional flows (grouped under reference panel 13)
+
+13a. **Screenshot text review:** keep the selected screenshot visible above the editable OCR text. Label the text as extracted, allow correction, and use **Check This Text** for a local scan or **Analyze with AI** to continue to the separate AI disclosure and confirmation.
+13b. **AI submission review:** show the editable text and its input type, explain what will leave the device and reach Groq, and offer a clear **Analyze Now** confirmation plus a local-only option and Cancel. Never auto-submit OCR text.
+13c. **SMS review:** show only the explicitly processed temporary SMS content and the available local scan result. Do not claim to block a sender or report to a third party; those actions are not implemented and require a separate product and platform design.
+
+Across all boards, preserve the generous rounded cards, consistent icon-left/content/chevron-right alignment, clear vertical grouping, and fixed bottom primary actions shown in the reference. Keep long text scrollable instead of compressing it. The screenshot's sample names, domains, statuses, and risk outcomes are illustrative only; use synthetic data and reserved example domains in design/build previews.
 
 ## 6. Visual system
 
-This palette is an original proposal. UI/UX Pro Max's design-system query and one narrower retry returned unrelated product styles; those outputs were discarded. Its Flutter/accessibility guidance and the other design skills informed the system below.
+The screenshot composition is retained, with the exact palette supplied for this revision. The UI/UX Pro Max design-system query returned a generic corporate palette, which is superseded by the user's explicit colors. Its Flutter guidance supports constraint-based layouts and typed navigation.
 
 ### 60:30:10 color distribution
 
-Use the **60:30:10 rule** across the mobile UI in both light and dark themes. Treat these as approximate shares of visible UI color, not fixed layout dimensions or a requirement to leave 60% of a screen empty.
+Apply these exact colors as the brand's approximate visual-area balance. Dark appearance is not supported; the app always uses this light palette regardless of the system appearance setting:
 
-| Share | Role | Light theme | Dark theme | Where it appears |
-|---|---|---|---|---|
-| 60% | Dominant neutral | Background `#F5F8FA` | Background `#0E191E` | Screen canvas, open space, and the main reading area. |
-| 30% | Supporting neutral | Surface `#FFFFFF` | Surface `#15262D` | Input panels, navigation, sheets, and grouped content surfaces. |
-| 10% | Accent | Primary teal `#0B6B65` | Primary mint `#76D8CD` | Primary actions, selected navigation, focus cues, and a few meaningful highlights. |
-
-Risk badges and warning panels use their semantic red, amber, or green within the accent share, replacing some teal emphasis rather than adding another decorative palette. Essential warnings may exceed that share when necessary for clarity. Keep their labels, evidence, and contrast fully visible; never reduce a warning to meet a percentage.
-
-Use one visually dominant primary action per screen. Keep supporting sections neutral instead of filling every card, heading, and icon with teal. Text uses the semantic text tokens regardless of the approximate area shares. Imported screenshots and original message content do not need to conform to the palette. Review the balance in actual light/dark screen captures during implementation.
-
-### Semantic color tokens
-
-| Role | Light | Dark |
+| Share | Color | Primary use |
 |---|---|---|
-| Background | `#F5F8FA` | `#0E191E` |
-| Surface | `#FFFFFF` | `#15262D` |
-| Primary text | `#162B33` | `#EFF7F8` |
-| Secondary text | `#52666D` | `#B7CDD2` |
-| Primary action | `#0B6B65` | `#76D8CD` |
-| On primary action | `#FFFFFF` | `#063C37` |
-| Decorative separator | `#D7E1E5` | `#3A545E` |
-| Control outline | `#6C818A` | `#78909A` |
-| High risk text / container | `#A52A36` / `#FCEDEF` | `#FFA8AF` / `#3E2029` |
-| Caution text / container | `#805100` / `#FFF4D9` | `#F2CE79` / `#382E18` |
-| Low risk text / container | `#126354` / `#E4F5EE` | `#90DEBE` / `#16372F` |
+| 60% | Warm neutral #EEE5D4 | Screen canvas, open space, onboarding background, and reading areas. |
+| 30% | Forest green #1D4A35 | Brand structure, selected navigation, primary buttons, major cards, headings, and controls. Use cream foregrounds on green fills. |
+| 10% | Coral #F2452E | Small visual accents, risk emphasis, selected-state markers, and carefully chosen illustration details. |
 
-Use explicit `ColorScheme` roles and a small risk-color `ThemeExtension`; no raw hex scattered through screens. Neutral/unknown uses secondary text on surface plus a written status. Do not use decorative separators as the only boundary of inputs. Keep risk colors consistent across themes; wallpaper-derived colors must not replace risk semantics. Brand teal indicates actions, not verified legitimacy.
+Percentages describe overall visual weight, not exact per-screen pixel counts. Keep the main screen calm: use the cream canvas as the dominant field, green for important surfaces and actions, and coral sparingly. Do not tint every icon, card, and heading coral. Evaluate each text/control pair in its final light-state composition, including large text and selected, pressed, focused, disabled, warning, and error states.
+
+Contrast is a constraint on the supplied colors: #EEE5D4 against #1D4A35 is 8.06:1; #F2452E is only 2.96:1 against cream and 2.72:1 against forest green. Therefore, never use the exact coral for body text, small labels, essential icons, or control outlines. Use it as decorative emphasis only, or use a contrast-checked darker coral tone derived from it for high-risk text on cream. Risk remains explicitly named with an icon and text; color alone never signals danger. Green is the brand color, not proof that a sender or link is legitimate. Keep large warning text on a high-contrast cream/green surface.
+
+### Semantic tokens
+
+Map colors through Flutter ThemeData/ColorScheme and the shared risk-color helper; don't scatter raw hex values through screens.
+
+| Role | Light appearance |
+|---|---|
+| Background | #EEE5D4 |
+| Primary surface / main action | #1D4A35 |
+| Primary on-surface text | #1D4A35 |
+| On primary surface/action | #EEE5D4 |
+| Accent marker | #F2452E (decorative; pair with a visible label) |
+| High risk label | Contrast coral #B92E22 or forest text on cream |
+| Caution / low / unknown | Explicit icon, shape, and text; no new brand hue required |
+
+Use high-contrast derived neutral/green surface tones only when needed for grouped cards, inputs, dividers, and focus states. These tones are supporting shades of the three specified colors, not new brand colors. The exact 60:30:10 base remains unchanged.
 
 ### Typography
 
-Use platform system typography: Roboto on Android and platform default on iOS. No remote font dependency. All sizes below are Flutter logical pixels before the user's text scaler.
+Use the native system font (Roboto on Android; platform system font on iOS) with a clear hierarchy. All measurements are Flutter logical pixels before the OS text scaler.
 
 | Role | Size / line height | Weight |
 |---|---|---|
-| Scan heading | 30 / 36 | 700 |
-| Risk headline | 28 / 34 | 700 |
-| Screen title | 24 / 30 | 600 |
-| Section title | 20 / 26 | 600 |
+| Home headline | 28–30 / 34–36 | 700 |
+| Risk headline | 24–28 / 30–34 | 700 |
+| Screen title | 22–24 / 28–30 | 600 |
+| Section title | 18–20 / 24–26 | 600 |
 | Body and entered message | 16 / 24 | 400 |
 | Action label | 16 / 22 | 600 |
 | Supporting text | 14 / 20 | 400 |
 | Navigation label | 12 / 16 | 500 |
 
-Map these roles to `TextTheme`. Sentence case, left aligned text, no tracked uppercase headings. Never shrink evidence or warnings to fit a fixed-height card.
+Use sentence case, readable left alignment for multi-line content, and slightly tighter leading only for large headings. Never shrink warning or evidence text to fit a fixed-height card. Respect OS text scaling and allow cards to grow.
 
-### Layout and components
+### Layout, illustration, and components
 
-- Spacing scale: 4, 8, 12, 16, 24, 32, 48.
-- Phone gutters: 20; 16 below 360 logical pixels. Tablet gutters: 32.
-- Compact width below 600: three labeled `NavigationBar` destinations. From 600: `NavigationRail`. From 840: history may use list/detail with at least 320 logical pixels per pane; stack again when text scaling makes the split impractical.
-- Form/result reading column max width: 720. Use available width and content constraints rather than orientation alone.
-- Fields/buttons radius 12; substantial input/result panels 16; modal sheet upper corners 24. Pills only for chips and badges. Prefer flat evidence/history rows to nested cards.
-- Buttons minimum height 52; every hit area at least 48 × 48; adjacent small targets separated by 8.
-- Use native `FilledButton`, `OutlinedButton`, `SegmentedButton`, `TextField`, `FilterChip`, `SnackBar`, sheets, dialogs, and selection controls. Icons come from the existing Material icon font, with text/semantics.
-- Respect status/navigation bars, cutouts, keyboard insets, Android Back, landscape, and scrollability. No sideways scrolling to read a message or URL.
+- Use the screenshot's card sequence and rounded, compact grouping. Spacing follows 4, 8, 12, 16, 24, 32, 48 logical pixels.
+- Phone side gutters are 20 logical pixels, reduced to 16 below 360; tablet gutters are 32. Use LayoutBuilder and content constraints rather than fixed device dimensions.
+- Keep the same 4 root destinations on compact phones; adapt to a labeled rail on wide screens. Long-form results and Learn articles use a comfortable reading width.
+- Card and field corners are 16; large feature surfaces 20; bottom sheets 24 at the top edge. Use flat grouping and subtle elevation rather than stacked glass effects.
+- Buttons are at least 52 high, and every touch target is at least 48 × 48 dp on Android (44 pt on iOS); adjacent small controls have at least 8 dp separation.
+- Use one consistent Material vector icon family. Prefer the existing platform icon font; no emoji as structural icons. Provide a visible label for every risk and icon-only control.
+- Build the shield, link, screenshot/OCR, and AI illustrations as a restrained vector family using cream, forest green, and limited coral. Keep the reference placement and scale, but remove its purple glow, glossy metal, and excess decorative sparkles.
+- Respect status/navigation bars, safe areas, keyboard insets, Back, landscape, and vertical scrolling. Never crop a URL host or place a CTA behind a system bar.
 
 ### Motion and feedback
 
-Native pressed feedback starts immediately. Shared targets: press 100 ms, inline crossfade 150 ms, result transition 200 ms, sheet 250 ms; use platform transitions where supplied. Motion answers an action and stays interruptible. No radar sweeps, flashing danger, confetti, card entrance cascades, or continuous background animation.
+Press feedback begins on touch-down within one frame and changes opacity/elevation without moving surrounding layout. Keep navigation on the platform's familiar path; entering and leaving a route use spatially consistent transitions. Gesture-driven onboarding or sheet movement follows the finger and remains interruptible. Use a critically damped spring or the equivalent native Flutter curve for ordinary state transitions; reserve slight bounce for momentum from a user gesture.
 
-Respect system reduced motion: remove translation, bounce, and shimmer; retain instant updates or brief opacity changes. History may show size-stable static skeleton rows after 200 ms if still loading. Never delay completed work to display a loader. OCR and network work use honest stage text, no invented percentage.
+Default transitions stay short and purposeful: roughly 100 ms press feedback, 150 ms inline status change, and 200–250 ms for a route/sheet. These are guidance, not delays before accepting input. Respect reduced motion by removing parallax/translation and using brief crossfades. Never add looping background motion, flashing alerts, haptic noise, confetti, or fake AI progress. Shimmer and skeletons appear only when a measurable wait justifies them; preserve layout space and never delay a completed result.
 
 ## 7. Risk, coverage, and error contracts
 
@@ -268,7 +252,7 @@ No-result and not-checked link states never use a green success checkmark. When 
 | 1 | Optimistic UI updates | Adapt: immediate benign preference changes with rollback on save failure. Risk verdicts, permission grants, and completed checks wait for real confirmation. |
 | 2 | Skeleton loaders | Adapt: explicit progress indicators during local initialization, OCR and SMS review. Defer list skeletons until a measured wait warrants them; no fabricated scan verdicts. |
 | 3 | Command palette | Defer: direct scan actions fit a phone better. Reconsider for a larger desktop product. |
-| 4 | Persistent sidebar navigation | Adapt: bottom navigation on phones, rail on wider layouts, preserved draft and scroll state. |
+| 4 | Persistent sidebar navigation | Adapt: the reference uses labeled Home, History, Learn, and Settings bottom navigation on phones; use a rail on wider layouts and preserve drafts/scroll state. |
 | 5 | Loading and empty states | Adopt: specify initial, empty, filtered-empty, loading, partial, offline, denied, failed, and success states. |
 | 6 | Autosave | Adapt: preferences automatically save; in-memory input survives navigation; persistent drafts require opt-in. |
 | 7 | Debouncing | Adopt: 300 ms history search; no automatic network requests while typing a message. |
@@ -279,7 +263,7 @@ No-result and not-checked link states never use a green success checkmark. When 
 | 12 | Advanced filtering | Adopt a small useful subset: risk, source, date, combined search, count, and removable filters. |
 | 13 | Keyboard shortcuts | Adapt: standard editing, focus traversal, Escape/back dismiss, Enter search; accessible visible actions remain primary. Multiline Enter inserts a newline. |
 | 14 | Tier-based indicators | Adapt to risk labels with icon and explanation; no subscription tiers. Unavailable is not a risk tier. |
-| 15 | Onboarding data capture | Adapt: one short first-run explanation and Start checking. Language and optional privacy preferences live in Settings; no name/email/phone or account. Permissions requested when used. |
+| 15 | Onboarding data capture | Adapt: match the three-dot welcome layout and Get Started action; collect no name/email/phone or account data. Language and privacy preferences live in Settings; permissions are requested only when used. |
 | 16 | Referral and affiliate pages | Defer: outside the scam-checking task; never encourage sharing private scan content for growth. |
 | 17 | Custom 404 page | Adapt: recoverable missing/deleted result route, including expired notification targets. |
 | 18 | Mobile-optimized layouts | Adopt: 320 logical pixels upward, thumb-reachable actions, safe areas, keyboard handling, scalable text, tablet rail. |
@@ -309,19 +293,19 @@ No-result and not-checked link states never use a green success checkmark. When 
 
 Design and implementation must support TalkBack, logical focus order, meaningful control labels, selected/disabled states, visible focus, and a single announcement of result/error changes. All gesture actions have buttons. Color, haptics, and animation never carry risk meaning alone.
 
-Require 4.5:1 contrast for ordinary text and 3:1 for large text and essential control outlines. Validate actual composed controls in both themes. Check at 320, 390, 600, and 840 logical pixels, landscape, keyboard open, and at least 200% text scaling; do not clamp OS scaling. The reading order is risk, coverage, recommendation, evidence, then details. [Flutter accessibility](https://docs.flutter.dev/ui/accessibility)
+Require 4.5:1 contrast for ordinary text and 3:1 for large text and essential control outlines. Validate actual composed controls in the fixed light palette. Check at 320, 390, 600, and 840 logical pixels, landscape, keyboard open, and at least 200% text scaling; do not clamp OS scaling. The reading order is risk, coverage, recommendation, evidence, then details. [Flutter accessibility](https://docs.flutter.dev/ui/accessibility)
 
 Use synthetic/de-identified English, Filipino, and Taglish evaluation cases, including legitimate bank notices, legitimate OTP warnings, payment requests, hostile URLs, and ambiguous messages. Keep rule-development examples separate from held-out evaluation. Report precision, recall, false-positive rate, per-language/per-category results, and sample counts; set deployment thresholds from reviewed data rather than claiming an invented accuracy figure. Evaluate OCR transcription separately because an incorrect URL changes the subsequent check.
 
 The user bypassed independent PH labeling and Filipino-copy review for the development handoff. Those checks remain unverified. The frozen public-data baseline in `docs/public-dataset-baseline-2026-11-10.md` reports source-category counts and historical smishing-label comparisons, with explicit exclusions; it establishes no PH accuracy or measured AI improvement.
 
-Acceptance includes no/one/100 retained scans; storage expiry; long emoji/combining-character text; URLs with long queries and deceptive hosts; blank/partial OCR; multiple mixed-status links; offline launch; network loss; cancelled/retried scan; permission revocation; background app/process loss; expired notification targets; dark mode; large text; and reduced motion.
+Acceptance includes no/one/100 retained scans; storage expiry; long emoji/combining-character text; URLs with long queries and deceptive hosts; blank/partial OCR; multiple mixed-status links; offline launch; network loss; cancelled/retried scan; permission revocation; background app/process loss; expired notification targets; fixed light appearance under both system appearance settings; large text; and reduced motion.
 
 Success criteria: a person can start a manual scan without an account or SMS permission, understand a finding and next step, see exactly which checks were incomplete, recover input after failure, and erase retained app data. Public claims about detection and automatic SMS availability require evaluation and platform evidence.
 
 ## 11. Design sources and remaining release decisions
 
-Skills used: UI/UX Pro Max; Frontend Design; Impeccable (planning/Operate guidance); Apple Design; Emil Design Engineering; Taste; transferable mobile-native, animation-performance, break-ui, and Web Design Guidelines principles. Web CSS/React/GSAP prescriptions do not apply to this Flutter specification. Brainstorming and Writing Plans guided the original documents; the user subsequently authorized implementation in the separate worktree. Current implementation/evidence is recorded in README and the completion audit.
+This revision applies Apple Design principles (purpose, agency, responsibility, familiarity, flexibility, simplicity, craft, delight; immediate feedback; spatial consistency; interruptible motion; reduced motion) and UI/UX Pro Max accessibility, touch-target, responsive-layout, and Flutter guidance. The Pro Max generated style/palette was not adopted because the user supplied an exact screen reference and palette. CSS/React/GSAP prescriptions do not apply to this Flutter specification. Current implementation/evidence is recorded in README and the completion audit.
 
 Primary technical references checked on 9 November 2026:
 
@@ -341,7 +325,7 @@ Planned on 9 November and explicitly included in the MVP by the user on 10 Novem
 
 The local algorithm remains fast, offline, and useful for consented incoming SMS. Optional AI analysis adds context for indirect requests, paraphrases, mixed Taglish, and wording designed to avoid simple phrase rules. Both approaches can be bypassed and can misclassify content; do not describe AI as foolproof or assume broader language accuracy without evaluation.
 
-Manual Text, Link and Screenshot remain input modes. Add a separate, clearly labeled analysis choice: **On-device** (default) or **AI assisted**. The latter still runs local checks and requests an independent AI assessment; do not send local scores/findings to the model or make the AI merely restate the algorithm. AI selection never changes automatic SMS behavior.
+The Home **AI Scan** card opens the introduction shown in Board 2 and then offers Text/Message, URL/Link, and Screenshot/Image inputs. Keep ordinary on-device scanning as the default route and make the AI route visibly labeled Beta until evaluation justifies broader claims. AI scans still run local checks alongside an independent AI assessment; never send local scores/findings to the model or make the AI merely restate the algorithm. AI selection never changes automatic SMS behavior.
 
 ### User journey and privacy
 
@@ -362,7 +346,7 @@ AI coverage states: not requested, checking, completed, unable to assess, unavai
 
 Require short quoted evidence that appears exactly in the submitted reviewed text; validate it server-side and independently on the device. Discard the model's free-form summary at the gateway. The response carries the fixed `assessment_complete` summary code, and the app explains risk, warning codes and recommendations using reviewed English/Filipino copy. This prevents invented contact details or links in model prose from becoming advice. Older retained prose is discarded while validated evidence remains. The model must not claim to have visited URLs or assert real-time threat intelligence. A separate reputation service owns that check.
 
-The existing 60:30:10 palette, accessible risk colors, type scale, loading states, reduced motion and 48-pixel hit targets apply. AI uses the same teal action system; it does not add a competing color palette, animated mascot, chat UI or fake thinking progress.
+The same cream/forest/coral palette, contrast rules, type scale, loading states, reduced motion and 48-pixel hit targets apply. AI uses the same restrained illustration family and action system; it does not add a purple palette, chat UI, animated mascot, or fake thinking progress.
 
 ### Model and configuration
 

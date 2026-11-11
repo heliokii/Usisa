@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
+import '../../widgets/glass_surface.dart';
 import '../../widgets/page_body.dart';
 import '../scan/result_screen.dart';
 import '../scan/scan_models.dart';
@@ -302,23 +303,26 @@ class _HistoryScreenState extends State<HistoryScreen>
                   else ...[
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: gutter),
-                      child: TextField(
-                        controller: _search,
-                        decoration: InputDecoration(
-                          labelText: l.searchHistory,
-                          prefixIcon: const Icon(Icons.search),
+                      child: GlassSurface(
+                        focusHighlight: true,
+                        child: TextField(
+                          controller: _search,
+                          decoration: InputDecoration(
+                            labelText: l.searchHistory,
+                            prefixIcon: const Icon(Icons.search),
+                          ),
+                          onChanged: (value) {
+                            _debounce?.cancel();
+                            _debounce = Timer(
+                              const Duration(milliseconds: 300),
+                              () {
+                                if (mounted) {
+                                  setState(() => _query = value);
+                                }
+                              },
+                            );
+                          },
                         ),
-                        onChanged: (value) {
-                          _debounce?.cancel();
-                          _debounce = Timer(
-                            const Duration(milliseconds: 300),
-                            () {
-                              if (mounted) {
-                                setState(() => _query = value);
-                              }
-                            },
-                          );
-                        },
                       ),
                     ),
                     Padding(

@@ -179,11 +179,19 @@ class ScanResult {
   final String ruleVersion;
   final AiAssessment? aiAssessment;
   final bool reviewedForAi;
-  RiskLevel get localRisk => findings.any((f) => f.severity == RiskLevel.high)
-      ? RiskLevel.high
-      : findings.isNotEmpty || links.any((l) => l.findings.isNotEmpty)
-      ? RiskLevel.caution
-      : RiskLevel.low;
+  RiskLevel get localRisk {
+    if (findings.any((f) => f.severity == RiskLevel.high) ||
+        links.any((l) => l.findings.any((f) => f.severity == RiskLevel.high))) {
+      return RiskLevel.high;
+    }
+    return findings.any((f) => f.severity == RiskLevel.caution) ||
+            links.any(
+              (l) => l.findings.any((f) => f.severity == RiskLevel.caution),
+            )
+        ? RiskLevel.caution
+        : RiskLevel.low;
+  }
+
   RiskLevel get risk {
     // Safe Browsing advisories cannot outlive expiry; independent local warnings remain.
     if (links.any((l) => l.hasThreatWarning) ||
@@ -200,6 +208,7 @@ class ScanResult {
   bool get hasUncheckedLinks => links.any(
     (l) =>
         l.uri == null ||
+        l.findings.any((f) => f.code == 'shortLink') ||
         l.currentReputation == ReputationState.notRequested ||
         l.currentReputation == ReputationState.unavailable ||
         l.currentReputation == ReputationState.checking,

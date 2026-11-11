@@ -436,18 +436,6 @@ class AppLocalizationsFil extends AppLocalizations {
   String get privacy => 'Pagkapribado at imbakan';
 
   @override
-  String get appearance => 'Hitsura';
-
-  @override
-  String get systemTheme => 'Sundin ang device';
-
-  @override
-  String get lightTheme => 'Maliwanag';
-
-  @override
-  String get darkTheme => 'Madilim';
-
-  @override
   String get language => 'Wika';
 
   @override
@@ -698,4 +686,207 @@ class AppLocalizationsFil extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get homeHeading => 'Isang hakbang sa unahan ng mga scam.';
+
+  @override
+  String get homeBrand => 'Usisa';
+
+  @override
+  String get homeBody =>
+      'Suriin ang mga mensahe, link, o screenshot para malaman agad ang posibleng panganib.';
+
+  @override
+  String get scanMessageCard => 'Suriin ang mensahe';
+
+  @override
+  String get scanMessageDescription => 'I-paste o i-type ang mensahe';
+
+  @override
+  String get checkLinkCard => 'Suriin ang link';
+
+  @override
+  String get checkLinkDescription => 'Tingnan kung ligtas ang URL';
+
+  @override
+  String get scanScreenshotCard => 'Suriin ang screenshot';
+
+  @override
+  String get scanScreenshotDescription =>
+      'Gamitin ang OCR para basahin ang teksto';
+
+  @override
+  String get aiScan => 'AI Scan';
+
+  @override
+  String get aiBeta => 'Beta';
+
+  @override
+  String get aiHomeDescription =>
+      'Kumuha ng mas malalim na pagsusuri gamit ang AI';
+
+  @override
+  String get homeAiBadge => 'Bago';
+
+  @override
+  String get autoSmsCard => 'Awtomatikong SMS';
+
+  @override
+  String get autoSmsDescription =>
+      'Suriin ang papasok na SMS para sa posibleng scam';
+
+  @override
+  String get aiIntroTitle => 'Pagsusuri ng scam gamit ang AI';
+
+  @override
+  String get aiIntroBody =>
+      'Suriin ang mensahe, link, o screenshot gamit ang AI para ipaliwanag ang posibleng panganib at ligtas na susunod na hakbang.';
+
+  @override
+  String get aiMultiInput => 'Iba’t ibang input';
+
+  @override
+  String get aiMultiInputBody => 'Teksto, link, o screenshot na may OCR';
+
+  @override
+  String get aiContextAware => 'May konteksto';
+
+  @override
+  String get aiContextAwareBody =>
+      'Naghahanap ng karaniwang pattern ng scam sa PH';
+
+  @override
+  String get aiActionable => 'May susunod na hakbang';
+
+  @override
+  String get aiActionableBody =>
+      'Antas ng panganib, paliwanag, at susunod na hakbang';
+
+  @override
+  String get startAiScan => 'Simulan ang AI Scan';
+
+  @override
+  String get aiInputQuestion => 'Ano ang gusto mong suriin?';
+
+  @override
+  String get aiTextOption => 'Teksto / Mensahe';
+
+  @override
+  String get aiTextOptionBody => 'I-paste o i-type ang kahina-hinalang mensahe';
+
+  @override
+  String get aiLinkOption => 'URL / Link';
+
+  @override
+  String get aiLinkOptionBody => 'Suriin ang konteksto ng link';
+
+  @override
+  String get aiScreenshotOption => 'Screenshot / Larawan';
+
+  @override
+  String get aiScreenshotOptionBody =>
+      'Gamitin ang OCR, saka suriin ang teksto';
+
+  @override
+  String get aiProgressTitle => 'Sinusuri ng AI…';
+
+  @override
+  String get aiStageReviewed => 'Nakumpirma ang sinuring teksto';
+
+  @override
+  String get aiStageLocal => 'Tapos na ang pagsusuri sa device';
+
+  @override
+  String get aiStageRequest => 'Humihingi ng pagsusuri mula sa AI';
+
+  @override
+  String get aiStageResult => 'Inihahanda ang resulta';
+
+  @override
+  String get smsDetectionTitle => 'Pagsuri ng SMS';
+
+  @override
+  String get smsDetectionBody =>
+      'Awtomatikong sinusuri ang papasok na SMS para sa posibleng scam at nagbibigay ng alerto kung may kahina-hinala.';
+
+  @override
+  String get smsRecentDetections => 'Mga kamakailang natukoy';
+
+  @override
+  String get warningSigns => 'Mga natukoy na babala';
+
+  @override
+  String get safetyRecommendations => 'Mga rekomendasyong pangkaligtasan';
+
+  @override
+  String get linkWhyRisky => 'Bakit ito kahina-hinala?';
+
+  @override
+  String get learnScamTips => 'Mga paalala laban sa scam';
+
+  @override
+  String get learnScamTipsBody =>
+      'Mga simpleng paraan para makaiwas sa karaniwang scam sa Pilipinas.';
+
+  @override
+  String get learnCommonScams => 'Karaniwang scam sa PH';
+
+  @override
+  String get getStarted => 'Magsimula';
+
+  @override
+  String get onboardingSecondTitle => 'Alamin kung bakit na-flag ang mensahe.';
+
+  @override
+  String get onboardingSecondBody =>
+      'Ipinapakita ng Usisa ang mga salita, link, at kahilingang dapat siyasatin.';
+
+  @override
+  String get onboardingThirdTitle => 'Ikaw ang pipili ng mananatili sa device.';
+
+  @override
+  String get onboardingThirdBody =>
+      'Lokal ang manwal na pagsusuri. Gagana lang ang AI at online na link check matapos suriin at pumayag.';
+
+  @override
+  String get linkCheckerTitle => 'Taga-suri ng link';
+
+  @override
+  String get aiScanResult => 'Resulta ng AI Scan';
+
+  @override
+  String get learnStaySafeTitle => 'Matuto at Manatiling Ligtas';
+
+  @override
+  String get detection => 'Pagsusuri';
+
+  @override
+  String get general => 'Pangkalahatan';
+
+  @override
+  String get notifications => 'Mga notification';
+
+  @override
+  String get aiScanToggleBody =>
+      'Gamitin ang AI para sa mas malalim na konteksto. Kailangan mo pa ring suriin at kumpirmahin ang bawat padala.';
+
+  @override
+  String get smsNotificationsEnabled => 'Naka-enable ang generic na SMS alert.';
+
+  @override
+  String smsRecentTab(int count) {
+    return 'Kamakailan ($count)';
+  }
+
+  @override
+  String smsFlaggedTab(int count) {
+    return 'Na-flag ($count)';
+  }
+
+  @override
+  String get smsFlaggedEmpty => 'Walang na-flag sa mga kamakailang SMS check.';
+
+  @override
+  String get home => 'Home';
 }
