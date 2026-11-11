@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
 import '../../widgets/glass_surface.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/usisa_action_button_painter.dart';
 import '../sms/sms_service.dart';
 import 'feature_artwork.dart';
 
@@ -49,7 +50,6 @@ class HomeScreen extends StatelessWidget {
         .clamp(16.0, 32.0)
         .toDouble();
     return PageBody(
-      showBrandWave: false,
       horizontalGutter: gutter,
       bottomPadding: 2,
       fillViewport: true,
@@ -280,8 +280,7 @@ class _HomeActionCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (primary)
-            const CustomPaint(painter: _PrimaryActionArtworkPainter()),
+          if (primary) const CustomPaint(painter: UsisaActionButtonPainter()),
           if (!primary)
             const CustomPaint(painter: _SecondaryActionArtworkPainter()),
           InkWell(
@@ -409,129 +408,6 @@ class _HomeActionCard extends StatelessWidget {
       child: Opacity(opacity: enabled ? 1 : .55, child: card),
     );
   }
-}
-
-class _PrimaryActionArtworkPainter extends CustomPainter {
-  const _PrimaryActionArtworkPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bounds = Offset.zero & size;
-    canvas.drawRect(
-      bounds,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF168363),
-            Color(0xFF0D6B51),
-            Color(0xFF075440),
-            Color(0xFF033E31),
-          ],
-          stops: [0, .3, .7, 1],
-        ).createShader(bounds),
-    );
-
-    final width = size.width;
-    final height = size.height;
-    final upperCurve = Path()
-      ..moveTo(0, 0)
-      ..lineTo(width, 0)
-      ..lineTo(width, height * .25)
-      ..cubicTo(
-        width * .72,
-        height * .22,
-        width * .62,
-        height * .3,
-        width * .43,
-        height * .32,
-      )
-      ..cubicTo(
-        width * .24,
-        height * .34,
-        width * .14,
-        height * .4,
-        0,
-        height * .57,
-      )
-      ..close();
-    canvas.drawPath(
-      upperCurve,
-      Paint()..color = const Color(0xFF31A078).withValues(alpha: .28),
-    );
-
-    final middleCurve = Path()
-      ..moveTo(0, height * .57)
-      ..cubicTo(
-        width * .18,
-        height * .4,
-        width * .32,
-        height * .5,
-        width * .51,
-        height * .55,
-      )
-      ..cubicTo(
-        width * .72,
-        height * .6,
-        width * .82,
-        height * .32,
-        width,
-        height * .3,
-      )
-      ..lineTo(width, height * .5)
-      ..cubicTo(
-        width * .8,
-        height * .52,
-        width * .67,
-        height * .71,
-        width * .47,
-        height * .7,
-      )
-      ..cubicTo(
-        width * .26,
-        height * .69,
-        width * .15,
-        height * .61,
-        0,
-        height * .77,
-      )
-      ..close();
-    canvas.drawPath(
-      middleCurve,
-      Paint()..color = const Color(0xFF126D51).withValues(alpha: .52),
-    );
-
-    final lowerCurve = Path()
-      ..moveTo(0, height * .77)
-      ..cubicTo(
-        width * .2,
-        height * .62,
-        width * .35,
-        height * .78,
-        width * .55,
-        height * .79,
-      )
-      ..cubicTo(
-        width * .78,
-        height * .8,
-        width * .87,
-        height * .62,
-        width,
-        height * .55,
-      )
-      ..lineTo(width, height)
-      ..lineTo(0, height)
-      ..close();
-    canvas.drawPath(
-      lowerCurve,
-      Paint()..color = const Color(0xFF013C30).withValues(alpha: .38),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _PrimaryActionArtworkPainter oldDelegate) =>
-      false;
 }
 
 class _SecondaryActionArtworkPainter extends CustomPainter {

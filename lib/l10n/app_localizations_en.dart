@@ -175,6 +175,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get messageScanPrompt => 'Paste or type a message to scan';
+
+  @override
+  String get messageScanSupport =>
+      'We\'ll check for suspicious links, scams, and harmful content.';
+
+  @override
   String get scanHeading => 'Check before you tap.';
 
   @override
@@ -192,6 +199,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get screenshot => 'Screenshot';
+
+  @override
+  String get screenshotHeading => 'Scan a screenshot';
+
+  @override
+  String get screenshotSelected => 'Screenshot selected';
+
+  @override
+  String get changeImage => 'Change image';
+
+  @override
+  String get screenshotSupported => 'PNG, JPG, JPEG, or WEBP · Up to 10 MB';
+
+  @override
+  String get linkCheckPrompt => 'Check a link’s safety';
+
+  @override
+  String get linkCheckSupport =>
+      'Paste a URL to see risk indicators before you open it.';
 
   @override
   String get inputHint => 'Paste or type the message here…';
@@ -300,6 +326,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'This message has strong warning signs. Pause before sharing information or money.';
 
   @override
+  String resultRiskLabel(String risk) {
+    String _temp0 = intl.Intl.selectLogic(risk, {
+      'low': 'Safe',
+      'caution': 'Need Review',
+      'other': 'High Risk',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get analysisSummary => 'Analysis Summary';
+
+  @override
+  String get detectedSigns => 'Detected Signs';
+
+  @override
   String get noWarnings => 'No common warning signs detected';
 
   @override
@@ -345,6 +387,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyHeading => 'Your checks, kept private.';
+
+  @override
+  String get historyAll => 'All';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
 
   @override
   String get historyOff => 'History is off';

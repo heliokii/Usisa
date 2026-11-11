@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
 import '../../widgets/glass_surface.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/usisa_action_button.dart';
 import '../home/feature_artwork.dart';
 
 class AiScanEntryScreen extends StatefulWidget {
@@ -65,6 +66,7 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
       ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: _choosing ? _inputChoices(context) : _introduction(context),
       ),
       bottomNavigationBar: _choosing
@@ -78,11 +80,7 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
                   PageBody.gutterOf(context),
                   16,
                 ),
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: UsisaTheme.contrastCoral,
-                    foregroundColor: UsisaTheme.cream,
-                  ),
+                child: UsisaActionButton.icon(
                   onPressed: _choosing
                       ? null
                       : () => setState(() => _choosing = true),
@@ -102,7 +100,7 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 4),
-          const Center(child: AiScanArtwork(size: 170)),
+          const Center(child: AiScanArtwork(size: 132)),
           const SizedBox(height: 8),
           Text(
             l.aiIntroTitle,
@@ -113,7 +111,7 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
           Text(
             l.aiIntroBody,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge,
+            style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
           _BenefitRow(
@@ -201,8 +199,8 @@ class _BenefitRow extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: colors.primaryContainer,
                 borderRadius: BorderRadius.circular(14),
@@ -214,8 +212,8 @@ class _BenefitRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: theme.textTheme.titleMedium),
-                  Text(subtitle, style: theme.textTheme.bodyMedium),
+                  Text(title, style: theme.textTheme.titleSmall),
+                  Text(subtitle, style: theme.textTheme.bodySmall),
                 ],
               ),
             ),

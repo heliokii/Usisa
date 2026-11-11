@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
 import '../../widgets/glass_surface.dart';
+import '../../widgets/usisa_action_button.dart';
 import 'scan_models.dart';
 import 'scam_analyzer.dart';
 
@@ -42,6 +43,7 @@ class _AiReviewScreenState extends State<AiReviewScreen> {
       appBar: AppBar(title: Text(l.aiReviewTitle)),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: PageBody(
           child: Form(
             key: _form,
@@ -86,7 +88,7 @@ class _AiReviewScreenState extends State<AiReviewScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                FilledButton.icon(
+                UsisaActionButton.icon(
                   onPressed: () => _finish(true),
                   icon: const Icon(Icons.cloud_upload_outlined),
                   label: Text(l.sendAi),

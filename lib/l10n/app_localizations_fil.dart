@@ -177,6 +177,13 @@ class AppLocalizationsFil extends AppLocalizations {
   String get settings => 'Mga setting';
 
   @override
+  String get messageScanPrompt => 'I-paste o i-type ang mensahe para masuri';
+
+  @override
+  String get messageScanSupport =>
+      'Susuriin namin ito para sa kahina-hinalang link, scam, at mapaminsalang nilalaman.';
+
+  @override
   String get scanHeading => 'Suriin bago pindutin.';
 
   @override
@@ -194,6 +201,25 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get screenshot => 'Screenshot';
+
+  @override
+  String get screenshotHeading => 'Suriin ang screenshot';
+
+  @override
+  String get screenshotSelected => 'Napili ang screenshot';
+
+  @override
+  String get changeImage => 'Palitan ang larawan';
+
+  @override
+  String get screenshotSupported => 'PNG, JPG, JPEG, o WEBP · Hanggang 10 MB';
+
+  @override
+  String get linkCheckPrompt => 'Suriin kung ligtas ang link';
+
+  @override
+  String get linkCheckSupport =>
+      'I-paste ang URL para makita ang mga babala bago ito buksan.';
 
   @override
   String get inputHint => 'I-paste o i-type ang mensahe rito…';
@@ -302,6 +328,22 @@ class AppLocalizationsFil extends AppLocalizations {
       'May matitinding babala sa mensaheng ito. Huminto muna bago magbigay ng impormasyon o pera.';
 
   @override
+  String resultRiskLabel(String risk) {
+    String _temp0 = intl.Intl.selectLogic(risk, {
+      'low': 'Ligtas',
+      'caution': 'Kailangang Suriin',
+      'other': 'Mataas na Panganib',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get analysisSummary => 'Buod ng Pagsusuri';
+
+  @override
+  String get detectedSigns => 'Mga Natukoy na Senyales';
+
+  @override
   String get noWarnings => 'Walang karaniwang babalang nakita';
 
   @override
@@ -348,6 +390,15 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get historyHeading => 'Pribado ang iyong mga pagsusuri.';
+
+  @override
+  String get historyAll => 'Lahat';
+
+  @override
+  String get today => 'Ngayon';
+
+  @override
+  String get yesterday => 'Kahapon';
 
   @override
   String get historyOff => 'Naka-off ang kasaysayan';
