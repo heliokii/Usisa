@@ -1,0 +1,126 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+
+import 'gateway_readiness.dart';
+import 'scan_models.dart';
+
+class ReputationCheck {
+  const ReputationCheck(
+    this.state, {
+    this.checkedAt,
+    this.expiresAt,
+    this.threatTypes = const [],
+    this.provider = safeBrowsingProvider,
+  });
+  final ReputationState state;
+  final DateTime? checkedAt;
+  final DateTime? expiresAt;
+  final List<String> threatTypes;
+  final String provider;
+}
+
+class ReputationClient {
+  ReputationClient({Uri? baseUri, http.Client? client})
+    : baseUri =
+          baseUri ??
+          Uri.tryParse(const String.fromEnvironment('USISA_GATEWAY_URL')),
+      _client = client ?? http.Client();
+  final Uri? baseUri;
+  final http.Client _client;
+  bool _closed = false;
+  bool get configured {
+    final uri = baseUri;
+    return uri != null &&
+        uri.hasAuthority &&
+        uri.userInfo.isEmpty &&
+        (uri.scheme == 'https' ||
+            (kDebugMode &&
+                uri.scheme == 'http' &&
+                ['localhost', '127.0.0.1', '10.0.2.2'].contains(uri.host)));
+  }
+
+  static const _threats = {
+    'MALWARE',
+    'SOCIAL_ENGINEERING',
+    'UNWANTED_SOFTWARE',
+  };
+  Future<ReputationCheck> check(Uri uri) async {
+    const unavailable = ReputationCheck(ReputationState.unavailable);
+    if (!configured ||
+        !['http', 'https'].contains(uri.scheme) ||
+        uri.host.isEmpty) {
+      return unavailable;
+    }
+    if (!await waitForGateway(_client, baseUri!, cancelled: () => _closed)) {
+      return unavailable;
+    }
+    try {
+      final elapsed = Stopwatch()..start();
+      final response = await _client
+          .post(
+            baseUri!.resolve('/v1/link-check'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'url': uri.removeFragment().toString()}),
+          )
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode != 200 || response.bodyBytes.length > 8192) {
+        return unavailable;
+      }
+      final value = jsonDecode(response.body);
+      if (value is! Map<String, dynamic> ||
+          value['provider'] != safeBrowsingProvider ||
+          value['checkedAt'] is! String ||
+          value['threatTypes'] is! List) {
+        return unavailable;
+      }
+      final at = DateTime.tryParse(value['checkedAt'] as String);
+      if (at == null ||
+          at.isBefore(DateTime.now().subtract(const Duration(minutes: 5))) ||
+          at.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
+        return unavailable;
+      }
+      final threats = List<String>.from(value['threatTypes'] as List);
+      if (threats.any((t) => !_threats.contains(t))) {
+        return unavailable;
+      }
+      if (value['status'] == 'noMatch' && threats.isEmpty) {
+        return ReputationCheck(
+          ReputationState.noMatch,
+          checkedAt: DateTime.now().toUtc(),
+        );
+      }
+      final expiry = value['expiresAt'] is String
+          ? DateTime.tryParse(value['expiresAt'] as String)
+          : null;
+      if (value['status'] == 'matched' &&
+          threats.isNotEmpty &&
+          expiry != null &&
+          expiry.isAfter(at)) {
+        // Use a device deadline so small server clock differences cannot extend an advisory.
+        var lifetime = expiry.difference(at);
+        if (lifetime > const Duration(minutes: 5)) {
+          lifetime = const Duration(minutes: 5);
+        }
+        final remaining = lifetime - elapsed.elapsed;
+        if (remaining <= Duration.zero) return unavailable;
+        final checkedOnDevice = DateTime.now().toUtc();
+        return ReputationCheck(
+          ReputationState.matched,
+          checkedAt: checkedOnDevice,
+          expiresAt: checkedOnDevice.add(remaining),
+          threatTypes: threats,
+        );
+      }
+      return unavailable;
+    } catch (_) {
+      return unavailable;
+    }
+  }
+
+  void close() {
+    _closed = true;
+    _client.close();
+  }
+}

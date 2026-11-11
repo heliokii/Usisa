@@ -19,7 +19,7 @@ android {
         applicationId = "com.example.usisa"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -27,6 +27,22 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures { buildConfig = true }
+    flavorDimensions += "capability"
+    productFlavors {
+        create("manual") {
+            dimension = "capability"
+            buildConfigField("boolean", "SMS_ENABLED", "false")
+        }
+        create("smsLab") {
+            dimension = "capability"
+            applicationIdSuffix = ".smslab"
+            versionNameSuffix = "-sms-lab"
+            buildConfigField("boolean", "SMS_ENABLED", "true")
+        }
     }
 
     buildTypes {
@@ -34,6 +50,7 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            proguardFiles("proguard-rules.pro")
         }
     }
 }
@@ -46,4 +63,13 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("androidx.work:work-runtime:2.11.2")
+    // Keep Flutter integration tests and Android instrumentation on the same runner.
+    debugImplementation("androidx.test:runner:1.7.0")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
 }
