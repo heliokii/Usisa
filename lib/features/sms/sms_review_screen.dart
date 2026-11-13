@@ -97,6 +97,7 @@ class _SmsReviewScreenState extends State<SmsReviewScreen> {
       return Scaffold(
         appBar: AppBar(title: Text(l.recentSms)),
         body: SafeArea(
+          bottom: false,
           child: PageBody(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,6 +167,7 @@ class _SmsInboxScreenState extends State<SmsInboxScreen> {
         ],
       ),
       body: SafeArea(
+        bottom: false,
         child: PageBody(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
 import '../../widgets/glass_surface.dart';
+import '../../widgets/usisa_action_button.dart';
 import 'ocr_models.dart';
 
 class ScreenshotReviewScreen extends StatefulWidget {
@@ -37,9 +38,40 @@ class _ScreenshotReviewScreenState extends State<ScreenshotReviewScreen> {
     final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l.reviewText)),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              UsisaActionButton(
+                onPressed: () {
+                  if (_text.text.trim().isEmpty) {
+                    setState(() => _error = 'emptyInput');
+                    return;
+                  }
+                  if (_text.text.runes.length > 10000) {
+                    setState(() => _error = 'textTooLong');
+                    return;
+                  }
+                  Navigator.pop(context, _text.text);
+                },
+                child: Text(l.checkThisText),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l.cancel),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: PageBody(
+          bottomPadding: 20,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -79,24 +111,6 @@ class _ScreenshotReviewScreenState extends State<ScreenshotReviewScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () {
-                  if (_text.text.trim().isEmpty) {
-                    setState(() => _error = 'emptyInput');
-                    return;
-                  }
-                  if (_text.text.runes.length > 10000) {
-                    setState(() => _error = 'textTooLong');
-                    return;
-                  }
-                  Navigator.pop(context, _text.text);
-                },
-                child: Text(l.checkThisText),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(l.cancel),
-              ),
             ],
           ),
         ),

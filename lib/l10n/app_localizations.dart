@@ -350,6 +350,18 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
+  /// No description provided for @messageScanPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste or type a message to scan'**
+  String get messageScanPrompt;
+
+  /// No description provided for @messageScanSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll check for suspicious links, scams, and harmful content.'**
+  String get messageScanSupport;
+
   /// No description provided for @scanHeading.
   ///
   /// In en, this message translates to:
@@ -385,6 +397,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Screenshot'**
   String get screenshot;
+
+  /// No description provided for @screenshotHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a screenshot'**
+  String get screenshotHeading;
+
+  /// No description provided for @screenshotSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshot selected'**
+  String get screenshotSelected;
+
+  /// No description provided for @changeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change image'**
+  String get changeImage;
+
+  /// No description provided for @screenshotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'PNG, JPG, JPEG, or WEBP · Up to 10 MB'**
+  String get screenshotSupported;
+
+  /// No description provided for @linkCheckPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Check a link’s safety'**
+  String get linkCheckPrompt;
+
+  /// No description provided for @linkCheckSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a URL to see risk indicators before you open it.'**
+  String get linkCheckSupport;
 
   /// No description provided for @inputHint.
   ///
@@ -578,6 +626,24 @@ abstract class AppLocalizations {
   /// **'This message has strong warning signs. Pause before sharing information or money.'**
   String get highCopy;
 
+  /// No description provided for @resultRiskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{risk, select, low{Safe} caution{Need Review} other{High Risk}}'**
+  String resultRiskLabel(String risk);
+
+  /// No description provided for @analysisSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis Summary'**
+  String get analysisSummary;
+
+  /// No description provided for @detectedSigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected Signs'**
+  String get detectedSigns;
+
   /// No description provided for @noWarnings.
   ///
   /// In en, this message translates to:
@@ -661,6 +727,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your checks, kept private.'**
   String get historyHeading;
+
+  /// No description provided for @historyAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get historyAll;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
 
   /// No description provided for @historyOff.
   ///

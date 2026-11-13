@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -19,6 +20,7 @@ import 'features/sms/sms_review_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/usisa_theme.dart';
 import 'widgets/glass_surface.dart';
+import 'widgets/usisa_modal.dart';
 
 class UsisaApp extends StatefulWidget {
   const UsisaApp({
@@ -60,6 +62,9 @@ class _UsisaAppState extends State<UsisaApp> {
   @override
   void initState() {
     super.initState();
+    if (!widget.isPreview && defaultTargetPlatform == TargetPlatform.android) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(_load());
     });
@@ -103,8 +108,9 @@ class _UsisaAppState extends State<UsisaApp> {
           systemNavigationBarColor: UsisaTheme.cream,
           systemNavigationBarDividerColor: UsisaTheme.cream,
           systemNavigationBarIconBrightness: Brightness.dark,
+          systemNavigationBarContrastEnforced: false,
         ),
-        child: child!,
+        child: ColoredBox(color: UsisaTheme.cream, child: child!),
       ),
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -146,6 +152,7 @@ class _Shell extends StatefulWidget {
 
 class _ShellState extends State<_Shell> with WidgetsBindingObserver {
   int index = 0;
+  final _tabs = PageController();
   StreamSubscription<String>? _smsOpens;
   bool _consumingNotification = false;
   bool _smsOpen = false;
@@ -155,6 +162,20 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
   Timer? _retentionTimer;
   bool _retentionActive = true;
   bool _retentionRefreshing = false;
+  void _selectTab(int next) {
+    if (next == index) return;
+    setState(() => index = next);
+    if (!_tabs.hasClients) return;
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    unawaited(
+      _tabs.animateToPage(
+        next,
+        duration: Duration(milliseconds: reducedMotion ? 120 : 240),
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
   bool _retentionFailed = false;
   void _scheduleRetention() {
     _retentionTimer?.cancel();
@@ -279,10 +300,11 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
     widget.history.removeListener(_scheduleRetention);
     _retentionTimer?.cancel();
     _smsOpens?.cancel();
+    _tabs.dispose();
     super.dispose();
   }
 
-  void _settings() => setState(() => index = 3);
+  void _settings() => _selectTab(3);
 
   void _openScan(int mode, {bool aiAssisted = false}) {
     Navigator.of(context).push(
@@ -326,22 +348,13 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
     if (!widget.sms.supported) return;
     final l = AppLocalizations.of(context);
     if (value) {
-      final confirmed = await showDialog<bool>(
+      final confirmed = await UsisaModal.show(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l.smsDisclosure),
-          content: SingleChildScrollView(child: Text(l.smsDisclosureBody)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l.enableSmsChecks),
-            ),
-          ],
-        ),
+        title: l.smsDisclosure,
+        message: l.smsDisclosureBody,
+        primaryLabel: l.enableSmsChecks,
+        secondaryLabel: l.cancel,
+        variant: UsisaModalVariant.info,
       );
       if (confirmed != true || !mounted) return;
     }
@@ -370,20 +383,21 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
     return PopScope(
       canPop: index == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && index != 0) setState(() => index = 0);
+        if (!didPop && index != 0) _selectTab(0);
       },
       child: Scaffold(
         body: SafeArea(
+          bottom: false,
           child: Row(
             children: [
-              if (wide && index == 0)
+              if (wide)
                 SizedBox(
                   width: 96,
                   child: NavigationRail(
                     minWidth: 96,
                     scrollable: true,
                     selectedIndex: index,
-                    onDestinationSelected: (i) => setState(() => index = i),
+                    onDestinationSelected: _selectTab,
                     labelType: NavigationRailLabelType.all,
                     destinations: destinations
                         .map(
@@ -424,47 +438,56 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
                         padding: const EdgeInsets.all(12),
                         child: Text(l.retentionCleanupFailed),
                       ),
-                    if (index != 0)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 4),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: () => setState(() => index = 0),
-                            icon: const Icon(Icons.arrow_back_rounded),
-                            label: Text(l.home),
-                          ),
-                        ),
-                      ),
                     Expanded(
-                      child: IndexedStack(
-                        index: index,
+                      child: PageView(
+                        controller: _tabs,
+                        physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          HomeScreen(
-                            sms: widget.sms,
-                            aiEnabled: widget.settings.aiScanning,
-                            onMessage: () => _openScan(0),
-                            onLink: () => _openScan(1),
-                            onScreenshot: () => _openScan(2),
-                            onAi: _openAi,
-                            onSms: _openSmsDetection,
-                            onSmsToggle: _setSmsEnabled,
-                            onRecentSms: _reviewSms,
+                          _RetainedTab(
+                            child: TickerMode(
+                              enabled: index == 0,
+                              child: HomeScreen(
+                                sms: widget.sms,
+                                aiEnabled: widget.settings.aiScanning,
+                                onMessage: () => _openScan(0),
+                                onLink: () => _openScan(1),
+                                onScreenshot: () => _openScan(2),
+                                onAi: _openAi,
+                                onSms: _openSmsDetection,
+                                onSmsToggle: _setSmsEnabled,
+                                onRecentSms: _reviewSms,
+                              ),
+                            ),
                           ),
-                          HistoryScreen(
-                            history: widget.history,
-                            settings: widget.settings,
-                            onEnable: _settings,
-                            onScan: () => setState(() => index = 0),
+                          _RetainedTab(
+                            child: TickerMode(
+                              enabled: index == 1,
+                              child: HistoryScreen(
+                                history: widget.history,
+                                settings: widget.settings,
+                                onEnable: _settings,
+                                onScan: () => _selectTab(0),
+                              ),
+                            ),
                           ),
-                          const LearnScreen(),
-                          SettingsScreen(
-                            settings: widget.settings,
-                            history: widget.history,
-                            preview: widget.preview,
-                            sms: widget.sms,
-                            onReviewSms: _reviewSms,
-                            embedded: true,
+                          _RetainedTab(
+                            child: TickerMode(
+                              enabled: index == 2,
+                              child: const LearnScreen(),
+                            ),
+                          ),
+                          _RetainedTab(
+                            child: TickerMode(
+                              enabled: index == 3,
+                              child: SettingsScreen(
+                                settings: widget.settings,
+                                history: widget.history,
+                                preview: widget.preview,
+                                sms: widget.sms,
+                                onReviewSms: _reviewSms,
+                                embedded: true,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -475,13 +498,14 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
             ],
           ),
         ),
-        bottomNavigationBar: wide || index != 0
+        bottomNavigationBar: wide
             ? null
             : SafeArea(
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
                   child: GlassSurface(
+                    color: colors.surface.withValues(alpha: .88),
                     borderRadius: BorderRadius.circular(32),
                     child: SizedBox(
                       height: 68,
@@ -497,7 +521,7 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
                                   label: destinations[i].$2,
                                   child: InkWell(
                                     customBorder: const StadiumBorder(),
-                                    onTap: () => setState(() => index = i),
+                                    onTap: () => _selectTab(i),
                                     child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
@@ -544,5 +568,26 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
               ),
       ),
     );
+  }
+}
+
+class _RetainedTab extends StatefulWidget {
+  const _RetainedTab({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_RetainedTab> createState() => _RetainedTabState();
+}
+
+class _RetainedTabState extends State<_RetainedTab>
+    with AutomaticKeepAliveClientMixin<_RetainedTab> {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

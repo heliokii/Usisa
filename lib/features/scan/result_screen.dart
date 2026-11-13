@@ -7,6 +7,8 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
 import '../../widgets/glass_surface.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/usisa_modal.dart';
+import '../../widgets/usisa_action_button.dart';
 import '../home/feature_artwork.dart';
 import 'scan_models.dart';
 import 'reputation_client.dart';
@@ -266,41 +268,27 @@ class _ResultScreenState extends State<ResultScreen>
       return;
     }
     if (widget.settings?.onlineLinkChecks != true) {
-      final confirmed = await showDialog<bool>(
+      final confirmed = await UsisaModal.show(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text(l.onlineDisclosure),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l.onlineBody),
-                const SizedBox(height: 16),
-                for (final link in _result.links.where(
-                  (link) => link.uri != null,
-                ))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SelectableText(link.uri!.removeFragment().toString()),
-                        if (link.schemeAssumed) Text(l.assumedHttps),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l.localOnly),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(l.enableOnline),
-            ),
+        title: l.onlineDisclosure,
+        message: l.onlineBody,
+        primaryLabel: l.enableOnline,
+        secondaryLabel: l.localOnly,
+        variant: UsisaModalVariant.info,
+        details: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final link in _result.links.where((link) => link.uri != null))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SelectableText(link.uri!.removeFragment().toString()),
+                    if (link.schemeAssumed) Text(l.assumedHttps),
+                  ],
+                ),
+              ),
           ],
         ),
       );
@@ -457,6 +445,7 @@ class _ResultScreenState extends State<ResultScreen>
       appBar: AppBar(title: Text(l.aiScan)),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: PageBody(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -517,13 +506,21 @@ class _ResultScreenState extends State<ResultScreen>
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final result = _result;
-    final (color, background, icon) = UsisaTheme.risk(context, result.risk);
-    final bannerColor = result.risk == RiskLevel.high
-        ? UsisaTheme.cream
-        : color;
-    final bannerBackground = result.risk == RiskLevel.high
-        ? UsisaTheme.contrastCoral
-        : background;
+    final bannerColor = switch (result.risk) {
+      RiskLevel.low => UsisaTheme.forest,
+      RiskLevel.caution => const Color(0xFF8A4B00),
+      RiskLevel.high => UsisaTheme.cream,
+    };
+    final bannerBackground = switch (result.risk) {
+      RiskLevel.low => const Color(0xFFDDE5D7),
+      RiskLevel.caution => const Color(0xFFFFE7B5),
+      RiskLevel.high => UsisaTheme.coral,
+    };
+    final bannerIcon = switch (result.risk) {
+      RiskLevel.low => Icons.verified_rounded,
+      RiskLevel.caution => Icons.warning_rounded,
+      RiskLevel.high => Icons.gpp_bad_rounded,
+    };
     final findings = [
       ...result.findings,
       ...result.links.expand((link) => link.findings),
@@ -566,28 +563,33 @@ class _ResultScreenState extends State<ResultScreen>
           ),
         ),
         bottomNavigationBar: SafeArea(
-          minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _showRecommendations,
-              child: Row(
-                children: [
-                  const Icon(Icons.shield_outlined),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l.safetyRecommendations,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: UsisaActionButton.icon(
+                onPressed: result.risk == RiskLevel.low
+                    ? () => Navigator.of(context).maybePop()
+                    : _showRecommendations,
+                icon: Icon(
+                  result.risk == RiskLevel.low
+                      ? Icons.replay_rounded
+                      : Icons.shield_outlined,
+                ),
+                label: Text(
+                  result.risk == RiskLevel.low
+                      ? l.newScan
+                      : l.safetyRecommendations,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
         ),
         body: SafeArea(
           top: false,
+          bottom: false,
           child: PageBody(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -600,14 +602,14 @@ class _ResultScreenState extends State<ResultScreen>
                       padding: const EdgeInsets.all(18),
                       child: Row(
                         children: [
-                          Icon(icon, color: bannerColor, size: 46),
+                          Icon(bannerIcon, color: bannerColor, size: 46),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  l.riskLabel(result.risk.name),
+                                  l.resultRiskLabel(result.risk.name),
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     color: bannerColor,
                                   ),
@@ -672,7 +674,7 @@ class _ResultScreenState extends State<ResultScreen>
                         ),
                         if (result.source == ScanSource.link) ...[
                           const SizedBox(height: 14),
-                          FilledButton.icon(
+                          UsisaActionButton.icon(
                             onPressed: _checkingLinks ? null : _checkLinks,
                             icon: const Icon(Icons.travel_explore_rounded),
                             label: Text(l.checkLink),
@@ -700,8 +702,12 @@ class _ResultScreenState extends State<ResultScreen>
                   ),
                 const SizedBox(height: 22),
                 Text(
-                  result.source == ScanSource.link
+                  result.risk == RiskLevel.low
+                      ? l.analysisSummary
+                      : result.source == ScanSource.link
                       ? l.linkWhyRisky
+                      : result.risk == RiskLevel.caution
+                      ? l.detectedSigns
                       : l.warningSigns,
                   style: theme.textTheme.titleLarge,
                 ),
@@ -757,8 +763,7 @@ class _ResultScreenState extends State<ResultScreen>
                           ],
                         ),
                 ),
-                if (widget.settings?.aiScanning != false ||
-                    aiState != AiScanState.notRequested ||
+                if (aiState != AiScanState.notRequested ||
                     result.reviewedForAi) ...[
                   const SizedBox(height: 22),
                   Text(l.aiAssessment, style: theme.textTheme.titleLarge),
@@ -998,7 +1003,7 @@ class _ResultScreenState extends State<ResultScreen>
                   '${l.sourceLabel(result.source.name)} • ${MaterialLocalizations.of(context).formatMediumDate(result.createdAt.toLocal())} • ${result.ruleVersion}',
                 ),
                 const SizedBox(height: 24),
-                FilledButton(
+                UsisaActionButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(l.newScan),
                 ),
