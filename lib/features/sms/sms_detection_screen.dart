@@ -58,6 +58,7 @@ class _SmsDetectionScreenState extends State<SmsDetectionScreen> {
       ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: ListenableBuilder(
           listenable: widget.sms,
           builder: (context, _) => PageBody(

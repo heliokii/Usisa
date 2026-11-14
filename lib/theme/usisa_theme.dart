@@ -7,7 +7,6 @@ abstract final class UsisaTheme {
   static const forest = Color(0xFF1D4A35);
   static const coral = Color(0xFFF2452E);
   static const contrastCoral = Color(0xFFB92E22);
-
   static ThemeData get light => _theme();
 
   static ThemeData _theme() {
@@ -47,7 +46,7 @@ abstract final class UsisaTheme {
       borderRadius: BorderRadius.circular(16),
     );
     return base.copyWith(
-      scaffoldBackgroundColor: background,
+      scaffoldBackgroundColor: Colors.transparent,
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         foregroundColor: text,
@@ -111,15 +110,44 @@ abstract final class UsisaTheme {
         style: FilledButton.styleFrom(
           minimumSize: const Size(48, 54),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: shape,
+          foregroundColor: cream,
+          backgroundColor: const Color(0xFF0B6048),
+          disabledForegroundColor: cream.withValues(alpha: .72),
+          disabledBackgroundColor: const Color(0xFF9DB5A8),
+          elevation: 3,
+          shadowColor: forest.withValues(alpha: .2),
+          side: BorderSide(
+            color: const Color(0xFF2C9A76).withValues(alpha: .76),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 52),
-          shape: shape,
-          side: BorderSide(color: scheme.outlineVariant),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          backgroundColor: surface,
+          foregroundColor: forest,
+          elevation: 1,
+          shadowColor: forest.withValues(alpha: .1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          side: BorderSide(color: forest.withValues(alpha: .36), width: 1.2),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 44),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          foregroundColor: forest,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       cardTheme: CardThemeData(
