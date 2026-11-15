@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
 import '../../widgets/glass_surface.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/usisa_loading_indicator.dart';
 import '../scan/scan_models.dart';
 import 'sms_service.dart';
 
@@ -99,7 +100,7 @@ class _SmsDetectionScreenState extends State<SmsDetectionScreen> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Padding(
                         padding: EdgeInsets.all(28),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: UsisaLoadingIndicator(size: 32)),
                       );
                     }
                     if (snapshot.hasError) return Text(l.smsMissing);

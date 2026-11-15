@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../l10n/app_localizations.dart';
 import '../theme/usisa_theme.dart';
@@ -49,29 +51,40 @@ class UsisaModal extends StatelessWidget {
     bool barrierDismissible = true,
   }) {
     final l = AppLocalizations.of(context);
-    return showDialog<bool>(
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    return showModal<bool>(
       context: context,
-      barrierDismissible: barrierDismissible,
-      builder: (context) => UsisaModal(
-        title: title,
-        message: message,
-        primaryLabel: primaryLabel,
-        secondaryLabel: secondaryLabel,
-        dismissLabel: l.cancel,
-        variant: variant,
-        details: details,
-        showClose: showClose,
-        primaryEnabled: primaryEnabled,
-        secondaryEnabled: secondaryEnabled,
+      configuration: FadeScaleTransitionConfiguration(
+        barrierDismissible: barrierDismissible,
+        transitionDuration: reducedMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 180),
+        reverseTransitionDuration: reducedMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 120),
+      ),
+      builder: (context) => SafeArea(
+        child: UsisaModal(
+          title: title,
+          message: message,
+          primaryLabel: primaryLabel,
+          secondaryLabel: secondaryLabel,
+          dismissLabel: l.cancel,
+          variant: variant,
+          details: details,
+          showClose: showClose,
+          primaryEnabled: primaryEnabled,
+          secondaryEnabled: secondaryEnabled,
+        ),
       ),
     );
   }
 
   String get _illustration => switch (variant) {
-    UsisaModalVariant.confirm => 'assets/illustrations/modal_confirm.svg',
-    UsisaModalVariant.success => 'assets/illustrations/modal_success.svg',
-    UsisaModalVariant.warning => 'assets/illustrations/modal_warning.svg',
-    UsisaModalVariant.info => 'assets/illustrations/modal_info.svg',
+    UsisaModalVariant.confirm => 'assets/image/modal-question-mark.png',
+    UsisaModalVariant.success => 'assets/image/modal-success.png',
+    UsisaModalVariant.warning => 'assets/image/modal-something-went-wrong.png',
+    UsisaModalVariant.info => 'assets/image/modal-info.png',
   };
 
   @override
@@ -150,7 +163,11 @@ class UsisaModal extends StatelessWidget {
                                     ),
                                     onPressed: () =>
                                         Navigator.of(context).pop(),
-                                    icon: const Icon(Icons.close_rounded),
+                                    icon: const HugeIcon(
+                                      icon: HugeIcons.strokeRoundedCancel01,
+                                      color: UsisaTheme.forest,
+                                      size: 21,
+                                    ),
                                   )
                                 : const SizedBox(width: 48, height: 48),
                           ),
@@ -163,7 +180,7 @@ class UsisaModal extends StatelessWidget {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  SvgPicture.asset(
+                                  Image.asset(
                                     _illustration,
                                     width: 164,
                                     height: 112,

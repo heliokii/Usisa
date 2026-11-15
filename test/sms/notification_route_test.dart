@@ -89,7 +89,7 @@ void main() {
         find.textContaining('This SMS review is unavailable.'),
         findsOneWidget,
       );
-      expect(find.text('High risk'), findsNothing);
+      expect(find.text('High Risk'), findsNothing);
     },
   );
   testWidgets(
@@ -116,7 +116,7 @@ void main() {
       );
       await show(tester, sms, history);
       await tester.pumpAndSettle();
-      expect(find.text('High risk'), findsWidgets);
+      expect(find.text('High Risk'), findsWidgets);
       expect(
         find.textContaining('This SMS review is unavailable.'),
         findsNothing,
@@ -155,7 +155,7 @@ void main() {
       UsisaApp(storage: storage, sms: SmsService(nativePlatform: true)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('High risk'), findsWidgets);
+    expect(find.text('High Risk'), findsWidgets);
     pending = id;
     await messenger.handlePlatformMessage(
       channel.name,
@@ -167,7 +167,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(find.text('High risk'), findsNothing);
+    expect(find.text('High Risk'), findsNothing);
     expect(find.text('Stay one step ahead of scams.'), findsOneWidget);
   });
 }

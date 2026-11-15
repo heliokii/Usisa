@@ -21,6 +21,7 @@ import 'l10n/app_localizations.dart';
 import 'theme/usisa_theme.dart';
 import 'widgets/glass_surface.dart';
 import 'widgets/usisa_modal.dart';
+import 'widgets/usisa_loading_indicator.dart';
 
 class UsisaApp extends StatefulWidget {
   const UsisaApp({
@@ -128,7 +129,9 @@ class _UsisaAppState extends State<UsisaApp> {
                     loadFailed: loadFailed,
                     sms: sms,
                   )
-          : const Scaffold(body: Center(child: CircularProgressIndicator())),
+          : const Scaffold(
+              body: Center(child: UsisaLoadingIndicator(size: 36)),
+            ),
     ),
   );
 }
@@ -166,11 +169,14 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
     if (next == index) return;
     setState(() => index = next);
     if (!_tabs.hasClients) return;
-    final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _tabs.jumpToPage(next);
+      return;
+    }
     unawaited(
       _tabs.animateToPage(
         next,
-        duration: Duration(milliseconds: reducedMotion ? 120 : 240),
+        duration: const Duration(milliseconds: 240),
         curve: Curves.easeOutCubic,
       ),
     );
@@ -379,6 +385,7 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
       (HugeIcons.strokeRoundedSettings02, l.settings),
     ];
     final wide = MediaQuery.sizeOf(context).width >= 600;
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
     final colors = Theme.of(context).colorScheme;
     return PopScope(
       canPop: index == 0,
@@ -467,13 +474,14 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
                                 settings: widget.settings,
                                 onEnable: _settings,
                                 onScan: () => _selectTab(0),
+                                onBack: () => _selectTab(0),
                               ),
                             ),
                           ),
                           _RetainedTab(
                             child: TickerMode(
                               enabled: index == 2,
-                              child: const LearnScreen(),
+                              child: LearnScreen(onBack: () => _selectTab(0)),
                             ),
                           ),
                           _RetainedTab(
@@ -527,21 +535,33 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
                                           MainAxisAlignment.center,
                                       children: [
                                         ExcludeSemantics(
-                                          child: HugeIcon(
-                                            icon: destinations[i].$1,
-                                            color: index == i
-                                                ? UsisaTheme.coral
-                                                : colors.onSurfaceVariant,
-                                            size: 24,
+                                          child: AnimatedScale(
+                                            scale: index == i ? 1.06 : 1,
+                                            duration: reducedMotion
+                                                ? Duration.zero
+                                                : const Duration(
+                                                    milliseconds: 150,
+                                                  ),
+                                            curve: Curves.easeOut,
+                                            child: HugeIcon(
+                                              icon: destinations[i].$1,
+                                              color: index == i
+                                                  ? UsisaTheme.coral
+                                                  : colors.onSurfaceVariant,
+                                              size: 24,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(height: 2),
                                         FittedBox(
                                           fit: BoxFit.scaleDown,
-                                          child: Text(
-                                            destinations[i].$2,
-                                            softWrap: false,
-                                            maxLines: 1,
+                                          child: AnimatedDefaultTextStyle(
+                                            duration: reducedMotion
+                                                ? Duration.zero
+                                                : const Duration(
+                                                    milliseconds: 150,
+                                                  ),
+                                            curve: Curves.easeOut,
                                             style: TextStyle(
                                               color: index == i
                                                   ? UsisaTheme.coral
@@ -551,6 +571,11 @@ class _ShellState extends State<_Shell> with WidgetsBindingObserver {
                                               fontWeight: index == i
                                                   ? FontWeight.w700
                                                   : FontWeight.w500,
+                                            ),
+                                            child: Text(
+                                              destinations[i].$2,
+                                              softWrap: false,
+                                              maxLines: 1,
                                             ),
                                           ),
                                         ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
@@ -20,11 +21,13 @@ class HistoryScreen extends StatefulWidget {
     required this.settings,
     required this.onEnable,
     required this.onScan,
+    required this.onBack,
   });
   final HistoryStore history;
   final SettingsStore settings;
   final VoidCallback onEnable;
   final VoidCallback onScan;
+  final VoidCallback onBack;
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
@@ -187,6 +190,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                             r == null ? l.allRisk : l.riskLabel(r.name),
                           ),
                           selected: _risk == r,
+                          showCheckmark: false,
                           onSelected: (_) {
                             setState(() => _risk = r);
                             update(() {});
@@ -206,6 +210,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                             s == null ? l.allSources : l.sourceLabel(s.name),
                           ),
                           selected: _source == s,
+                          showCheckmark: false,
                           onSelected: (_) {
                             setState(() => _source = s);
                             update(() {});
@@ -229,6 +234,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                                 : l.last30,
                           ),
                           selected: _days == d,
+                          showCheckmark: false,
                           onSelected: (_) {
                             setState(() => _days = d);
                             update(() {});
@@ -272,47 +278,131 @@ class _HistoryScreenState extends State<HistoryScreen>
                       children: [
                         Padding(
                           padding: EdgeInsets.fromLTRB(gutter, 4, gutter, 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  l.history,
-                                  style: theme.textTheme.headlineSmall,
+                          child: SizedBox(
+                            height: 48,
+                            child: Stack(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: IconButton(
+                                    tooltip: l.back,
+                                    onPressed: widget.onBack,
+                                    icon: ExcludeSemantics(
+                                      child: HugeIcon(
+                                        icon: HugeIcons.strokeRoundedArrowLeft01,
+                                        color: UsisaTheme.forest,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                tooltip: l.searchHistory,
-                                onPressed: () => setState(() {
-                                  _showSearch = !_showSearch;
-                                  if (!_showSearch) {
-                                    _search.clear();
-                                    _query = '';
-                                  }
-                                }),
-                                icon: Icon(
-                                  _showSearch
-                                      ? Icons.close_rounded
-                                      : Icons.search_rounded,
+                                Center(
+                                  child: Text(
+                                    l.history,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      color: UsisaTheme.forest,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                tooltip: l.filters,
-                                onPressed: _filters,
-                                icon: const Icon(Icons.tune_rounded),
-                              ),
-                              IconButton(
-                                tooltip: _selecting ? l.cancel : l.select,
-                                onPressed: () => setState(() {
-                                  _selecting = !_selecting;
-                                  _selected.clear();
-                                }),
-                                icon: Icon(
-                                  _selecting
-                                      ? Icons.close_rounded
-                                      : Icons.checklist_rounded,
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        tooltip: l.searchHistory,
+                                        onPressed: () => setState(() {
+                                          _showSearch = !_showSearch;
+                                          if (!_showSearch) {
+                                            _search.clear();
+                                            _query = '';
+                                          }
+                                        }),
+                                        icon: ExcludeSemantics(
+                                          child: HugeIcon(
+                                            icon: _showSearch
+                                                ? HugeIcons.strokeRoundedCancel01
+                                                : HugeIcons.strokeRoundedSearch01,
+                                            color: _showSearch
+                                                ? UsisaTheme.coral
+                                                : UsisaTheme.forest,
+                                            size: 22,
+                                          ),
+                                        ),
+                                      ),
+                                      PopupMenuButton<String>(
+                                        icon: ExcludeSemantics(
+                                          child: HugeIcon(
+                                            icon: HugeIcons.strokeRoundedMoreVertical,
+                                            color: UsisaTheme.forest,
+                                            size: 22,
+                                          ),
+                                        ),
+                                        onSelected: (action) {
+                                          if (action == 'filters') {
+                                            _filters();
+                                          } else {
+                                            setState(() {
+                                              _selecting = !_selecting;
+                                              _selected.clear();
+                                            });
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem(
+                                            value: 'filters',
+                                            child: Row(
+                                              children: [
+                                                ExcludeSemantics(
+                                                  child: HugeIcon(
+                                                    icon: HugeIcons
+                                                        .strokeRoundedFilterHorizontal,
+                                                    color: UsisaTheme.forest,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Flexible(
+                                                  child: Text(l.filters, softWrap: true),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 'select',
+                                            child: Row(
+                                              children: [
+                                                ExcludeSemantics(
+                                                  child: HugeIcon(
+                                                    icon: _selecting
+                                                        ? HugeIcons
+                                                            .strokeRoundedCancel01
+                                                        : HugeIcons
+                                                            .strokeRoundedCheckList,
+                                                    color: _selecting
+                                                        ? UsisaTheme.coral
+                                                        : UsisaTheme.forest,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Flexible(
+                                                  child: Text(
+                                                    _selecting ? l.cancel : l.select,
+                                                    softWrap: true,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                         if (!widget.history.enabled)
@@ -324,10 +414,11 @@ class _HistoryScreenState extends State<HistoryScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                const Align(
+                                Align(
                                   alignment: Alignment.centerLeft,
-                                  child: Icon(
-                                    Icons.lock_outline_rounded,
+                                  child: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedLock,
+                                    color: UsisaTheme.forest,
                                     size: 40,
                                   ),
                                 ),
@@ -365,7 +456,13 @@ class _HistoryScreenState extends State<HistoryScreen>
                                   autofocus: true,
                                   decoration: InputDecoration(
                                     hintText: l.searchHistory,
-                                    prefixIcon: const Icon(Icons.search),
+                                    prefixIcon: ExcludeSemantics(
+                                      child: HugeIcon(
+                                        icon: HugeIcons.strokeRoundedSearch01,
+                                        color: UsisaTheme.forest,
+                                        size: 22,
+                                      ),
+                                    ),
                                   ),
                                   onChanged: (value) {
                                     _debounce?.cancel();
@@ -445,12 +542,14 @@ class _HistoryScreenState extends State<HistoryScreen>
                                   if (_risk != null)
                                     InputChip(
                                       label: Text(l.riskLabel(_risk!.name)),
+                                      deleteIcon: _historyDeleteIcon(),
                                       onDeleted: () =>
                                           setState(() => _risk = null),
                                     ),
                                   if (_source != null)
                                     InputChip(
                                       label: Text(l.sourceLabel(_source!.name)),
+                                      deleteIcon: _historyDeleteIcon(),
                                       onDeleted: () =>
                                           setState(() => _source = null),
                                     ),
@@ -459,6 +558,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                                       label: Text(
                                         _days == 7 ? l.last7 : l.last30,
                                       ),
+                                      deleteIcon: _historyDeleteIcon(),
                                       onDeleted: () =>
                                           setState(() => _days = 0),
                                     ),
@@ -510,8 +610,23 @@ class _HistoryScreenState extends State<HistoryScreen>
                                 : DateUtils.dateOnly(
                                     matches[index - 1].createdAt.toLocal(),
                                   );
-                            final (color, background, riskIcon) =
-                                UsisaTheme.risk(context, result.risk);
+                            final rowTitle = result.reviewedForAi
+                                ? l.aiScan
+                                : l.sourceLabel(result.source.name);
+                            final sourceIcon = result.reviewedForAi
+                                ? HugeIcons.strokeRoundedArtificialIntelligence04
+                                : switch (result.source) {
+                                    ScanSource.link =>
+                                      HugeIcons.strokeRoundedLink04,
+                                    ScanSource.screenshot =>
+                                      HugeIcons.strokeRoundedImage03,
+                                    ScanSource.sms =>
+                                      HugeIcons.strokeRoundedMessageSquareMore,
+                                    ScanSource.text =>
+                                      HugeIcons.strokeRoundedMessageSquareMore,
+                                  };
+                            final iconColor =
+                                _historyStatusColors(result).$3;
                             final time = MaterialLocalizations.of(context)
                                 .formatTimeOfDay(
                                   TimeOfDay.fromDateTime(
@@ -542,129 +657,163 @@ class _HistoryScreenState extends State<HistoryScreen>
                                       style: theme.textTheme.titleSmall,
                                     ),
                                   ),
-                                GlassSurface(
-                                  child: ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    leading: _selecting
-                                        ? Checkbox(
-                                            value: _selected.contains(
-                                              result.id,
-                                            ),
-                                            onChanged: (_) => setState(() {
-                                              if (!_selected.add(result.id)) {
-                                                _selected.remove(result.id);
-                                              }
-                                            }),
-                                          )
-                                        : Icon(switch (result.source) {
-                                            ScanSource.link =>
-                                              Icons.link_rounded,
-                                            ScanSource.screenshot =>
-                                              Icons.image_outlined,
-                                            ScanSource.sms =>
-                                              Icons.sms_outlined,
-                                            ScanSource.text =>
-                                              Icons.chat_bubble_outline_rounded,
-                                          }, color: UsisaTheme.forest),
-                                    title: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            l.sourceLabel(result.source.name),
-                                            style: theme.textTheme.titleSmall,
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: background,
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                riskIcon,
-                                                size: 13,
-                                                color: color,
+                                Dismissible(
+                                  key: ValueKey(result.id),
+                                  direction: _selecting
+                                      ? DismissDirection.none
+                                      : DismissDirection.horizontal,
+                                  background: _deleteBackground(
+                                    context,
+                                    fromLeft: true,
+                                  ),
+                                  secondaryBackground: _deleteBackground(
+                                    context,
+                                    fromLeft: false,
+                                  ),
+                                  onDismissed: (_) => _deleteLater(result),
+                                  child: GlassSurface(
+                                    child: InkWell(
+                                      onLongPress: () => setState(() {
+                                        _selecting = true;
+                                        _selected.add(result.id);
+                                      }),
+                                      onTap: () {
+                                        if (_selecting) {
+                                          setState(() {
+                                            if (!_selected.add(result.id)) {
+                                              _selected.remove(result.id);
+                                            }
+                                          });
+                                        } else {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute<void>(
+                                              builder: (_) => ResultScreen(
+                                                result: result,
+                                                history: widget.history,
+                                                settings: widget.settings,
                                               ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                l.riskLabel(result.risk.name),
-                                                style: theme
-                                                    .textTheme
-                                                    .labelSmall
-                                                    ?.copyWith(
-                                                      color: color,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              result.text,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            time,
-                                            style: theme.textTheme.bodySmall,
-                                          ),
-                                        ],
+                                          );
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 12,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 48,
+                                              height: 48,
+                                              child: Center(
+                                                child: _selecting
+                                                    ? Checkbox(
+                                                        value: _selected
+                                                            .contains(result.id),
+                                                        activeColor:
+                                                            UsisaTheme.forest,
+                                                        checkColor: Colors.white,
+                                                        onChanged: (_) =>
+                                                            setState(() {
+                                                              if (!_selected
+                                                                  .add(
+                                                                    result.id,
+                                                                  )) {
+                                                                _selected
+                                                                    .remove(
+                                                                      result.id,
+                                                                    );
+                                                              }
+                                                            }),
+                                                      )
+                                                    : ExcludeSemantics(
+                                                        child: _historySourceIcon(
+                                                          sourceIcon,
+                                                          iconColor,
+                                                        ),
+                                                      ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          rowTitle,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: theme
+                                                              .textTheme
+                                                              .titleSmall
+                                                              ?.copyWith(
+                                                                color: UsisaTheme
+                                                                    .forest,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      _historyStatusPill(
+                                                        context,
+                                                        result,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 5),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          result.text,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: theme
+                                                              .textTheme
+                                                              .bodySmall
+                                                              ?.copyWith(
+                                                                color: theme
+                                                                    .colorScheme
+                                                                    .onSurfaceVariant,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 8),
+                                                      Text(
+                                                        time,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: theme.textTheme
+                                                            .labelSmall
+                                                            ?.copyWith(
+                                                              color: theme
+                                                                  .colorScheme
+                                                                  .onSurfaceVariant,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    trailing: _selecting
-                                        ? null
-                                        : PopupMenuButton<String>(
-                                            tooltip: l.delete,
-                                            onSelected: (_) =>
-                                                _deleteLater(result),
-                                            itemBuilder: (_) => [
-                                              PopupMenuItem(
-                                                value: 'delete',
-                                                child: Text(l.delete),
-                                              ),
-                                            ],
-                                          ),
-                                    onLongPress: () => setState(() {
-                                      _selecting = true;
-                                      _selected.add(result.id);
-                                    }),
-                                    onTap: () {
-                                      if (_selecting) {
-                                        setState(() {
-                                          if (!_selected.add(result.id)) {
-                                            _selected.remove(result.id);
-                                          }
-                                        });
-                                      } else {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute<void>(
-                                            builder: (_) => ResultScreen(
-                                              result: result,
-                                              history: widget.history,
-                                              settings: widget.settings,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
                                   ),
                                 ),
                               ],
@@ -682,10 +831,184 @@ class _HistoryScreenState extends State<HistoryScreen>
     },
   );
 
-  Widget _historyChip(String label, int value) => ChoiceChip(
-    label: Text(label),
-    selected: _historyTab == value,
-    showCheckmark: false,
-    onSelected: (_) => setState(() => _historyTab = value),
+  Widget _historyChip(String label, int value) {
+    final selected = _historyTab == value;
+    final theme = Theme.of(context);
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      showCheckmark: false,
+      backgroundColor: theme.colorScheme.surface,
+      selectedColor: UsisaTheme.forest,
+      side: BorderSide(
+        color: selected
+            ? Colors.transparent
+            : UsisaTheme.forest.withValues(alpha: .08),
+      ),
+      shape: const StadiumBorder(),
+      elevation: selected ? 0 : 1,
+      pressElevation: 0,
+      shadowColor: UsisaTheme.forest.withValues(alpha: .1),
+      labelStyle: theme.textTheme.labelMedium?.copyWith(
+        color: selected ? Colors.white : UsisaTheme.forest,
+        fontWeight: FontWeight.w600,
+      ),
+      onSelected: (_) => setState(() => _historyTab = value),
+    );
+  }
+
+  (Color, Color, Color, Color, Color) _historyStatusColors(
+    ScanResult result,
+  ) {
+    if (result.risk == RiskLevel.low && result.hasUncheckedLinks) {
+      return (
+        const Color(0xFFA65DDB),
+        const Color(0xFF8E4CC6),
+        const Color(0xFF542080),
+        Colors.white,
+        const Color(0xFF542080),
+      );
+    }
+    return switch (result.risk) {
+      RiskLevel.low => (
+          const Color(0xFF39A879),
+          const Color(0xFF2E9B70),
+          const Color(0xFF006B4B),
+          Colors.white,
+          const Color(0xFF006B4B),
+        ),
+      RiskLevel.caution => (
+          const Color(0xFFFFD77A),
+          const Color(0xFFFFC857),
+          const Color(0xFFF5A623),
+          const Color(0xFF704000),
+          const Color(0xFF704000),
+        ),
+      RiskLevel.high => (
+          const Color(0xFFFF654F),
+          const Color(0xFFF2452E),
+          const Color(0xFFD92D20),
+          Colors.white,
+          const Color(0xFFC92B1D),
+        ),
+    };
+  }
+
+  Widget _historyStatusPill(BuildContext context, ScanResult result) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final unknown = result.risk == RiskLevel.low && result.hasUncheckedLinks;
+    final label = unknown
+        ? l.unknownStatus
+        : l.resultRiskLabel(result.risk.name);
+    final (start, middle, end, textColor, _) =
+        _historyStatusColors(result);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 116),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [start, middle, end],
+            stops: const [0, .45, 1],
+          ),
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(color: start.withValues(alpha: .7)),
+          boxShadow: [
+            BoxShadow(
+              color: middle.withValues(alpha: .16),
+              offset: const Offset(0, 1),
+              blurRadius: 3,
+            ),
+          ],
+        ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            softWrap: false,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: textColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _historySourceIcon(List<List<dynamic>> icon, Color color) {
+    return HugeIcon(
+      icon: icon,
+      color: color,
+      size: 36,
+      strokeWidth: 2.5,
+    );
+  }
+
+  Widget _historyDeleteIcon() => ExcludeSemantics(
+    child: HugeIcon(
+      icon: HugeIcons.strokeRoundedCancel01,
+      color: UsisaTheme.coral,
+      size: 16,
+    ),
   );
+
+  Widget _deleteBackground(
+    BuildContext context, {
+    required bool fromLeft,
+  }) {
+    final l = AppLocalizations.of(context);
+    final content = fromLeft
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const HugeIcon(
+                icon: HugeIcons.strokeRoundedDelete01,
+                color: Colors.white,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l.delete,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l.delete,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const HugeIcon(
+                icon: HugeIcons.strokeRoundedDelete01,
+                color: Colors.white,
+                size: 22,
+              ),
+            ],
+          );
+    return Container(
+      alignment: fromLeft ? Alignment.centerLeft : Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: UsisaTheme.coral,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: content,
+    );
+  }
 }

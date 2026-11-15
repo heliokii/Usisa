@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/app.dart';
 import 'package:usisa/features/history/history_store.dart';
-import 'package:usisa/features/history/history_screen.dart';
 import 'package:usisa/features/scan/scam_analyzer.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 import 'package:usisa/features/settings/settings_store.dart';
 import 'package:usisa/l10n/app_localizations.dart';
 import 'package:usisa/theme/usisa_theme.dart';
+import 'package:usisa/widgets/usisa_action_button.dart';
 
 void main() {
   WidgetController.hitTestWarningShouldBeFatal = true;
@@ -31,15 +31,21 @@ void main() {
       await SettingsStore(storage).update(onboarded: true);
       await tester.pumpWidget(UsisaApp(storage: storage));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Scan Message').last);
-      await tester.tap(find.text('Scan Message').last);
+      final l = AppLocalizations.of(tester.element(find.text('Scan Message')));
+      await tester.ensureVisible(find.text(l.scanMessageCard).last);
+      await tester.tap(find.text(l.scanMessageCard).last);
       await tester.pumpAndSettle();
       const text = 'GCash: Send your OTP immediately.\nKeep this draft.';
       await tester.enterText(find.byType(TextField).first, text);
-      await tester.ensureVisible(find.text('Check message'));
-      await tester.tap(find.text('Check message'));
+      await tester.pump();
+      final scanButton = find.widgetWithText(
+        UsisaActionButton,
+        l.scanMessageCard,
+      );
+      await tester.ensureVisible(scanButton);
+      await tester.tap(scanButton);
       await tester.pumpAndSettle();
-      expect(find.text('High risk'), findsWidgets);
+      expect(find.text(l.resultRiskLabel('high')), findsWidgets);
       expect(
         find.byWidgetPredicate(
           (widget) =>
@@ -47,8 +53,8 @@ void main() {
         ),
         findsWidgets,
       );
-      await tester.ensureVisible(find.text('Asks for a security secret'));
-      await tester.tap(find.text('Asks for a security secret'));
+      await tester.ensureVisible(find.text(l.findingTitle('codeRequest')));
+      await tester.tap(find.text(l.findingTitle('codeRequest')));
       await tester.pumpAndSettle();
       expect(find.byType(SelectableText), findsWidgets);
       await tester.binding.handlePopRoute();
@@ -85,8 +91,8 @@ void main() {
     for (final theme in [UsisaTheme.light]) {
       final scheme = theme.colorScheme;
       for (final background in [
-        theme.scaffoldBackgroundColor,
         scheme.surface,
+        scheme.surfaceContainerLowest,
       ]) {
         expect(
           contrast(scheme.onSurface, background),
@@ -158,22 +164,14 @@ void main() {
           await tester.tap(find.text(l.history).last);
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          await tester.scrollUntilVisible(
-            find.byIcon(Icons.tune_rounded),
-            150,
-            scrollable: find
-                .descendant(
-                  of: find.byType(HistoryScreen),
-                  matching: find.byType(Scrollable),
-                )
-                .first,
-          );
-          await tester.tap(find.byIcon(Icons.tune_rounded));
+          await tester.tap(find.byType(PopupMenuButton<String>).first);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(l.filters));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
           await tester.binding.handlePopRoute();
           await tester.pumpAndSettle();
-          await tester.ensureVisible(find.text(l.select));
+          await tester.tap(find.byType(PopupMenuButton<String>).first);
           await tester.pumpAndSettle();
           await tester.tap(find.text(l.select));
           await tester.pumpAndSettle();
@@ -196,11 +194,15 @@ void main() {
           await tester.tap(scanCard);
           await tester.pumpAndSettle();
           await tester.enterText(find.byType(TextField).first, sample.text);
-          final checkButton = find.widgetWithText(FilledButton, l.checkMessage);
+          await tester.pump();
+          final checkButton = find.widgetWithText(
+            UsisaActionButton,
+            l.scanMessageCard,
+          );
           await tester.ensureVisible(checkButton);
           await tester.tap(checkButton);
           await tester.pumpAndSettle();
-          expect(find.text(l.riskLabel('high')), findsWidgets);
+          expect(find.text(l.resultRiskLabel('high')), findsWidgets);
           expect(tester.takeException(), isNull);
         },
       );

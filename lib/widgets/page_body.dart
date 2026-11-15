@@ -28,10 +28,27 @@ class PageBody extends StatelessWidget {
     final gutter = horizontalGutter ?? gutterOf(context);
     return LayoutBuilder(
       builder: (context, viewport) {
-        final scrollBody = SingleChildScrollView(
+        final padding = EdgeInsets.fromLTRB(gutter, 20, gutter, bottomPadding);
+        if (!scrollable && viewport.hasBoundedHeight) {
+          final bodyHeight = (viewport.maxHeight - padding.vertical)
+              .clamp(0.0, double.infinity)
+              .toDouble();
+          return Padding(
+            padding: padding,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: SizedBox(height: bodyHeight, child: child),
+              ),
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           physics: scrollable ? null : const NeverScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(gutter, 20, gutter, bottomPadding),
+          padding: padding,
           child: Align(
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
@@ -47,7 +64,6 @@ class PageBody extends StatelessWidget {
             ),
           ),
         );
-        return scrollBody;
       },
     );
   }

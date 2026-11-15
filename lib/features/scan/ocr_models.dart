@@ -1,7 +1,13 @@
 import 'dart:typed_data';
 
 class OcrDraft {
-  const OcrDraft({required this.text, required this.bytes});
+  const OcrDraft({
+    required this.text,
+    required this.bytes,
+    this.fileName = '',
+  });
+
   final String text;
   final Uint8List bytes;
+  final String fileName;
 }

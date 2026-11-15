@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../theme/usisa_theme.dart';
+import '../../widgets/usisa_loading_indicator.dart';
 
 class HomeLeafArtwork extends StatelessWidget {
   const HomeLeafArtwork({super.key, this.width = 76, this.height = 85});
@@ -66,8 +67,9 @@ class LearnSafetyArtwork extends StatelessWidget {
 }
 
 class AiAnalysisArtwork extends StatelessWidget {
-  const AiAnalysisArtwork({super.key, this.size = 188});
+  const AiAnalysisArtwork({super.key, this.size = 188, this.loading = true});
   final double size;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) => SizedBox.square(
@@ -75,14 +77,7 @@ class AiAnalysisArtwork extends StatelessWidget {
     child: Stack(
       alignment: Alignment.center,
       children: [
-        SizedBox.square(
-          dimension: size,
-          child: CircularProgressIndicator(
-            color: UsisaTheme.coral,
-            backgroundColor: UsisaTheme.forest.withValues(alpha: .18),
-            strokeWidth: 5,
-          ),
-        ),
+        if (loading) UsisaLoadingIndicator(size: size, color: UsisaTheme.coral),
         SvgPicture.asset(
           'assets/illustrations/ai_bot.svg',
           width: size * .68,

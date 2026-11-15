@@ -19,11 +19,43 @@ import 'package:usisa/features/scan/result_screen.dart';
 import 'package:usisa/features/scan/scam_analyzer.dart';
 import 'package:usisa/l10n/app_localizations.dart';
 import 'package:usisa/theme/usisa_theme.dart';
+import 'package:usisa/widgets/usisa_action_button.dart';
 
 import 'ai_models_test.dart' show assessment;
 import 'gateway_test_helpers.dart';
 
 Future<void> tap(WidgetTester tester, String text) async {
+  if (text == 'AI assisted') {
+    final chip = find.widgetWithText(ChoiceChip, text);
+    await tester.ensureVisible(chip.last);
+    await tester.tap(chip.last);
+    await tester.pumpAndSettle();
+    return;
+  }
+  if (text == 'Review for AI check') {
+    final action = find.widgetWithText(UsisaActionButton, text);
+    if (action.evaluate().isNotEmpty) {
+      await tester.ensureVisible(action.last);
+      await tester.tap(action.last);
+      await tester.pumpAndSettle();
+      return;
+    }
+  }
+  if (text == 'Review for AI check' && find.text(text).evaluate().isEmpty) {
+    final check = find.text('Check');
+    if (check.evaluate().isNotEmpty) {
+      await tester.ensureVisible(check.last);
+      await tester.tap(check.last);
+      await tester.pumpAndSettle();
+      return;
+    }
+  }
+  if (text == 'Review and retry AI' && find.text(text).evaluate().isEmpty) {
+    final assessment = find.text('AI assessment').first;
+    await tester.ensureVisible(assessment);
+    await tester.tap(assessment);
+    await tester.pumpAndSettle();
+  }
   await tester.ensureVisible(find.text(text).last);
   await tester.tap(find.text(text).last);
   await tester.pumpAndSettle();
@@ -53,7 +85,7 @@ class ScreenshotOcr extends OcrService {
   @override
   Future<OcrDraft?> recoverScreenshot() async => null;
   @override
-  Future<OcrDraft?> readScreenshot() async =>
+  Future<OcrDraft?> readScreenshot({bool usePhotos = false}) async =>
       OcrDraft(text: 'Send your OTP', bytes: Uint8List(0));
 }
 
@@ -87,6 +119,7 @@ void main() {
       await tester.pumpAndSettle();
       await tap(tester, 'Review for AI check');
       await tester.enterText(find.byType(TextFormField), 'Send your OTP');
+      await tester.pump();
       await tap(tester, 'Send this text for AI check');
       expect(history.entries, hasLength(1));
       expect(history.entries.single.id, original.id);
@@ -161,7 +194,7 @@ void main() {
       await tap(tester, 'Send this text for AI check');
       expect(calls, 1);
       expect(find.textContaining('AI assessment unavailable'), findsOneWidget);
-      expect(find.text('High risk'), findsWidgets);
+      expect(find.text('High Risk'), findsWidgets);
       await tap(tester, 'Review and retry AI');
       expect(calls, 1);
       await tester.ensureVisible(find.text('Send this text for AI check'));
@@ -225,13 +258,19 @@ void main() {
         await tap(tester, 'AI assisted');
         if (mode == 'screenshot') {
           await tap(tester, 'Screenshot');
-          await tap(tester, 'Choose screenshot');
+          final chooseScreenshot = find.text('Choose screenshot');
+          expect(chooseScreenshot, findsOneWidget);
+          await tester.tap(chooseScreenshot);
+          await tester.pumpAndSettle();
+          await tap(tester, 'Photos');
+          await tap(tester, 'Scan Screenshot');
           await tap(tester, 'Check this text');
         } else {
           await tester.enterText(
             find.byType(TextField).first,
             'Original private text',
           );
+          await tester.pump();
           await tap(tester, 'Review for AI check');
         }
         expect(calls, 0);
@@ -240,6 +279,7 @@ void main() {
           find.byType(TextFormField),
           'GCash: Send your OTP immediately.',
         );
+        await tester.pump();
         await tester.ensureVisible(find.text('Send this text for AI check'));
         await tester.tap(find.text('Send this text for AI check'));
         await tester.pump();
@@ -256,9 +296,10 @@ void main() {
         expect(find.text('On-device checks complete'), findsOneWidget);
         wait.complete(http.Response(jsonEncode(assessment(risk: 'low')), 200));
         await tester.pumpAndSettle();
-        expect(find.text('High risk'), findsWidgets);
+        expect(find.text('High Risk'), findsWidgets);
         expect(find.text('AI assessment'), findsOneWidget);
-        expect(find.textContaining('The assessments differ'), findsOneWidget);
+        await tap(tester, 'AI assessment');
+        expect(find.textContaining('Results differ.'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
         history.dispose();
@@ -293,6 +334,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, 'Hello');
+      await tester.pump();
       await tap(tester, 'AI assisted');
       await tap(tester, 'Review for AI check');
       await tap(tester, 'Cancel');
@@ -329,6 +371,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.showKeyboard(find.byType(TextFormField));
         await tester.enterText(find.byType(TextFormField), '');
+        await tester.pump();
         await tap(tester, 'Ipadala ang tekstong ito para sa AI');
         expect(tester.takeException(), isNull);
         expect(find.byType(TextFormField), findsOneWidget);

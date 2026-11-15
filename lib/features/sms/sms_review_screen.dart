@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../widgets/page_body.dart';
+import '../../widgets/usisa_loading_indicator.dart';
 import '../history/history_store.dart';
 import '../scan/result_screen.dart';
 import '../scan/scan_models.dart';
@@ -82,7 +83,7 @@ class _SmsReviewScreenState extends State<SmsReviewScreen> {
       if (snapshot.connectionState == ConnectionState.waiting) {
         return Scaffold(
           appBar: AppBar(title: Text(l.recentSms)),
-          body: const Center(child: CircularProgressIndicator()),
+          body: const Center(child: UsisaLoadingIndicator(size: 36)),
         );
       }
       final review = snapshot.data;
@@ -178,7 +179,7 @@ class _SmsInboxScreenState extends State<SmsInboxScreen> {
                 future: _items,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: UsisaLoadingIndicator(size: 28));
                   }
                   if (snapshot.hasError) return Text(l.smsMissing);
                   final items = snapshot.data ?? [];

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../l10n/app_localizations.dart';
@@ -64,12 +63,12 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 children: [
-                  ExcludeSemantics(
-                    child: SvgPicture.asset(
-                      'assets/illustrations/brand_shield.svg',
-                      width: 34,
-                      height: 34,
-                    ),
+                  Image.asset(
+                    'assets/image/logo.png',
+                    width: 34,
+                    height: 34,
+                    fit: BoxFit.contain,
+                    excludeFromSemantics: true,
                   ),
                   const SizedBox(width: 11),
                   Expanded(
@@ -230,14 +229,16 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (sms.supported)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Semantics(
+                        label: l.smsHeading,
                         child: Switch(
                           value: sms.enabled,
-                          onChanged: onSmsToggle,
+                          onChanged: sms.supported ? onSmsToggle : null,
                         ),
                       ),
+                    ),
                   ],
                 ),
               );

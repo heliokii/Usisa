@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -9,6 +10,7 @@ import '../../theme/usisa_theme.dart';
 import '../../widgets/page_body.dart';
 import '../../widgets/glass_surface.dart';
 import '../../widgets/usisa_action_button.dart';
+import '../../widgets/usisa_loading_indicator.dart';
 import '../history/history_store.dart';
 import '../settings/settings_store.dart';
 import '../sms/sms_service.dart';
@@ -51,10 +53,16 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
+  static const _messageInputTopSpacing = 50.0;
+  static const _messageInputCardHeight = 250.0;
+  static const _messageImageTopSpacing = 25.0;
+  static const _messageImageBottomSpacing = 25.0;
+
   final _inputs = [TextEditingController(), TextEditingController()];
   final _scan = ScanController();
   late final _ocr = widget.ocr ?? OcrService();
   bool _reading = false;
+  String? _ocrErrorCode;
   OcrDraft? _recovered;
   OcrDraft? _selectedScreenshot;
   int _ocrRevision = 0;
@@ -193,6 +201,9 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
           history: widget.history,
           settings: widget.settings,
           aiFactory: widget.aiFactory,
+          screenshotPreview: value.source == ScanSource.screenshot
+              ? _selectedScreenshot?.bytes
+              : null,
           initialAiInput: sendAi
               ? ReviewedAiInput(
                   text: result.text,
@@ -212,14 +223,11 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
   }
 
   void _ocrError(Object error) {
-    final l = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          l.errorMessage(error is ScanException ? error.code : 'ocrFailed'),
-        ),
-      ),
-    );
+    final code = error is ScanException ? error.code : 'ocrFailed';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _ocrErrorCode = code);
+    });
   }
 
   @override
@@ -243,30 +251,57 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     }
   }
 
+  Future<bool?> _chooseScreenshotSource() => showModalBottomSheet<bool>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) {
+      final l = AppLocalizations.of(context);
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l.photos),
+              onTap: () => Navigator.pop(context, true),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_open_rounded),
+              title: Text(l.browseFiles),
+              onTap: () => Navigator.pop(context, false),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+
   Future<void> _importScreenshot({OcrDraft? recovered}) async {
-    if (_reading) {
-      return;
-    }
-    setState(() => _reading = true);
+    if (_reading) return;
+    setState(() {
+      _reading = true;
+      _ocrErrorCode = null;
+    });
     final revision = ++_ocrRevision;
     try {
-      final draft = recovered ?? await _ocr.readScreenshot();
-      if (!mounted || draft == null || revision != _ocrRevision) {
-        return;
-      }
+      final usePhotos =
+          recovered != null || defaultTargetPlatform != TargetPlatform.android
+          ? true
+          : await _chooseScreenshotSource();
+      if (!mounted || usePhotos == null || revision != _ocrRevision) return;
+      final draft =
+          recovered ?? await _ocr.readScreenshot(usePhotos: usePhotos);
+      if (!mounted || draft == null || revision != _ocrRevision) return;
       setState(() {
         _selectedScreenshot = draft;
         _recovered = null;
+        _ocrErrorCode = null;
         _mode = 2;
       });
     } catch (e) {
-      if (mounted && revision == _ocrRevision) {
-        _ocrError(e);
-      }
+      if (mounted && revision == _ocrRevision) _ocrError(e);
     } finally {
-      if (mounted) {
-        setState(() => _reading = false);
-      }
+      if (mounted) setState(() => _reading = false);
     }
   }
 
@@ -294,6 +329,7 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
         return;
       }
       _inputs[mode].text = data!.text!;
+      setState(() => _scan.error = null);
       if (mode == 0) {
         _scheduleDraft();
       }
@@ -311,37 +347,78 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     }
   }
 
-  Widget _inputCard(BuildContext context, AppLocalizations l, ThemeData theme) {
-    final fillMessageField = _mode == 0 && !widget.aiAssisted;
+  Future<void> _clearMessage() async {
+    _inputs[0].clear();
+    _draftTimer?.cancel();
+    _draftRevision++;
+    setState(() => _scan.error = null);
+    try {
+      await widget.history.clearDraft();
+    } catch (_) {
+      _draftError();
+    }
+  }
+
+  Widget _inputCard(
+    BuildContext context,
+    AppLocalizations l,
+    ThemeData theme, {
+    bool fillMessageSpace = false,
+  }) {
+    final compactMessageField = _mode == 0;
+    final message = _inputs[0].text;
     final field = TextField(
       controller: _inputs[_mode],
       key: ValueKey(_mode),
       enabled: !_scan.busy,
-      minLines: fillMessageField ? null : (_mode == 1 ? 1 : 2),
-      maxLines: fillMessageField ? null : (_mode == 1 ? 1 : 4),
-      expands: fillMessageField,
+      minLines: fillMessageSpace
+          ? null
+          : compactMessageField
+          ? 1
+          : (_mode == 1 ? 1 : 2),
+      maxLines: fillMessageSpace
+          ? null
+          : compactMessageField
+          ? 2
+          : (_mode == 1 ? 1 : 4),
+      expands: fillMessageSpace,
       textAlignVertical: TextAlignVertical.top,
       style: theme.textTheme.bodyLarge,
       keyboardType: _mode == 1 ? TextInputType.url : TextInputType.multiline,
       autocorrect: false,
       enableSuggestions: false,
       decoration: InputDecoration(
-        labelText: widget.aiAssisted ? l.message : null,
-        hintText: _mode == 1 ? 'https://example.com' : l.inputHint,
+        labelText: _aiAssisted && !compactMessageField ? l.message : null,
+        hintText: _mode == 1 ? l.pasteLink : l.inputHint,
         errorText: _scan.error == null ? null : l.errorMessage(_scan.error!),
         errorMaxLines: 5,
-        prefixIcon: _mode == 1 ? const Icon(Icons.link_rounded) : null,
+        prefixIcon: _mode == 1
+            ? HugeIcon(
+                icon: HugeIcons.strokeRoundedLink04,
+                color: theme.colorScheme.primary,
+                size: 20,
+              )
+            : null,
         suffixIcon: _mode == 1
             ? IconButton(
-                tooltip: l.clear,
+                tooltip: _inputs[_mode].text.isEmpty ? l.pasteLink : l.clear,
                 onPressed: _scan.busy
                     ? null
+                    : _inputs[_mode].text.isEmpty
+                    ? _paste
                     : () {
                         _inputs[_mode].clear();
                         setState(() => _scan.error = null);
                       },
-                icon: const Icon(Icons.close_rounded),
+                icon: Icon(
+                  _inputs[_mode].text.isEmpty
+                      ? Icons.content_paste_rounded
+                      : Icons.close_rounded,
+                ),
               )
+            : null,
+        contentPadding: compactMessageField
+            ? const EdgeInsets.symmetric(vertical: 8)
             : null,
       ),
       onChanged: (_) {
@@ -349,73 +426,83 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
         setState(() => _scan.error = null);
       },
     );
-    return GlassSurface(
-      focusHighlight: true,
-      child: Column(
-        mainAxisSize: fillMessageField ? MainAxisSize.max : MainAxisSize.min,
+    final messageInput = Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 4, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (fillMessageField)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.lock_outline_rounded,
-                    size: 16,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l.localPrivate,
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: HugeIcon(
+              icon: HugeIcons.strokeRoundedMessageSquareMore,
+              color: theme.colorScheme.primary,
+              size: 18,
             ),
-          if (fillMessageField) Expanded(child: field) else field,
-          if (_mode == 0)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 8, 4),
-              child: Row(
-                children: [
-                  TextButton.icon(
-                    onPressed: _scan.busy ? null : _paste,
-                    icon: const Icon(Icons.content_paste_rounded, size: 18),
-                    label: Text(l.pasteText),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${_inputs[0].text.length}/10,000',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  if (_inputs[0].text.isNotEmpty)
-                    IconButton(
-                      tooltip: l.clear,
-                      onPressed: _scan.busy
-                          ? null
-                          : () async {
-                              _inputs[0].clear();
-                              _draftTimer?.cancel();
-                              _draftRevision++;
-                              setState(() => _scan.error = null);
-                              try {
-                                await widget.history.clearDraft();
-                              } catch (_) {
-                                _draftError();
-                              }
-                            },
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                ],
-              ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: fillMessageSpace ? SizedBox.expand(child: field) : field,
+          ),
+          if (message.isNotEmpty)
+            IconButton(
+              tooltip: l.clear,
+              onPressed: _scan.busy ? null : _clearMessage,
+              icon: const Icon(Icons.close_rounded),
             ),
         ],
       ),
     );
+    final pasteButton = TextButton(
+      style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+      onPressed: _scan.busy ? null : _paste,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.content_paste_rounded, size: 18),
+          const SizedBox(width: 8),
+          Flexible(child: Text(l.pasteText, softWrap: true)),
+        ],
+      ),
+    );
+    final counter = Text(
+      '${message.length}/10,000',
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+    final messageControls = fillMessageSpace
+        ? Row(
+            children: [
+              Expanded(child: pasteButton),
+              const SizedBox(width: 8),
+              counter,
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              pasteButton,
+              Align(alignment: Alignment.centerRight, child: counter),
+            ],
+          );
+    final card = GlassSurface(
+      focusHighlight: true,
+      child: Column(
+        mainAxisSize: fillMessageSpace ? MainAxisSize.max : MainAxisSize.min,
+        children: [
+          if (compactMessageField)
+            fillMessageSpace ? Expanded(child: messageInput) : messageInput
+          else
+            field,
+          if (_mode == 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+              child: messageControls,
+            ),
+        ],
+      ),
+    );
+    return card;
   }
 
   @override
@@ -424,8 +511,14 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
     builder: (context, _) {
       final l = AppLocalizations.of(context);
       final theme = Theme.of(context);
-      final messageMode = _mode == 0 && !widget.aiAssisted;
-      final messageHasText = _inputs[0].text.trim().isNotEmpty;
+      final messageMode = _mode == 0;
+      final largeText = MediaQuery.textScalerOf(context).scale(16) > 20;
+      final fillMessageLayout =
+          messageMode &&
+          !largeText &&
+          MediaQuery.sizeOf(context).height +
+                  MediaQuery.viewInsetsOf(context).bottom >=
+              600;
       final checkLabel = _scan.busy
           ? l.checking
           : _aiAssisted
@@ -434,29 +527,44 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
           ? l.checkLink
           : l.checkMessage;
       final Widget messageAction = UsisaActionButton.icon(
-        onPressed: _scan.busy || !messageHasText ? null : _check,
+        onPressed: _scan.busy || _inputs[0].text.trim().isEmpty ? null : _check,
         icon: _scan.busy
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: UsisaTheme.cream,
-                ),
-              )
+            ? const UsisaLoadingIndicator(size: 18, color: UsisaTheme.cream)
             : const Icon(Icons.arrow_forward_rounded),
-        label: Text(_scan.busy ? l.checking : l.scanMessageCard),
+        label: Text(
+          _scan.busy
+              ? l.checking
+              : _aiAssisted
+              ? l.aiReviewTitle
+              : l.scanMessageCard,
+        ),
       );
       final Widget primaryAction = messageMode
           ? messageAction
+          : _mode == 1
+          ? UsisaActionButton(
+              onPressed: _scan.busy ? null : _check,
+              child: _scan.busy
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const UsisaLoadingIndicator(
+                          size: 18,
+                          color: UsisaTheme.cream,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(l.checking),
+                      ],
+                    )
+                  : Text(checkLabel),
+            )
           : _mode < 2
           ? UsisaActionButton.icon(
               onPressed: _scan.busy ? null : _check,
               icon: _scan.busy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  ? const UsisaLoadingIndicator(
+                      size: 18,
+                      color: UsisaTheme.cream,
                     )
                   : const Icon(Icons.search_rounded),
               label: Text(checkLabel),
@@ -468,25 +576,14 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                   ? _importScreenshot
                   : _reviewSelectedScreenshot,
               icon: _reading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  ? const UsisaLoadingIndicator(
+                      size: 18,
+                      color: UsisaTheme.cream,
                     )
-                  : Icon(
-                      _selectedScreenshot == null
-                          ? Icons.image_outlined
-                          : Icons.arrow_forward_rounded,
-                    ),
-              label: Text(
-                _reading
-                    ? l.readingImage
-                    : _selectedScreenshot == null
-                    ? l.chooseScreenshot
-                    : l.scanScreenshotCard,
-              ),
+                  : const Icon(Icons.arrow_forward_rounded),
+              label: Text(_reading ? l.readingImage : l.scanScreenshotCard),
             );
-      final title = widget.aiAssisted
+      final title = _aiAssisted
           ? l.aiScan
           : _mode == 1
           ? l.linkCheckerTitle
@@ -494,89 +591,46 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
           ? l.scanScreenshotCard
           : l.scanMessageCard;
       return Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          actions: widget.aiAssisted
-              ? [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Center(
-                      child: Text(
-                        l.aiBeta,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.error,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ]
-              : null,
-        ),
+        appBar: AppBar(title: Text(title)),
         body: SafeArea(
           top: false,
           bottom: false,
           child: PageBody(
-            fillViewport: messageMode,
+            fillViewport: fillMessageLayout,
+            scrollable: true,
             child: Builder(
               builder: (context) {
-                final content = Column(
+                final messageIntro = Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (messageMode) ...[
-                      Center(
-                        child: SizedBox(
-                          width: 148,
-                          height: 90,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned(
-                                left: 10,
-                                bottom: 10,
-                                child: Container(
-                                  width: 128,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(40),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 3,
-                                right: 22,
-                                child: Icon(
-                                  Icons.auto_awesome_rounded,
-                                  color: UsisaTheme.coral,
-                                  size: 17,
-                                ),
-                              ),
-                              HugeIcon(
-                                icon: HugeIcons.strokeRoundedMessageSquareMore,
-                                color: UsisaTheme.forest,
-                                size: 50,
-                              ),
-                            ],
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: _messageImageTopSpacing,
+                        bottom: _messageImageBottomSpacing,
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          'assets/image/scan-message-brand.png',
+                          width: 220,
+                          height: 110,
+                          fit: BoxFit.contain,
+                          excludeFromSemantics: true,
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        l.messageScanPrompt,
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        l.messageScanSupport,
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 10),
-                    ] else if (_mode == 0) ...[
-                      Text(l.scanHeading, style: theme.textTheme.headlineLarge),
-                      const SizedBox(height: 12),
-                      Text(l.scanIntro, style: theme.textTheme.bodyLarge),
-                      const SizedBox(height: 20),
+                    ),
+                    Text(
+                      _aiAssisted ? l.scanHeading : l.messageScanPrompt,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _aiAssisted ? l.scanIntro : l.messageScanSupport,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    if (_aiAssisted) ...[
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Icon(
@@ -587,65 +641,84 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              _aiAssisted ? l.aiManualOnly : l.localPrivate,
+                              l.aiManualOnly,
                               style: theme.textTheme.bodyMedium,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                    ] else if (_mode == 1) ...[
-                      const SizedBox(height: 28),
-                      Center(
-                        child: SizedBox(
-                          width: 148,
-                          height: 132,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned(
-                                left: 6,
-                                bottom: 14,
-                                child: Container(
-                                  width: 136,
-                                  height: 62,
-                                  decoration: BoxDecoration(
-                                    color: theme.colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(40),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 8,
-                                right: 18,
-                                child: Icon(
-                                  Icons.auto_awesome_rounded,
-                                  color: UsisaTheme.coral,
-                                  size: 20,
-                                ),
-                              ),
-                              HugeIcon(
-                                icon: HugeIcons.strokeRoundedLink04,
-                                color: UsisaTheme.forest,
-                                size: 68,
-                              ),
-                            ],
+                    ],
+                  ],
+                );
+                final linkIntro = Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: _messageImageTopSpacing,
+                        bottom: _messageImageBottomSpacing,
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          'assets/image/link-checker-brand.png',
+                          width: 280,
+                          height: 150,
+                          fit: BoxFit.contain,
+                          excludeFromSemantics: true,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      l.linkCheckPrompt,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l.linkCheckSupport,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 22),
+                  ],
+                );
+                final content = Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (messageMode)
+                      messageIntro
+                    else if (_mode == 1)
+                      linkIntro
+                    else if (_mode == 2 &&
+                        _selectedScreenshot == null &&
+                        !_reading) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: _messageImageTopSpacing,
+                          bottom: _messageImageBottomSpacing,
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/image/scan-screenshot-brand.png',
+                            width: 280,
+                            height: 150,
+                            fit: BoxFit.contain,
+                            excludeFromSemantics: true,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
                       Text(
-                        l.linkCheckPrompt,
+                        l.screenshotHeading,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        l.linkCheckSupport,
+                        l.screenshotIntro,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 18),
                     ] else
                       const SizedBox(height: 8),
                     if (_recovered != null) ...[
@@ -671,7 +744,8 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                       if (_reading) ...[
                         const SizedBox(height: 48),
                         const Center(
-                          child: CircularProgressIndicator(
+                          child: UsisaLoadingIndicator(
+                            size: 40,
                             color: UsisaTheme.forest,
                           ),
                         ),
@@ -689,152 +763,148 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                         ),
                       ] else if (_selectedScreenshot != null) ...[
                         const SizedBox(height: 12),
-                        Text(
-                          l.screenshotSelected,
-                          style: theme.textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 12),
-                        GlassSurface(
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Image.memory(
-                                    _selectedScreenshot!.bytes,
-                                    height: 250,
-                                    fit: BoxFit.contain,
-                                    semanticLabel: l.screenshot,
-                                    errorBuilder: (context, error, stack) =>
-                                        SizedBox(
-                                          height: 160,
-                                          child: Center(
-                                            child: Text(l.previewUnavailable),
-                                          ),
+                        Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                width: double.infinity,
+                                height: 180,
+                                color: const Color(0xFF272C2A),
+                                child: Image.memory(
+                                  _selectedScreenshot!.bytes,
+                                  fit: BoxFit.contain,
+                                  semanticLabel: l.screenshot,
+                                  errorBuilder: (context, error, stack) =>
+                                      Center(
+                                        child: Text(
+                                          l.previewUnavailable,
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: UsisaTheme.cream,
+                                              ),
                                         ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.image_outlined,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        '${l.screenshot} · ${(_selectedScreenshot!.bytes.length / 1024).ceil()} KB',
-                                        style: theme.textTheme.titleSmall,
                                       ),
-                                    ),
-                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: IconButton.filled(
+                                tooltip: l.clear,
+                                onPressed: () => setState(() {
+                                  _selectedScreenshot = null;
+                                  _ocrErrorCode = null;
+                                }),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: UsisaTheme.forest,
+                                  foregroundColor: UsisaTheme.cream,
+                                ),
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerLeft,
+                        Row(
+                          children: [
+                            HugeIcon(
+                              icon: HugeIcons.strokeRoundedImage03,
+                              color: UsisaTheme.forest,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _selectedScreenshot!.fileName.isEmpty
+                                        ? l.screenshot
+                                        : _selectedScreenshot!.fileName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.titleSmall,
+                                  ),
+                                  Text(
+                                    '${(_selectedScreenshot!.bytes.length / 1024).ceil()} KB',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: _ocr.available
+                            onPressed: _ocr.available && !_reading
                                 ? () => _importScreenshot()
                                 : null,
                             icon: const Icon(Icons.refresh_rounded),
                             label: Text(l.changeImage),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(l.ocrNotice, style: theme.textTheme.bodySmall),
                       ] else ...[
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 18),
                         Center(
                           child: SizedBox(
-                            width: 148,
-                            height: 132,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Positioned(
-                                  left: 6,
-                                  bottom: 14,
-                                  child: Container(
-                                    width: 136,
-                                    height: 62,
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primaryContainer,
-                                      borderRadius: BorderRadius.circular(40),
+                            width: double.infinity,
+                            child: CustomPaint(
+                              painter: _DashedOutlinePainter(
+                                color: UsisaTheme.forest,
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _ocr.available
+                                      ? () => _importScreenshot()
+                                      : null,
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 22,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        HugeIcon(
+                                          icon: HugeIcons.strokeRoundedImage03,
+                                          color: theme.colorScheme.primary,
+                                          size: 36,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          l.chooseScreenshot,
+                                          style: theme.textTheme.titleSmall,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                Positioned(
-                                  top: 8,
-                                  right: 18,
-                                  child: Icon(
-                                    Icons.auto_awesome_rounded,
-                                    color: UsisaTheme.coral,
-                                    size: 20,
-                                  ),
-                                ),
-                                HugeIcon(
-                                  icon: HugeIcons.strokeRoundedImage03,
-                                  color: UsisaTheme.forest,
-                                  size: 68,
-                                ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          l.screenshotHeading,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          l.screenshotIntro,
+                          l.screenshotSupported,
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.bodyMedium,
+                          style: theme.textTheme.bodySmall,
                         ),
-                        const SizedBox(height: 22),
-                        GlassSurface(
-                          child: InkWell(
-                            onTap: _ocr.available
-                                ? () => _importScreenshot()
-                                : null,
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 22,
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.add_photo_alternate_outlined,
-                                    size: 34,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    l.chooseScreenshot,
-                                    style: theme.textTheme.titleSmall,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    l.screenshotSupported,
-                                    textAlign: TextAlign.center,
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
+                        if (_ocrErrorCode != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            l.errorMessage(_ocrErrorCode!),
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.error,
                             ),
                           ),
-                        ),
+                        ],
                         if (!_ocr.available) ...[
                           const SizedBox(height: 12),
                           Text(
@@ -895,64 +965,94 @@ class _ScanScreenState extends State<ScanScreen> with WidgetsBindingObserver {
                     ],
                     if (_mode < 2) ...[
                       if (messageMode)
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: SizedBox(
-                              height: 220,
-                              child: _inputCard(context, l, theme),
-                            ),
+                        SizedBox(
+                          height: _aiAssisted ? 8 : _messageInputTopSpacing,
+                        ),
+                      if (messageMode)
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: _messageInputCardHeight,
+                            maxHeight: largeText
+                                ? double.infinity
+                                : _messageInputCardHeight,
+                          ),
+                          child: _inputCard(
+                            context,
+                            l,
+                            theme,
+                            fillMessageSpace: !largeText,
                           ),
                         )
                       else
                         _inputCard(context, l, theme),
-                      if (_mode == 1) ...[
-                        const SizedBox(height: 4),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: _scan.busy ? null : _paste,
-                            icon: const Icon(
-                              Icons.content_paste_rounded,
-                              size: 18,
-                            ),
-                            label: Text(l.pasteLink),
-                          ),
-                        ),
-                      ],
                     ],
                   ],
                 );
-                return messageMode ? IntrinsicHeight(child: content) : content;
+                return content;
               },
             ),
           ),
         ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                primaryAction,
-                if (_scan.busy)
-                  TextButton(onPressed: _scan.cancel, child: Text(l.cancel))
-                else if (_reading && _mode == 2)
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _ocrRevision++;
-                      _reading = false;
-                      _selectedScreenshot = null;
-                    }),
-                    child: Text(l.cancel),
+        bottomNavigationBar:
+            _mode == 2 && _selectedScreenshot == null && !_reading
+            ? null
+            : SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      primaryAction,
+                      if (_scan.busy)
+                        TextButton(
+                          onPressed: _scan.cancel,
+                          child: Text(l.cancel),
+                        )
+                      else if (_reading && _mode == 2)
+                        TextButton(
+                          onPressed: () => setState(() {
+                            _ocrRevision++;
+                            _reading = false;
+                            _selectedScreenshot = null;
+                          }),
+                          child: Text(l.cancel),
+                        ),
+                    ],
                   ),
-              ],
-            ),
-          ),
-        ),
+                ),
+              ),
       );
     },
   );
+}
+
+class _DashedOutlinePainter extends CustomPainter {
+  const _DashedOutlinePainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeWidth = 1.3;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+    final rect = (Offset.zero & size).deflate(strokeWidth / 2);
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(16)));
+
+    for (final metric in path.computeMetrics()) {
+      for (var distance = 0.0; distance < metric.length; distance += 10) {
+        final end = distance + 5 < metric.length ? distance + 5 : metric.length;
+        canvas.drawPath(metric.extractPath(distance, end), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedOutlinePainter oldDelegate) =>
+      oldDelegate.color != color;
 }

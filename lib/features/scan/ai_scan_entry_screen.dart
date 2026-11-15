@@ -1,11 +1,13 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/usisa_theme.dart';
 import '../../widgets/glass_surface.dart';
 import '../../widgets/page_body.dart';
 import '../../widgets/usisa_action_button.dart';
-import '../home/feature_artwork.dart';
+import '../../widgets/usisa_action_button_painter.dart';
 
 class AiScanEntryScreen extends StatefulWidget {
   const AiScanEntryScreen({super.key, required this.onChooseInput});
@@ -27,7 +29,6 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -37,37 +38,27 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
               : Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        title: _choosing
-            ? Text(l.aiScan)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(l.aiScan),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: UsisaTheme.contrastCoral,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      l.aiBeta,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: UsisaTheme.cream,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+        title: Text(l.aiScan),
       ),
       body: SafeArea(
         top: false,
         bottom: false,
-        child: _choosing ? _inputChoices(context) : _introduction(context),
+        child: PageTransitionSwitcher(
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation, secondaryAnimation) =>
+              FadeThroughTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                fillColor: UsisaTheme.cream,
+                child: child,
+              ),
+          child: KeyedSubtree(
+            key: ValueKey(_choosing),
+            child: _choosing ? _inputChoices(context) : _introduction(context),
+          ),
+        ),
       ),
       bottomNavigationBar: _choosing
           ? null
@@ -81,9 +72,8 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
                   16,
                 ),
                 child: UsisaActionButton.icon(
-                  onPressed: _choosing
-                      ? null
-                      : () => setState(() => _choosing = true),
+                  onPressed: () => setState(() => _choosing = true),
+                  danger: true,
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: Text(l.startAiScan),
                 ),
@@ -99,8 +89,17 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 4),
-          const Center(child: AiScanArtwork(size: 132)),
+          const SizedBox(height: 16),
+          Center(
+            child: Image.asset(
+              'assets/image/ai-brand.png',
+              width: 230,
+              height: 147,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              excludeFromSemantics: true,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             l.aiIntroTitle,
@@ -119,15 +118,15 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
             title: l.aiMultiInput,
             subtitle: l.aiMultiInputBody,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _BenefitRow(
-            icon: Icons.psychology_alt_outlined,
+            icon: Icons.layers_outlined,
             title: l.aiContextAware,
             subtitle: l.aiContextAwareBody,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _BenefitRow(
-            icon: Icons.verified_user_outlined,
+            icon: Icons.shield_outlined,
             title: l.aiActionable,
             subtitle: l.aiActionableBody,
           ),
@@ -143,35 +142,39 @@ class _AiScanEntryScreenState extends State<AiScanEntryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l.aiInputQuestion, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 20),
+          Text(l.aiInputQuestion, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 16),
           _InputCard(
-            icon: Icons.sms_outlined,
+            icon: HugeIcons.strokeRoundedMessageSquareMore,
             title: l.aiTextOption,
             subtitle: l.aiTextOptionBody,
             onTap: () => _choose(0),
+            primary: true,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _InputCard(
-            icon: Icons.link_rounded,
+            icon: HugeIcons.strokeRoundedLink04,
             title: l.aiLinkOption,
             subtitle: l.aiLinkOptionBody,
             onTap: () => _choose(1),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _InputCard(
-            icon: Icons.image_search_outlined,
+            icon: HugeIcons.strokeRoundedImage03,
             title: l.aiScreenshotOption,
             subtitle: l.aiScreenshotOptionBody,
             onTap: () => _choose(2),
           ),
-          const SizedBox(height: 32),
-          const Center(child: AiScanArtwork(size: 136)),
-          const SizedBox(height: 8),
-          Text(
-            l.aiManualOnly,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium,
+          const SizedBox(height: 64),
+          Center(
+            child: Image.asset(
+              'assets/image/ai-brand.png',
+              width: 230,
+              height: 147,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              excludeFromSemantics: true,
+            ),
           ),
         ],
       ),
@@ -191,22 +194,13 @@ class _BenefitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     return GlassSurface(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: colors.primaryContainer,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: colors.primary),
-            ),
+            Icon(icon, color: UsisaTheme.coral, size: 30),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -230,49 +224,106 @@ class _InputCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.primary = false,
   });
-  final IconData icon;
+
+  final List<List<dynamic>> icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final bool primary;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    return GlassSurface(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(icon, color: colors.primary),
+    final colors = theme.colorScheme;
+    final foreground = primary ? colors.onPrimary : colors.onSurface;
+    final radius = BorderRadius.circular(primary ? 21 : 16);
+    final surface = GlassSurface(
+      color: primary ? const Color(0xFF0B6048) : colors.surface,
+      borderRadius: radius,
+      showShadow: !primary,
+      child: Stack(
+        children: [
+          if (primary)
+            const Positioned.fill(
+              child: CustomPaint(painter: UsisaActionButtonPainter()),
+            ),
+          InkWell(
+            onTap: onTap,
+            borderRadius: radius,
+            child: Padding(
+              padding: primary
+                  ? const EdgeInsets.fromLTRB(22, 12, 22, 6)
+                  : const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  HugeIcon(
+                    icon: icon,
+                    color: primary ? colors.onPrimary : UsisaTheme.coral,
+                    size: primary ? 32 : 36,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: primary
+                              ? theme.textTheme.titleSmall?.copyWith(
+                                  color: foreground,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                )
+                              : theme.textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: primary
+                              ? theme.textTheme.bodySmall?.copyWith(
+                                  color: foreground,
+                                  fontSize: 12,
+                                )
+                              : theme.textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: primary ? colors.onPrimary : UsisaTheme.forest,
+                    size: 26,
+                  ),
+                ],
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 3),
-                    Text(subtitle, style: theme.textTheme.bodyMedium),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
+    );
+    if (!primary) return surface;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFF2C9A76).withValues(alpha: .76),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF064638).withValues(alpha: .2),
+            offset: const Offset(0, 3),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Padding(padding: const EdgeInsets.all(1), child: surface),
     );
   }
 }

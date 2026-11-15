@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/app.dart';
+import 'package:usisa/features/history/history_screen.dart';
 import 'package:usisa/features/history/history_store.dart';
 import 'package:usisa/features/settings/settings_store.dart';
 import 'package:usisa/features/scan/scan_models.dart';
@@ -89,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('History').last);
     await tester.pumpAndSettle();
-    expect(find.text('Your checks, kept private.'), findsOneWidget);
+    expect(find.byType(HistoryScreen), findsOneWidget);
     await tester.tap(find.text('Home').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Scan Message'));

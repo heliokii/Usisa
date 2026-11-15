@@ -30,12 +30,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text(
-        'Image preview is unavailable. You can still review and edit the extracted text.',
-      ),
-      findsOneWidget,
+    final l = AppLocalizations.of(
+      tester.element(find.byType(ScreenshotReviewScreen)),
     );
+    expect(find.text(l.previewUnavailable), findsOneWidget);
     expect(find.text('Readable OCR text'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -59,7 +57,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Review previous screenshot'), findsNothing);
+      final l = AppLocalizations.of(tester.element(find.byType(ScanScreen)));
+      expect(find.text(l.reviewRecoveredScreenshot), findsNothing);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
@@ -68,8 +67,8 @@ void main() {
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(find.text('Review previous screenshot'), findsOneWidget);
-      expect(find.text('Scan result'), findsNothing);
+      expect(find.text(l.reviewRecoveredScreenshot), findsOneWidget);
+      expect(find.text(l.result), findsNothing);
       expect(ocr.pickerCalls, 0);
     },
   );
@@ -93,13 +92,15 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Review previous screenshot'), findsOneWidget);
+      final l = AppLocalizations.of(tester.element(find.byType(ScanScreen)));
+      expect(find.text(l.reviewRecoveredScreenshot), findsOneWidget);
       expect(ocr.pickerCalls, 0);
-      await tester.ensureVisible(find.text('Review previous screenshot'));
-      await tester.tap(find.text('Review previous screenshot'));
+      await tester.ensureVisible(find.text(l.reviewRecoveredScreenshot));
+      await tester.tap(find.text(l.reviewRecoveredScreenshot));
       await tester.pumpAndSettle();
-      expect(find.text('Recovered text'), findsOneWidget);
-      expect(find.text('Scan result'), findsNothing);
+      expect(find.text(l.changeImage), findsOneWidget);
+      expect(find.byType(Image), findsOneWidget);
+      expect(find.text(l.result), findsNothing);
       expect(ocr.pickerCalls, 0);
     },
   );
@@ -158,7 +159,7 @@ class RecoveredOcr implements OcrService {
   }
 
   @override
-  Future<OcrDraft?> readScreenshot() async {
+  Future<OcrDraft?> readScreenshot({bool usePhotos = false}) async {
     pickerCalls++;
     return null;
   }

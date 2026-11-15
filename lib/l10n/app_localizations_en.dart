@@ -26,7 +26,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiDisclosure =>
-      'This exact text will be sent to Usisa’s server and Groq for an AI assessment. Remove any codes or personal details you do not want to share. Names, numbers and links in this text are included. Your screenshot and separate sender details stay on your device. Groq may retain requests for reliability or abuse monitoring, depending on account settings. AI can make mistakes; it does not verify the sender or visit links.';
+      'This exact text goes to Usisa’s server and Groq for AI review. Remove codes or personal details you do not want to share. Names, numbers, and links are included. Screenshots and sender details stay on your device. Groq may keep requests for reliability or abuse monitoring, based on account settings. AI can be wrong; it does not verify senders or open links.';
 
   @override
   String get aiTextLabel => 'Text to send';
@@ -48,37 +48,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiUnknown =>
-      'AI could not assess this message. Use the local findings and verify independently.';
+      'AI could not assess this message. Use local findings and verify it yourself.';
 
   @override
   String get aiUnavailable =>
-      'On-device checks complete; AI assessment unavailable. Your text is preserved. You can review it and try again.';
+      'Local checks are done, but AI is unavailable. Your text is still here. Review it and try again.';
 
   @override
   String get aiCancelled =>
-      'AI check cancelled. Local findings remain available. A request already sent may have been processed.';
+      'AI check cancelled. Local findings remain. A sent request may still be processed.';
 
   @override
-  String get aiNotRequested =>
-      'AI was not requested. Review the text to add an optional online assessment.';
+  String get aiNotRequested => 'No AI check yet. Review the text to add one.';
 
   @override
   String get aiDisagreement =>
-      'The assessments differ. The stronger warning is kept; neither assessment proves the message is safe.';
+      'Results differ. Keep the stronger warning; neither proves the message safe.';
 
   @override
-  String get aiReviewed => 'This result uses the text reviewed for AI.';
+  String get aiReviewed => 'AI used the text you reviewed.';
 
   @override
   String get aiRetry => 'Review and retry AI';
 
   @override
   String get aiLimitations =>
-      'AI adds context, but may miss scams or flag legitimate messages. Quotes show the text it used; they do not prove its conclusion.';
+      'AI can miss scams or flag safe messages. Quotes show its input, not proof.';
 
   @override
   String get aiSettingsBody =>
-      'Optional online help for text, links and reviewed screenshot text. You review and confirm each upload to Usisa’s server and Groq. Automatic SMS checks stay on-device. Online link-check consent does not enable AI.';
+      'AI can check text, links, and screenshot text you approve. Confirm each upload to Usisa and Groq. Auto SMS stays on-device. Link-check consent does not enable AI.';
 
   @override
   String aiFindingTitle(String code) {
@@ -115,42 +114,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learnOtpBody =>
-      'Treat requests to share a code with care, even when a sender claims to be support. An ordinary OTP reminder may tell you never to share the code. Verify requests through the official app you opened yourself.';
+      'Treat code requests with care, even from claimed support. Real OTP messages may warn you not to share the code. Verify through the official app.';
 
   @override
-  String get learnBankTitle => 'Fake bank and e-wallet alerts';
+  String get learnBankTitle => 'Bank & Wallet Scams';
 
   @override
   String get learnBankBody =>
       'An account suspension threat can pressure you to tap a link. Sender names can be spoofed. Open your bank or e-wallet app directly to check your account; do not use the message\'s link as proof.';
 
   @override
-  String get learnGovernmentTitle => 'Government impersonation';
+  String get learnBankSummary => 'Fake messages from BPI,\nGCash, Maya, etc.';
+
+  @override
+  String get learnGovernmentTitle => 'Government Impersonation';
 
   @override
   String get learnGovernmentBody =>
-      'Messages may claim to come from SSS, PhilHealth, Pag-IBIG, or another agency. Verify unexpected aid, penalty, or registration requests using an independently opened official service. A logo or government name does not prove authenticity.';
+      'Scammers may pose as SSS, PhilHealth, Pag-IBIG, or another agency. Verify unexpected aid, fines, or registration through an official service you open yourself. A logo proves nothing.';
+
+  @override
+  String get learnGovernmentSummary =>
+      'Scams pretending to be from\nSSS, PAG-IBIG, PhilPost, and more.';
 
   @override
   String get learnDeliveryTitle => 'Unexpected delivery fees';
 
   @override
   String get learnDeliveryBody =>
-      'A small redelivery fee may lead to a page asking for card or account details. Check the order inside the shopping or courier app. A shortened link hides its destination; Usisa does not expand it.';
+      'Fake redelivery fees can lead to pages that steal card or account details. Check orders in your courier app. Short links hide destinations; Usisa does not expand them.';
 
   @override
-  String get learnSellerTitle => 'Online seller payments';
+  String get learnSellerTitle => 'Online Selling Scams';
 
   @override
   String get learnSellerBody =>
       'Be cautious about pressure to move a conversation or payment outside a marketplace\'s normal process. Confirm the seller, item, recipient and payment purpose through trusted records before sending money.';
 
   @override
+  String get learnSellerSummary =>
+      'Fake sellers, payment proofs,\nand delivery tricks.';
+
+  @override
   String get learnRecoveryTitle => 'If you already shared details';
 
   @override
   String get learnRecoveryBody =>
-      'Pause further payments and contact your bank or e-wallet through its official app or a trusted contact from your own records. Change affected passwords through the real service. Keep relevant evidence privately. Never share another OTP with someone promising recovery.';
+      'Stop payments. Contact your bank or e-wallet through its official app or a trusted contact. Change exposed passwords; keep evidence private. Never share another OTP with a recovery helper.';
 
   @override
   String selectedCount(int count) {
@@ -185,11 +195,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanHeading => 'Check before you tap.';
 
   @override
-  String get scanIntro =>
-      'A little pause can protect a lot. Check a message or link before you act.';
+  String get scanIntro => 'Check a message or link before you act.';
 
   @override
-  String get localPrivate => 'On your device. Private by default.';
+  String get localPrivate => 'Checks stay on your device by default.';
 
   @override
   String get message => 'Message';
@@ -216,8 +225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkCheckPrompt => 'Check a link’s safety';
 
   @override
-  String get linkCheckSupport =>
-      'Paste a URL to see risk indicators before you open it.';
+  String get linkCheckSupport => 'See known risk signs before opening a URL.';
 
   @override
   String get inputHint => 'Paste or type the message here…';
@@ -241,18 +249,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checking => 'Checking warning signs…';
 
   @override
+  String get loading => 'Loading';
+
+  @override
   String get cancel => 'Cancel';
 
   @override
   String get chooseScreenshot => 'Choose screenshot';
 
   @override
+  String get photos => 'Photos';
+
+  @override
+  String get browseFiles => 'Browse files';
+
+  @override
   String get screenshotIntro =>
-      'Choose an image of a message. Review the extracted text before checking it.';
+      'Choose a message screenshot. Review its text before scanning.';
 
   @override
   String get ocrNativeOnly =>
-      'Screenshot OCR is available in the Android and iOS app. You can paste text here.';
+      'OCR works in the Android and iOS app. You can paste text here.';
 
   @override
   String get readingImage => 'Reading screenshot…';
@@ -262,25 +279,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ocrNotice =>
-      'Images can be misread. Check names, numbers, and links before continuing.';
+      'Check names, numbers, and links. OCR can misread them.';
 
   @override
   String get previewUnavailable =>
-      'Image preview is unavailable. You can still review and edit the extracted text.';
+      'Preview unavailable. Review and edit the extracted text anyway.';
 
   @override
   String get checkThisText => 'Check this text';
 
   @override
   String get noOcrText =>
-      'No readable text found. Choose another image or type the message.';
+      'No text found. Choose another image or type the message.';
 
   @override
-  String get smsOff => 'Incoming SMS checks unavailable in this build';
+  String get smsOff => 'Auto SMS is unavailable.';
 
   @override
   String get smsDetail =>
-      'Manual checks work without SMS access. Automatic checks need an eligible Android build.';
+      'Manual scans work without SMS access. Auto checks need a supported Android phone.';
 
   @override
   String get reminderTitle => 'Never share your OTP.';
@@ -294,6 +311,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newScan => 'Check another message';
+
+  @override
+  String get checkAnotherLink => 'Check another link';
+
+  @override
+  String get checkAnotherScreenshot => 'Check another screenshot';
+
+  @override
+  String get viewFullImage => 'View full image';
+
+  @override
+  String get checkAiShort => 'Check';
+
+  @override
+  String get linkDomainLabel => 'Domain';
+
+  @override
+  String get linkSimilarityLabel => 'Similarity';
+
+  @override
+  String get linkStatusLabel => 'Status';
+
+  @override
+  String resultLinkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count links found',
+      one: '1 link found',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String resultMoreFindings(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'See $count more signs',
+      one: 'See 1 more sign',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get whyFlagged => 'Why this was flagged';
@@ -315,15 +375,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lowCopy =>
-      'No common warning signs found. This does not verify who sent the message.';
+      'No common warning signs found. The sender is not verified.';
 
   @override
   String get cautionCopy =>
-      'Some details deserve a closer look. Verify the request before replying or paying.';
+      'Some details need a closer look. Verify before replying or paying.';
 
   @override
   String get highCopy =>
-      'This message has strong warning signs. Pause before sharing information or money.';
+      'Strong warning signs found. Pause before sharing money or details.';
 
   @override
   String resultRiskLabel(String risk) {
@@ -334,6 +394,9 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get unknownStatus => 'Unknown';
 
   @override
   String get analysisSummary => 'Analysis Summary';
@@ -349,7 +412,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notListed =>
-      'Not on the provider threat list; this does not prove safety';
+      'Not on the threat list. That does not prove it is safe.';
 
   @override
   String get linkUnavailable => 'Online check unavailable. Try again later.';
@@ -383,7 +446,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clickedAdvice =>
-      'Already shared details? Contact your bank or e-wallet through its official app immediately.';
+      'Already shared details? Contact your bank or e-wallet through its official app now.';
 
   @override
   String get historyHeading => 'Your checks, kept private.';
@@ -401,8 +464,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyOff => 'History is off';
 
   @override
-  String get historyOffBody =>
-      'Messages stay in this session. Enable encrypted history for the latest 100 checks, with review access expiring after 30 days.';
+  String get historyOffBody => 'Save up to 100 encrypted scans for 30 days.';
 
   @override
   String get enableHistory => 'Enable private history';
@@ -412,7 +474,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noHistoryBody =>
-      'Your saved checks will appear here. Start with a message you want to verify.';
+      'Saved checks appear here. Start with a message you want to verify.';
 
   @override
   String get noMatches => 'No matching scans';
@@ -461,14 +523,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteBody =>
-      'This removes saved checks from Usisa only. It does not delete messages from your SMS app.';
+      'This removes the saved check from Usisa, not the SMS in your messaging app.';
 
   @override
   String get clearSavedData => 'Clear saved data';
 
   @override
-  String get notSaved =>
-      'Not saved. Your result is still available in this session.';
+  String get notSaved => 'Not saved. This result stays in your session.';
 
   @override
   String get saveFailed => 'Could not save the change. Try again.';
@@ -494,7 +555,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get draftDetail =>
-      'Restore one encrypted text draft within 24 hours. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Screenshots are never saved.';
+      'Encrypted text draft for 24 hours. Screenshots are not saved.';
 
   @override
   String get onlineChecks => 'Online link checks';
@@ -503,8 +564,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onlineDisclosure => 'Enable online link checks?';
 
   @override
+  String get onlineSettingsDescription =>
+      'Check full URLs with Google Safe Browsing.';
+
+  @override
   String get onlineBody =>
-      'Full URLs, including path and query, go to the Usisa gateway and Google Safe Browsing for manual link checks until disabled. Messages, senders, and images stay on your device. SMS checks never upload URLs. Google can miss threats or flag legitimate sites. Online advisories expire; saved history keeps local findings and last-check details, not online verdicts.';
+      'While enabled, manual link checks send full URLs, including paths and queries, to the Usisa gateway and Google Safe Browsing. Messages, senders, and images stay on-device. SMS checks never upload URLs. Google may miss threats or flag safe sites. Online advisories expire. History saves local findings and last-check details, not online verdicts.';
 
   @override
   String get googleAdvisory => 'Advisory provided by Google';
@@ -537,15 +602,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutBody =>
-      'Built for messages in the Philippines. Usisa points out potential scam indicators; it cannot guarantee detection or verify every sender.';
+      'Made for messages in the Philippines. Usisa flags possible scam signs; it can miss scams and cannot verify every sender.';
 
   @override
   String get sessionPreview =>
-      'Browser preview: session-only storage. Native OCR and incoming SMS need Android.';
+      'Browser preview stores data for this session only. OCR and incoming SMS need Android.';
 
   @override
   String get privateHistoryConsent =>
-      'Save encrypted copies of message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Clear saved data erases them immediately when storage is available.';
+      'Save encrypted message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Usisa deletes expired files while it runs or next time you open it. A stopped app cannot delete them on schedule. Clear saved data deletes them when storage is available.';
 
   @override
   String get reviewRecoveredScreenshot => 'Review previous screenshot';
@@ -578,11 +643,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeBody =>
-      'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish messages in the Philippines.';
+      'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish in the Philippines.';
 
   @override
   String get welcomePrivacy =>
-      'Manual text checks work offline. History, cloud link checks, and incoming SMS checks are optional and start off. Usisa can miss scams; verify important requests independently.';
+      'Manual text checks work offline. History, online link checks, and incoming SMS are optional and off by default. Usisa can miss scams. Verify important requests independently.';
 
   @override
   String get startChecking => 'Start checking';
@@ -595,7 +660,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get smsDisclosureBody =>
-      'Usisa reads only new SMS received while this feature is enabled. It checks them locally without uploading messages or reading your inbox or other apps. Up to 20 encrypted reviews expire after 15 minutes; Android may delay file cleanup. Android may delay or stop checks; force-stopping Usisa prevents them. Detection can miss scams.';
+      'Checks new SMS on this device only. No inbox access or message uploads. Up to 20 encrypted reviews expire in 15 minutes. Android may delay checks; force-stop stops checks. Some scams may be missed.';
 
   @override
   String get enableSmsChecks => 'Enable SMS checks';
@@ -611,18 +676,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get smsLimits =>
-      'Local checks only. Android may delay checks; coverage is not guaranteed. Low-risk messages stay quiet.';
+      'Checks stay on-device. Android may delay them; coverage is not guaranteed. Low-risk messages stay quiet.';
 
   @override
   String get smsAlertsOff =>
-      'Notifications are off. Open recent SMS reviews here. You can also enable notifications in Android app settings.';
+      'Notifications are off. Recent reviews stay here. Enable alerts in Android settings.';
 
   @override
   String get enableSmsAlerts => 'Enable review notifications';
 
   @override
   String get smsDegraded =>
-      'Some messages could not be checked. Coverage is incomplete. Try turning SMS checks off and on again.';
+      'Some messages were not checked. Turn SMS checks off, then on again.';
 
   @override
   String get manageSms => 'Manage SMS checks';
@@ -632,19 +697,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get smsTemporary =>
-      'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are removed after checking.';
+      'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are deleted after checking.';
 
   @override
   String get smsEmpty =>
-      'No temporary SMS reviews. Messages may have expired, stayed quiet, or not been received while checks were enabled.';
+      'No temporary reviews. They may have expired, been low-risk, or arrived while checks were off.';
 
   @override
   String get smsMissing =>
-      'This SMS review is unavailable. It may have expired, been erased, or checks were turned off. Copy the message into Text to check it again.';
+      'Review unavailable. It may have expired, been deleted, or SMS checks were off. Copy the message into a manual scan.';
 
   @override
   String get smsPending =>
-      'This message has no completed check yet. Try again shortly, or copy it into Text for a manual check.';
+      'No check completed yet. Try again soon or copy the message into a manual scan.';
 
   @override
   String get continueAction => 'Continue';
@@ -741,7 +806,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeBody =>
-      'Scan messages, links, or screenshots and get an instant risk analysis.';
+      'Check messages, links, and screenshots for scam signs.';
 
   @override
   String get scanMessageCard => 'Scan Message';
@@ -753,13 +818,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkLinkCard => 'Check a Link';
 
   @override
-  String get checkLinkDescription => 'Check if a URL is safe';
+  String get checkLinkDescription => 'Check a URL before opening.';
 
   @override
   String get scanScreenshotCard => 'Scan Screenshot';
 
   @override
-  String get scanScreenshotDescription => 'Use OCR to read text';
+  String get scanScreenshotDescription =>
+      'Read message text from a screenshot.';
 
   @override
   String get aiScan => 'AI Scan';
@@ -768,7 +834,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiBeta => 'Beta';
 
   @override
-  String get aiHomeDescription => 'Get a deeper AI analysis';
+  String get aiHomeDescription => 'Get AI help with scam checks.';
 
   @override
   String get homeAiBadge => 'New';
@@ -777,14 +843,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoSmsCard => 'Auto SMS Detection';
 
   @override
-  String get autoSmsDescription => 'Check incoming SMS for potential scams';
+  String get autoSmsDescription => 'Check incoming SMS for scams.';
 
   @override
   String get aiIntroTitle => 'AI-Powered Scam Analysis';
 
   @override
   String get aiIntroBody =>
-      'Analyze a message, link, or screenshot with AI to explain possible risks and suggest safe next steps.';
+      'Check a message, link, or screenshot. AI explains possible risks and next steps.';
 
   @override
   String get aiMultiInput => 'Multi-input';
@@ -808,7 +874,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startAiScan => 'Start AI Scan';
 
   @override
-  String get aiInputQuestion => 'What do you want to analyze?';
+  String get aiInputQuestion => 'What do you want to check?';
 
   @override
   String get aiTextOption => 'Text / Message';
@@ -820,13 +886,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiLinkOption => 'URL / Link';
 
   @override
-  String get aiLinkOptionBody => 'Check a link for scam context';
+  String get aiLinkOptionBody => 'Check a link for scam signs.';
 
   @override
   String get aiScreenshotOption => 'Screenshot / Image';
 
   @override
-  String get aiScreenshotOptionBody => 'Use OCR to read and review text';
+  String get aiScreenshotOptionBody => 'Read and review text with OCR.';
 
   @override
   String get aiProgressTitle => 'Analyzing with AI…';
@@ -838,7 +904,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiStageLocal => 'On-device checks complete';
 
   @override
-  String get aiStageRequest => 'Requesting AI assessment';
+  String get aiStageRequest => 'Sending text for an AI check…';
 
   @override
   String get aiStageResult => 'Preparing your result';
@@ -848,10 +914,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get smsDetectionBody =>
-      'Automatically checks incoming SMS for potential scams and alerts you if something looks suspicious.';
+      'Checks new SMS for scam signs and alerts you to suspicious messages.';
 
   @override
-  String get smsRecentDetections => 'Recent Detections';
+  String get smsRecentDetections => 'Recent SMS checks';
 
   @override
   String get warningSigns => 'Detected Warning Signs';
@@ -867,7 +933,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learnScamTipsBody =>
-      'Simple ways to avoid common scams in the Philippines.';
+      'Simple ways to avoid common\nscams in the Philippines.';
 
   @override
   String get learnCommonScams => 'Common Scams in PH';
@@ -880,14 +946,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingSecondBody =>
-      'Usisa shows the words, links, and requests that need a closer look.';
+      'See which words, links, and requests need a closer look.';
 
   @override
   String get onboardingThirdTitle => 'Choose what stays on your device.';
 
   @override
   String get onboardingThirdBody =>
-      'Manual scans stay local. AI and online link checks only run after review and consent.';
+      'Manual checks stay local. AI and online link checks need your review and consent.';
 
   @override
   String get linkCheckerTitle => 'Link Checker';
@@ -908,11 +974,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifications => 'Notifications';
 
   @override
-  String get aiScanToggleBody =>
-      'Use AI-assisted scans for deeper context. Each upload still needs your review and confirmation.';
+  String get aiScanToggleBody => 'Review before AI checks text.';
 
   @override
-  String get smsNotificationsEnabled => 'Generic SMS alerts are enabled.';
+  String get smsNotificationsEnabled => 'SMS notifications are enabled.';
 
   @override
   String smsRecentTab(int count) {
@@ -925,7 +990,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get smsFlaggedEmpty => 'No flagged messages among recent SMS checks.';
+  String get smsFlaggedEmpty => 'No flagged messages in recent SMS checks.';
 
   @override
   String get home => 'Home';

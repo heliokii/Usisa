@@ -82,6 +82,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('example.test').first);
+      await tester.pumpAndSettle();
       expect(find.text('Link safety is unknown.'), findsOneWidget);
       expect(
         find.textContaining('Previously listed as a threat.'),

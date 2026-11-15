@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 
 import '../features/scan/scan_models.dart';
@@ -46,7 +47,17 @@ abstract final class UsisaTheme {
       borderRadius: BorderRadius.circular(16),
     );
     return base.copyWith(
-      scaffoldBackgroundColor: Colors.transparent,
+      scaffoldBackgroundColor: background,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: _UsisaPageTransitionsBuilder(),
+          TargetPlatform.iOS: _UsisaPageTransitionsBuilder(),
+          TargetPlatform.macOS: _UsisaPageTransitionsBuilder(),
+          TargetPlatform.windows: _UsisaPageTransitionsBuilder(),
+          TargetPlatform.linux: _UsisaPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: _UsisaPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         foregroundColor: text,
@@ -185,5 +196,32 @@ abstract final class UsisaTheme {
         Icons.fact_check_outlined,
       ),
     };
+  }
+}
+
+class _UsisaPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _UsisaPageTransitionsBuilder();
+
+  static const _sharedAxis = SharedAxisPageTransitionsBuilder(
+    transitionType: SharedAxisTransitionType.horizontal,
+    fillColor: UsisaTheme.cream,
+  );
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    return _sharedAxis.buildTransitions(
+      route,
+      context,
+      animation,
+      secondaryAnimation,
+      child,
+    );
   }
 }

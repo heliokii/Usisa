@@ -116,14 +116,19 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        final attribution = find.text('Advisory provided by Google');
+        final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
+        final host = find.text('submitted.example').first;
+        await tester.ensureVisible(host);
+        await tester.tap(host);
+        await tester.pumpAndSettle();
+        final attribution = find.text(l.googleAdvisory);
         if (expired) {
           expect(attribution, findsNothing);
           expect(
-            find.textContaining('Previously listed as a threat.'),
-            findsNothing,
+            find.textContaining(l.previousThreat),
+            findsOneWidget,
           );
-          expect(find.text('Link safety is unknown.'), findsOneWidget);
+          expect(find.text(l.unknownLink), findsOneWidget);
         } else {
           await tester.ensureVisible(attribution);
           await tester.tap(attribution);
@@ -159,14 +164,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('submitted.example'));
-    await tester.tap(find.text('submitted.example'));
+    final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
+    final host = find.text('submitted.example').first;
+    await tester.ensureVisible(host);
+    await tester.tap(host);
     await tester.pumpAndSettle();
-    for (final label in [
-      'Learn about phishing',
-      'Learn about malware',
-      'Learn about unwanted software',
-    ]) {
+    for (final label in [l.phishingHelp, l.malwareHelp, l.unwantedHelp]) {
       await tester.ensureVisible(find.text(label));
       await tester.tap(find.text(label));
       await tester.pumpAndSettle();
@@ -196,16 +199,19 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Advisory provided by Google'));
-        await tester.tap(find.text('Advisory provided by Google'));
+        final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
+        final host = find.text('submitted.example').first;
+        await tester.ensureVisible(host);
+        await tester.tap(host);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text(l.googleAdvisory));
+        await tester.tap(find.text(l.googleAdvisory));
         await tester.pump();
         expect(
-          find.text(
-            'Could not open the help page. Your scan is still available.',
-          ),
+          find.text(l.advisoryUnavailable),
           findsOneWidget,
         );
-        expect(find.text('Link Checker'), findsOneWidget);
+        expect(find.text(l.linkCheckerTitle), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -238,8 +244,13 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Advisory provided by Google'));
-        await tester.tap(find.text('Advisory provided by Google'));
+        final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
+        final host = find.text('submitted.example').first;
+        await tester.ensureVisible(host);
+        await tester.tap(host);
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text(l.googleAdvisory));
+        await tester.tap(find.text(l.googleAdvisory));
         await tester.pumpAndSettle();
         expect(opened, isTrue);
         expect(tester.takeException(), isNull);

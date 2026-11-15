@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiDisclosure.
   ///
   /// In en, this message translates to:
-  /// **'This exact text will be sent to Usisa’s server and Groq for an AI assessment. Remove any codes or personal details you do not want to share. Names, numbers and links in this text are included. Your screenshot and separate sender details stay on your device. Groq may retain requests for reliability or abuse monitoring, depending on account settings. AI can make mistakes; it does not verify the sender or visit links.'**
+  /// **'This exact text goes to Usisa’s server and Groq for AI review. Remove codes or personal details you do not want to share. Names, numbers, and links are included. Screenshots and sender details stay on your device. Groq may keep requests for reliability or abuse monitoring, based on account settings. AI can be wrong; it does not verify senders or open links.'**
   String get aiDisclosure;
 
   /// No description provided for @aiTextLabel.
@@ -173,37 +173,37 @@ abstract class AppLocalizations {
   /// No description provided for @aiUnknown.
   ///
   /// In en, this message translates to:
-  /// **'AI could not assess this message. Use the local findings and verify independently.'**
+  /// **'AI could not assess this message. Use local findings and verify it yourself.'**
   String get aiUnknown;
 
   /// No description provided for @aiUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'On-device checks complete; AI assessment unavailable. Your text is preserved. You can review it and try again.'**
+  /// **'Local checks are done, but AI is unavailable. Your text is still here. Review it and try again.'**
   String get aiUnavailable;
 
   /// No description provided for @aiCancelled.
   ///
   /// In en, this message translates to:
-  /// **'AI check cancelled. Local findings remain available. A request already sent may have been processed.'**
+  /// **'AI check cancelled. Local findings remain. A sent request may still be processed.'**
   String get aiCancelled;
 
   /// No description provided for @aiNotRequested.
   ///
   /// In en, this message translates to:
-  /// **'AI was not requested. Review the text to add an optional online assessment.'**
+  /// **'No AI check yet. Review the text to add one.'**
   String get aiNotRequested;
 
   /// No description provided for @aiDisagreement.
   ///
   /// In en, this message translates to:
-  /// **'The assessments differ. The stronger warning is kept; neither assessment proves the message is safe.'**
+  /// **'Results differ. Keep the stronger warning; neither proves the message safe.'**
   String get aiDisagreement;
 
   /// No description provided for @aiReviewed.
   ///
   /// In en, this message translates to:
-  /// **'This result uses the text reviewed for AI.'**
+  /// **'AI used the text you reviewed.'**
   String get aiReviewed;
 
   /// No description provided for @aiRetry.
@@ -215,13 +215,13 @@ abstract class AppLocalizations {
   /// No description provided for @aiLimitations.
   ///
   /// In en, this message translates to:
-  /// **'AI adds context, but may miss scams or flag legitimate messages. Quotes show the text it used; they do not prove its conclusion.'**
+  /// **'AI can miss scams or flag safe messages. Quotes show its input, not proof.'**
   String get aiLimitations;
 
   /// No description provided for @aiSettingsBody.
   ///
   /// In en, this message translates to:
-  /// **'Optional online help for text, links and reviewed screenshot text. You review and confirm each upload to Usisa’s server and Groq. Automatic SMS checks stay on-device. Online link-check consent does not enable AI.'**
+  /// **'AI can check text, links, and screenshot text you approve. Confirm each upload to Usisa and Groq. Auto SMS stays on-device. Link-check consent does not enable AI.'**
   String get aiSettingsBody;
 
   /// No description provided for @aiFindingTitle.
@@ -251,13 +251,13 @@ abstract class AppLocalizations {
   /// No description provided for @learnOtpBody.
   ///
   /// In en, this message translates to:
-  /// **'Treat requests to share a code with care, even when a sender claims to be support. An ordinary OTP reminder may tell you never to share the code. Verify requests through the official app you opened yourself.'**
+  /// **'Treat code requests with care, even from claimed support. Real OTP messages may warn you not to share the code. Verify through the official app.'**
   String get learnOtpBody;
 
   /// No description provided for @learnBankTitle.
   ///
   /// In en, this message translates to:
-  /// **'Fake bank and e-wallet alerts'**
+  /// **'Bank & Wallet Scams'**
   String get learnBankTitle;
 
   /// No description provided for @learnBankBody.
@@ -266,17 +266,29 @@ abstract class AppLocalizations {
   /// **'An account suspension threat can pressure you to tap a link. Sender names can be spoofed. Open your bank or e-wallet app directly to check your account; do not use the message\'s link as proof.'**
   String get learnBankBody;
 
+  /// No description provided for @learnBankSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake messages from BPI,\nGCash, Maya, etc.'**
+  String get learnBankSummary;
+
   /// No description provided for @learnGovernmentTitle.
   ///
   /// In en, this message translates to:
-  /// **'Government impersonation'**
+  /// **'Government Impersonation'**
   String get learnGovernmentTitle;
 
   /// No description provided for @learnGovernmentBody.
   ///
   /// In en, this message translates to:
-  /// **'Messages may claim to come from SSS, PhilHealth, Pag-IBIG, or another agency. Verify unexpected aid, penalty, or registration requests using an independently opened official service. A logo or government name does not prove authenticity.'**
+  /// **'Scammers may pose as SSS, PhilHealth, Pag-IBIG, or another agency. Verify unexpected aid, fines, or registration through an official service you open yourself. A logo proves nothing.'**
   String get learnGovernmentBody;
+
+  /// No description provided for @learnGovernmentSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Scams pretending to be from\nSSS, PAG-IBIG, PhilPost, and more.'**
+  String get learnGovernmentSummary;
 
   /// No description provided for @learnDeliveryTitle.
   ///
@@ -287,13 +299,13 @@ abstract class AppLocalizations {
   /// No description provided for @learnDeliveryBody.
   ///
   /// In en, this message translates to:
-  /// **'A small redelivery fee may lead to a page asking for card or account details. Check the order inside the shopping or courier app. A shortened link hides its destination; Usisa does not expand it.'**
+  /// **'Fake redelivery fees can lead to pages that steal card or account details. Check orders in your courier app. Short links hide destinations; Usisa does not expand them.'**
   String get learnDeliveryBody;
 
   /// No description provided for @learnSellerTitle.
   ///
   /// In en, this message translates to:
-  /// **'Online seller payments'**
+  /// **'Online Selling Scams'**
   String get learnSellerTitle;
 
   /// No description provided for @learnSellerBody.
@@ -301,6 +313,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Be cautious about pressure to move a conversation or payment outside a marketplace\'s normal process. Confirm the seller, item, recipient and payment purpose through trusted records before sending money.'**
   String get learnSellerBody;
+
+  /// No description provided for @learnSellerSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake sellers, payment proofs,\nand delivery tricks.'**
+  String get learnSellerSummary;
 
   /// No description provided for @learnRecoveryTitle.
   ///
@@ -311,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @learnRecoveryBody.
   ///
   /// In en, this message translates to:
-  /// **'Pause further payments and contact your bank or e-wallet through its official app or a trusted contact from your own records. Change affected passwords through the real service. Keep relevant evidence privately. Never share another OTP with someone promising recovery.'**
+  /// **'Stop payments. Contact your bank or e-wallet through its official app or a trusted contact. Change exposed passwords; keep evidence private. Never share another OTP with a recovery helper.'**
   String get learnRecoveryBody;
 
   /// No description provided for @selectedCount.
@@ -371,13 +389,13 @@ abstract class AppLocalizations {
   /// No description provided for @scanIntro.
   ///
   /// In en, this message translates to:
-  /// **'A little pause can protect a lot. Check a message or link before you act.'**
+  /// **'Check a message or link before you act.'**
   String get scanIntro;
 
   /// No description provided for @localPrivate.
   ///
   /// In en, this message translates to:
-  /// **'On your device. Private by default.'**
+  /// **'Checks stay on your device by default.'**
   String get localPrivate;
 
   /// No description provided for @message.
@@ -431,7 +449,7 @@ abstract class AppLocalizations {
   /// No description provided for @linkCheckSupport.
   ///
   /// In en, this message translates to:
-  /// **'Paste a URL to see risk indicators before you open it.'**
+  /// **'See known risk signs before opening a URL.'**
   String get linkCheckSupport;
 
   /// No description provided for @inputHint.
@@ -476,6 +494,12 @@ abstract class AppLocalizations {
   /// **'Checking warning signs…'**
   String get checking;
 
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
+
   /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
@@ -488,16 +512,28 @@ abstract class AppLocalizations {
   /// **'Choose screenshot'**
   String get chooseScreenshot;
 
+  /// No description provided for @photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get photos;
+
+  /// No description provided for @browseFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse files'**
+  String get browseFiles;
+
   /// No description provided for @screenshotIntro.
   ///
   /// In en, this message translates to:
-  /// **'Choose an image of a message. Review the extracted text before checking it.'**
+  /// **'Choose a message screenshot. Review its text before scanning.'**
   String get screenshotIntro;
 
   /// No description provided for @ocrNativeOnly.
   ///
   /// In en, this message translates to:
-  /// **'Screenshot OCR is available in the Android and iOS app. You can paste text here.'**
+  /// **'OCR works in the Android and iOS app. You can paste text here.'**
   String get ocrNativeOnly;
 
   /// No description provided for @readingImage.
@@ -515,13 +551,13 @@ abstract class AppLocalizations {
   /// No description provided for @ocrNotice.
   ///
   /// In en, this message translates to:
-  /// **'Images can be misread. Check names, numbers, and links before continuing.'**
+  /// **'Check names, numbers, and links. OCR can misread them.'**
   String get ocrNotice;
 
   /// No description provided for @previewUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Image preview is unavailable. You can still review and edit the extracted text.'**
+  /// **'Preview unavailable. Review and edit the extracted text anyway.'**
   String get previewUnavailable;
 
   /// No description provided for @checkThisText.
@@ -533,19 +569,19 @@ abstract class AppLocalizations {
   /// No description provided for @noOcrText.
   ///
   /// In en, this message translates to:
-  /// **'No readable text found. Choose another image or type the message.'**
+  /// **'No text found. Choose another image or type the message.'**
   String get noOcrText;
 
   /// No description provided for @smsOff.
   ///
   /// In en, this message translates to:
-  /// **'Incoming SMS checks unavailable in this build'**
+  /// **'Auto SMS is unavailable.'**
   String get smsOff;
 
   /// No description provided for @smsDetail.
   ///
   /// In en, this message translates to:
-  /// **'Manual checks work without SMS access. Automatic checks need an eligible Android build.'**
+  /// **'Manual scans work without SMS access. Auto checks need a supported Android phone.'**
   String get smsDetail;
 
   /// No description provided for @reminderTitle.
@@ -571,6 +607,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check another message'**
   String get newScan;
+
+  /// No description provided for @checkAnotherLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Check another link'**
+  String get checkAnotherLink;
+
+  /// No description provided for @checkAnotherScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Check another screenshot'**
+  String get checkAnotherScreenshot;
+
+  /// No description provided for @viewFullImage.
+  ///
+  /// In en, this message translates to:
+  /// **'View full image'**
+  String get viewFullImage;
+
+  /// No description provided for @checkAiShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get checkAiShort;
+
+  /// No description provided for @linkDomainLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Domain'**
+  String get linkDomainLabel;
+
+  /// No description provided for @linkSimilarityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Similarity'**
+  String get linkSimilarityLabel;
+
+  /// No description provided for @linkStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get linkStatusLabel;
+
+  /// No description provided for @resultLinkCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 link found} other{{count} links found}}'**
+  String resultLinkCount(int count);
+
+  /// No description provided for @resultMoreFindings.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{See 1 more sign} other{See {count} more signs}}'**
+  String resultMoreFindings(int count);
 
   /// No description provided for @whyFlagged.
   ///
@@ -611,19 +701,19 @@ abstract class AppLocalizations {
   /// No description provided for @lowCopy.
   ///
   /// In en, this message translates to:
-  /// **'No common warning signs found. This does not verify who sent the message.'**
+  /// **'No common warning signs found. The sender is not verified.'**
   String get lowCopy;
 
   /// No description provided for @cautionCopy.
   ///
   /// In en, this message translates to:
-  /// **'Some details deserve a closer look. Verify the request before replying or paying.'**
+  /// **'Some details need a closer look. Verify before replying or paying.'**
   String get cautionCopy;
 
   /// No description provided for @highCopy.
   ///
   /// In en, this message translates to:
-  /// **'This message has strong warning signs. Pause before sharing information or money.'**
+  /// **'Strong warning signs found. Pause before sharing money or details.'**
   String get highCopy;
 
   /// No description provided for @resultRiskLabel.
@@ -631,6 +721,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{risk, select, low{Safe} caution{Need Review} other{High Risk}}'**
   String resultRiskLabel(String risk);
+
+  /// No description provided for @unknownStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknownStatus;
 
   /// No description provided for @analysisSummary.
   ///
@@ -659,7 +755,7 @@ abstract class AppLocalizations {
   /// No description provided for @notListed.
   ///
   /// In en, this message translates to:
-  /// **'Not on the provider threat list; this does not prove safety'**
+  /// **'Not on the threat list. That does not prove it is safe.'**
   String get notListed;
 
   /// No description provided for @linkUnavailable.
@@ -719,7 +815,7 @@ abstract class AppLocalizations {
   /// No description provided for @clickedAdvice.
   ///
   /// In en, this message translates to:
-  /// **'Already shared details? Contact your bank or e-wallet through its official app immediately.'**
+  /// **'Already shared details? Contact your bank or e-wallet through its official app now.'**
   String get clickedAdvice;
 
   /// No description provided for @historyHeading.
@@ -755,7 +851,7 @@ abstract class AppLocalizations {
   /// No description provided for @historyOffBody.
   ///
   /// In en, this message translates to:
-  /// **'Messages stay in this session. Enable encrypted history for the latest 100 checks, with review access expiring after 30 days.'**
+  /// **'Save up to 100 encrypted scans for 30 days.'**
   String get historyOffBody;
 
   /// No description provided for @enableHistory.
@@ -773,7 +869,7 @@ abstract class AppLocalizations {
   /// No description provided for @noHistoryBody.
   ///
   /// In en, this message translates to:
-  /// **'Your saved checks will appear here. Start with a message you want to verify.'**
+  /// **'Saved checks appear here. Start with a message you want to verify.'**
   String get noHistoryBody;
 
   /// No description provided for @noMatches.
@@ -869,7 +965,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteBody.
   ///
   /// In en, this message translates to:
-  /// **'This removes saved checks from Usisa only. It does not delete messages from your SMS app.'**
+  /// **'This removes the saved check from Usisa, not the SMS in your messaging app.'**
   String get deleteBody;
 
   /// No description provided for @clearSavedData.
@@ -881,7 +977,7 @@ abstract class AppLocalizations {
   /// No description provided for @notSaved.
   ///
   /// In en, this message translates to:
-  /// **'Not saved. Your result is still available in this session.'**
+  /// **'Not saved. This result stays in your session.'**
   String get notSaved;
 
   /// No description provided for @saveFailed.
@@ -929,7 +1025,7 @@ abstract class AppLocalizations {
   /// No description provided for @draftDetail.
   ///
   /// In en, this message translates to:
-  /// **'Restore one encrypted text draft within 24 hours. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Screenshots are never saved.'**
+  /// **'Encrypted text draft for 24 hours. Screenshots are not saved.'**
   String get draftDetail;
 
   /// No description provided for @onlineChecks.
@@ -944,10 +1040,16 @@ abstract class AppLocalizations {
   /// **'Enable online link checks?'**
   String get onlineDisclosure;
 
+  /// No description provided for @onlineSettingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Check full URLs with Google Safe Browsing.'**
+  String get onlineSettingsDescription;
+
   /// No description provided for @onlineBody.
   ///
   /// In en, this message translates to:
-  /// **'Full URLs, including path and query, go to the Usisa gateway and Google Safe Browsing for manual link checks until disabled. Messages, senders, and images stay on your device. SMS checks never upload URLs. Google can miss threats or flag legitimate sites. Online advisories expire; saved history keeps local findings and last-check details, not online verdicts.'**
+  /// **'While enabled, manual link checks send full URLs, including paths and queries, to the Usisa gateway and Google Safe Browsing. Messages, senders, and images stay on-device. SMS checks never upload URLs. Google may miss threats or flag safe sites. Online advisories expire. History saves local findings and last-check details, not online verdicts.'**
   String get onlineBody;
 
   /// No description provided for @googleAdvisory.
@@ -1007,19 +1109,19 @@ abstract class AppLocalizations {
   /// No description provided for @aboutBody.
   ///
   /// In en, this message translates to:
-  /// **'Built for messages in the Philippines. Usisa points out potential scam indicators; it cannot guarantee detection or verify every sender.'**
+  /// **'Made for messages in the Philippines. Usisa flags possible scam signs; it can miss scams and cannot verify every sender.'**
   String get aboutBody;
 
   /// No description provided for @sessionPreview.
   ///
   /// In en, this message translates to:
-  /// **'Browser preview: session-only storage. Native OCR and incoming SMS need Android.'**
+  /// **'Browser preview stores data for this session only. OCR and incoming SMS need Android.'**
   String get sessionPreview;
 
   /// No description provided for @privateHistoryConsent.
   ///
   /// In en, this message translates to:
-  /// **'Save encrypted copies of message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Expired files are erased while Usisa runs or on next use; a closed or stopped app cannot erase on schedule. Clear saved data erases them immediately when storage is available.'**
+  /// **'Save encrypted message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Usisa deletes expired files while it runs or next time you open it. A stopped app cannot delete them on schedule. Clear saved data deletes them when storage is available.'**
   String get privateHistoryConsent;
 
   /// No description provided for @reviewRecoveredScreenshot.
@@ -1073,13 +1175,13 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeBody.
   ///
   /// In en, this message translates to:
-  /// **'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish messages in the Philippines.'**
+  /// **'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish in the Philippines.'**
   String get welcomeBody;
 
   /// No description provided for @welcomePrivacy.
   ///
   /// In en, this message translates to:
-  /// **'Manual text checks work offline. History, cloud link checks, and incoming SMS checks are optional and start off. Usisa can miss scams; verify important requests independently.'**
+  /// **'Manual text checks work offline. History, online link checks, and incoming SMS are optional and off by default. Usisa can miss scams. Verify important requests independently.'**
   String get welcomePrivacy;
 
   /// No description provided for @startChecking.
@@ -1103,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @smsDisclosureBody.
   ///
   /// In en, this message translates to:
-  /// **'Usisa reads only new SMS received while this feature is enabled. It checks them locally without uploading messages or reading your inbox or other apps. Up to 20 encrypted reviews expire after 15 minutes; Android may delay file cleanup. Android may delay or stop checks; force-stopping Usisa prevents them. Detection can miss scams.'**
+  /// **'Checks new SMS on this device only. No inbox access or message uploads. Up to 20 encrypted reviews expire in 15 minutes. Android may delay checks; force-stop stops checks. Some scams may be missed.'**
   String get smsDisclosureBody;
 
   /// No description provided for @enableSmsChecks.
@@ -1133,13 +1235,13 @@ abstract class AppLocalizations {
   /// No description provided for @smsLimits.
   ///
   /// In en, this message translates to:
-  /// **'Local checks only. Android may delay checks; coverage is not guaranteed. Low-risk messages stay quiet.'**
+  /// **'Checks stay on-device. Android may delay them; coverage is not guaranteed. Low-risk messages stay quiet.'**
   String get smsLimits;
 
   /// No description provided for @smsAlertsOff.
   ///
   /// In en, this message translates to:
-  /// **'Notifications are off. Open recent SMS reviews here. You can also enable notifications in Android app settings.'**
+  /// **'Notifications are off. Recent reviews stay here. Enable alerts in Android settings.'**
   String get smsAlertsOff;
 
   /// No description provided for @enableSmsAlerts.
@@ -1151,7 +1253,7 @@ abstract class AppLocalizations {
   /// No description provided for @smsDegraded.
   ///
   /// In en, this message translates to:
-  /// **'Some messages could not be checked. Coverage is incomplete. Try turning SMS checks off and on again.'**
+  /// **'Some messages were not checked. Turn SMS checks off, then on again.'**
   String get smsDegraded;
 
   /// No description provided for @manageSms.
@@ -1169,25 +1271,25 @@ abstract class AppLocalizations {
   /// No description provided for @smsTemporary.
   ///
   /// In en, this message translates to:
-  /// **'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are removed after checking.'**
+  /// **'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are deleted after checking.'**
   String get smsTemporary;
 
   /// No description provided for @smsEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No temporary SMS reviews. Messages may have expired, stayed quiet, or not been received while checks were enabled.'**
+  /// **'No temporary reviews. They may have expired, been low-risk, or arrived while checks were off.'**
   String get smsEmpty;
 
   /// No description provided for @smsMissing.
   ///
   /// In en, this message translates to:
-  /// **'This SMS review is unavailable. It may have expired, been erased, or checks were turned off. Copy the message into Text to check it again.'**
+  /// **'Review unavailable. It may have expired, been deleted, or SMS checks were off. Copy the message into a manual scan.'**
   String get smsMissing;
 
   /// No description provided for @smsPending.
   ///
   /// In en, this message translates to:
-  /// **'This message has no completed check yet. Try again shortly, or copy it into Text for a manual check.'**
+  /// **'No check completed yet. Try again soon or copy the message into a manual scan.'**
   String get smsPending;
 
   /// No description provided for @continueAction.
@@ -1247,7 +1349,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeBody.
   ///
   /// In en, this message translates to:
-  /// **'Scan messages, links, or screenshots and get an instant risk analysis.'**
+  /// **'Check messages, links, and screenshots for scam signs.'**
   String get homeBody;
 
   /// No description provided for @scanMessageCard.
@@ -1271,7 +1373,7 @@ abstract class AppLocalizations {
   /// No description provided for @checkLinkDescription.
   ///
   /// In en, this message translates to:
-  /// **'Check if a URL is safe'**
+  /// **'Check a URL before opening.'**
   String get checkLinkDescription;
 
   /// No description provided for @scanScreenshotCard.
@@ -1283,7 +1385,7 @@ abstract class AppLocalizations {
   /// No description provided for @scanScreenshotDescription.
   ///
   /// In en, this message translates to:
-  /// **'Use OCR to read text'**
+  /// **'Read message text from a screenshot.'**
   String get scanScreenshotDescription;
 
   /// No description provided for @aiScan.
@@ -1301,7 +1403,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiHomeDescription.
   ///
   /// In en, this message translates to:
-  /// **'Get a deeper AI analysis'**
+  /// **'Get AI help with scam checks.'**
   String get aiHomeDescription;
 
   /// No description provided for @homeAiBadge.
@@ -1319,7 +1421,7 @@ abstract class AppLocalizations {
   /// No description provided for @autoSmsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Check incoming SMS for potential scams'**
+  /// **'Check incoming SMS for scams.'**
   String get autoSmsDescription;
 
   /// No description provided for @aiIntroTitle.
@@ -1331,7 +1433,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiIntroBody.
   ///
   /// In en, this message translates to:
-  /// **'Analyze a message, link, or screenshot with AI to explain possible risks and suggest safe next steps.'**
+  /// **'Check a message, link, or screenshot. AI explains possible risks and next steps.'**
   String get aiIntroBody;
 
   /// No description provided for @aiMultiInput.
@@ -1379,7 +1481,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiInputQuestion.
   ///
   /// In en, this message translates to:
-  /// **'What do you want to analyze?'**
+  /// **'What do you want to check?'**
   String get aiInputQuestion;
 
   /// No description provided for @aiTextOption.
@@ -1403,7 +1505,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiLinkOptionBody.
   ///
   /// In en, this message translates to:
-  /// **'Check a link for scam context'**
+  /// **'Check a link for scam signs.'**
   String get aiLinkOptionBody;
 
   /// No description provided for @aiScreenshotOption.
@@ -1415,7 +1517,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiScreenshotOptionBody.
   ///
   /// In en, this message translates to:
-  /// **'Use OCR to read and review text'**
+  /// **'Read and review text with OCR.'**
   String get aiScreenshotOptionBody;
 
   /// No description provided for @aiProgressTitle.
@@ -1439,7 +1541,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiStageRequest.
   ///
   /// In en, this message translates to:
-  /// **'Requesting AI assessment'**
+  /// **'Sending text for an AI check…'**
   String get aiStageRequest;
 
   /// No description provided for @aiStageResult.
@@ -1457,13 +1559,13 @@ abstract class AppLocalizations {
   /// No description provided for @smsDetectionBody.
   ///
   /// In en, this message translates to:
-  /// **'Automatically checks incoming SMS for potential scams and alerts you if something looks suspicious.'**
+  /// **'Checks new SMS for scam signs and alerts you to suspicious messages.'**
   String get smsDetectionBody;
 
   /// No description provided for @smsRecentDetections.
   ///
   /// In en, this message translates to:
-  /// **'Recent Detections'**
+  /// **'Recent SMS checks'**
   String get smsRecentDetections;
 
   /// No description provided for @warningSigns.
@@ -1493,7 +1595,7 @@ abstract class AppLocalizations {
   /// No description provided for @learnScamTipsBody.
   ///
   /// In en, this message translates to:
-  /// **'Simple ways to avoid common scams in the Philippines.'**
+  /// **'Simple ways to avoid common\nscams in the Philippines.'**
   String get learnScamTipsBody;
 
   /// No description provided for @learnCommonScams.
@@ -1517,7 +1619,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSecondBody.
   ///
   /// In en, this message translates to:
-  /// **'Usisa shows the words, links, and requests that need a closer look.'**
+  /// **'See which words, links, and requests need a closer look.'**
   String get onboardingSecondBody;
 
   /// No description provided for @onboardingThirdTitle.
@@ -1529,7 +1631,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingThirdBody.
   ///
   /// In en, this message translates to:
-  /// **'Manual scans stay local. AI and online link checks only run after review and consent.'**
+  /// **'Manual checks stay local. AI and online link checks need your review and consent.'**
   String get onboardingThirdBody;
 
   /// No description provided for @linkCheckerTitle.
@@ -1571,13 +1673,13 @@ abstract class AppLocalizations {
   /// No description provided for @aiScanToggleBody.
   ///
   /// In en, this message translates to:
-  /// **'Use AI-assisted scans for deeper context. Each upload still needs your review and confirmation.'**
+  /// **'Review before AI checks text.'**
   String get aiScanToggleBody;
 
   /// No description provided for @smsNotificationsEnabled.
   ///
   /// In en, this message translates to:
-  /// **'Generic SMS alerts are enabled.'**
+  /// **'SMS notifications are enabled.'**
   String get smsNotificationsEnabled;
 
   /// No description provided for @smsRecentTab.
@@ -1595,7 +1697,7 @@ abstract class AppLocalizations {
   /// No description provided for @smsFlaggedEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No flagged messages among recent SMS checks.'**
+  /// **'No flagged messages in recent SMS checks.'**
   String get smsFlaggedEmpty;
 
   /// No description provided for @home.
