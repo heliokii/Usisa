@@ -4,6 +4,21 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+abstract class PrepareLauncherIconTask : DefaultTask() {
+    @get:InputFile
+    abstract val sourceImage: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun copyImage() {
+        val target = outputDirectory.get().file("drawable-nodpi/logo_brand.png").asFile
+        target.parentFile.mkdirs()
+        sourceImage.get().asFile.copyTo(target, overwrite = true)
+    }
+}
+
 android {
     namespace = "com.example.usisa"
     compileSdk = flutter.compileSdkVersion
@@ -52,6 +67,21 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             proguardFiles("proguard-rules.pro")
         }
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val task = tasks.register<PrepareLauncherIconTask>(
+            "prepare${variant.name.replaceFirstChar { it.uppercase() }}LauncherIcon",
+        ) {
+            sourceImage.set(layout.projectDirectory.file("../../assets/image/logo-brand.png"))
+            outputDirectory.set(layout.buildDirectory.dir("generated/res/launcher/${variant.name}"))
+        }
+        variant.sources.res?.addGeneratedSourceDirectory(
+            task,
+            PrepareLauncherIconTask::outputDirectory,
+        )
     }
 }
 
