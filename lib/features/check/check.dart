@@ -19,9 +19,12 @@ class CheckInput {
 enum LinkStatus { clean, flagged, shortenerBlocked, opensApp, unresolved }
 
 class LinkCheck {
-  const LinkCheck(this.link, this.status);
+  const LinkCheck(this.link, this.status, {this.destination});
   final String link;
   final LinkStatus status;
+
+  /// The Real destination after all redirects, when the gateway saw it.
+  final String? destination;
 }
 
 enum AiLevel { low, caution, high }
@@ -41,7 +44,13 @@ class AiAnswer {
 
 /// What a Check returns; screens only display this.
 class CheckResult {
-  const CheckResult({required this.text, required this.verdict, required this.reasons, required this.checkedOnPhone});
+  const CheckResult({
+    required this.text,
+    required this.verdict,
+    required this.reasons,
+    required this.checkedOnPhone,
+    this.destinations = const [],
+  });
   final String text;
   final Verdict verdict;
 
@@ -50,6 +59,9 @@ class CheckResult {
 
   /// True when no online check (link or AI) gave an answer.
   final bool checkedOnPhone;
+
+  /// Real destinations of the checked links, shown as "Really goes to ...".
+  final List<String> destinations;
 }
 
 typedef LinkChecker = Future<List<LinkCheck>> Function(List<String> links);
@@ -67,13 +79,18 @@ class CheckPipeline {
 
   Future<CheckResult> run(CheckInput input) async {
     final phone = phoneCheck(input.text);
-    var links = const <LinkCheck>[];
-    if (linkChecker != null && phone.links.isNotEmpty) {
+    final pasted = input.text.trim();
+    // A pasted link the phone check can't spot still goes online, so it is never passed as safe.
+    final found = phone.links.isEmpty && input.source == CheckSource.link && pasted.isNotEmpty ? [pasted] : phone.links;
+    final web = [for (final l in found) if (!opensApp(l)) l];
+    var links = [for (final l in found) if (opensApp(l)) LinkCheck(l, LinkStatus.opensApp)];
+    final online = linkChecker != null && web.isNotEmpty;
+    if (online) {
       try {
-        links = await linkChecker!(phone.links);
+        links = [...links, ...await linkChecker!(web)];
       } catch (_) {
         // Any failure means the links weren't checked, never that they're clean.
-        links = [for (final l in phone.links) LinkCheck(l, LinkStatus.unresolved)];
+        links = [...links, for (final l in web) LinkCheck(l, LinkStatus.unresolved)];
       }
     }
     AiAnswer? ai;
@@ -82,8 +99,24 @@ class CheckPipeline {
         ai = await aiChecker!(input.text);
       } catch (_) {}
     }
-    return decideVerdict(text: input.text, phone: phone, links: links, aiScan: input.aiScan, ai: ai);
+    return decideVerdict(
+      text: input.text,
+      phone: phone,
+      links: links,
+      aiScan: input.aiScan,
+      ai: ai,
+      checkedOnline: online,
+    );
   }
+}
+
+/// Whether a Check would send anything online: it has a link, or came from Check a link.
+bool needsOnline(CheckInput input) => input.source == CheckSource.link || phoneCheck(input.text).links.isNotEmpty;
+
+/// A link with a non-web scheme (intent: and the like) that opens an app instead of a website.
+bool opensApp(String link) {
+  final scheme = RegExp(r'^([a-z][a-z0-9+-]*):(?!\d)', caseSensitive: false).firstMatch(link)?[1]?.toLowerCase();
+  return scheme != null && scheme != 'http' && scheme != 'https';
 }
 
 const _order = [Verdict.looksSafe, Verdict.beCareful, Verdict.dangerous];
@@ -97,6 +130,9 @@ CheckResult decideVerdict({
   required List<LinkCheck> links,
   required bool aiScan,
   AiAnswer? ai,
+
+  /// Whether the online link check ran; defaults to "some link has a result".
+  bool? checkedOnline,
 }) {
   bool has(LinkStatus s) => links.any((l) => l.status == s);
   final strong = [
@@ -141,5 +177,11 @@ CheckResult decideVerdict({
   }.take(3).toList();
   if (reasons.isEmpty && verdict == Verdict.looksSafe) reasons.add('no_signs');
 
-  return CheckResult(text: text, verdict: verdict, reasons: reasons, checkedOnPhone: links.isEmpty && ai == null);
+  return CheckResult(
+    text: text,
+    verdict: verdict,
+    reasons: reasons,
+    checkedOnPhone: !(checkedOnline ?? links.isNotEmpty) && ai == null,
+    destinations: {for (final l in links) ?l.destination}.toList(),
+  );
 }
