@@ -81,6 +81,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get smsCardOff => 'Texts are not being checked';
 
   @override
+  String get smsSetupTitle => 'Protect me from scam texts';
+
+  @override
+  String get smsSetupBody =>
+      'Usisa checks each new text on your phone and warns you only when it may be a scam. Android will ask you to allow SMS and notifications.';
+
+  @override
+  String get smsSetupTurnOn => 'Turn on protection';
+
+  @override
+  String get smsSetupNotNow => 'Not now';
+
+  @override
+  String get smsBackgroundTitle => 'Let Usisa keep running';
+
+  @override
+  String get smsBackgroundBody =>
+      'Your phone may stop apps that run in the background. On the next screen, allow Usisa to start on its own or remove its battery limit, so new texts keep getting checked.';
+
+  @override
+  String get smsBackgroundOpen => 'Open settings';
+
+  @override
+  String get smsBackgroundDone => 'Done';
+
+  @override
+  String get smsOffBanner => 'Scam text protection is off';
+
+  @override
+  String get smsOffBannerBody =>
+      'Usisa needs SMS and notification permission to check your texts.';
+
+  @override
+  String get smsFix => 'Fix';
+
+  @override
   String get comingSoon => 'Coming soon';
 
   @override

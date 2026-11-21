@@ -24,6 +24,7 @@ import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/settings/settings_store.dart';
 import 'features/sms/sms_service.dart';
+import 'features/sms/sms_setup_screen.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
@@ -70,6 +71,9 @@ class _UsisaAppState extends State<UsisaApp> {
     clearSmsPrivacy: () async {
       if (sms.bridgeAvailable) await sms.invalidatePrivacy().catchError((_) => 0);
     },
+    forgetSmsWarning: (id) async {
+      if (sms.bridgeAvailable) await sms.dismiss(id);
+    },
   );
   late final http.Client _gateway = widget.gatewayClient ?? http.Client();
   late final SmsService sms = widget.sms ?? SmsService();
@@ -79,6 +83,12 @@ class _UsisaAppState extends State<UsisaApp> {
   final _savedTexts = <String>{};
   bool _savingTexts = false;
 
+  /// Settings and History have loaded, so first-run setup can decide whether to show.
+  bool _ready = false;
+
+  // Coming back from Android settings (Fix, background running) picks up the new permission state.
+  late final AppLifecycleListener _lifecycle;
+
   /// Saves each warned incoming text to History, marked From your texts, with the phone check's verdict.
   /// The entry keeps the text's ID, so tapping its notification later updates it rather than adding one.
   Future<void> _saveWarnedTexts() async {
@@ -86,7 +96,6 @@ class _UsisaAppState extends State<UsisaApp> {
     _savingTexts = true;
     try {
       for (final id in await sms.reviewIds()) {
-        // shortcut: remembered for this app run only, so a deleted warning returns on the next open while Android keeps it (24 h).
         if (_savedTexts.contains(id) || history.entries.any((e) => e.id == id)) continue;
         final review = await sms.review(id);
         if (review?.result == null) continue;
@@ -108,6 +117,7 @@ class _UsisaAppState extends State<UsisaApp> {
     super.initState();
     sms.addListener(_saveWarnedTexts);
     sms.refresh();
+    _lifecycle = AppLifecycleListener(onResume: sms.refresh);
     // Corrupt or unreadable settings keep the defaults rather than blocking the app.
     settings
         .load()
@@ -121,13 +131,14 @@ class _UsisaAppState extends State<UsisaApp> {
         .then((_) => _saveWarnedTexts())
         .catchError((_) {})
         .whenComplete(() {
-          if (mounted) setState(() {});
+          if (mounted) setState(() => _ready = true);
         });
   }
 
   @override
   void dispose() {
     sms.removeListener(_saveWarnedTexts);
+    _lifecycle.dispose();
     settings.dispose();
     history.dispose();
     if (widget.gatewayClient == null) _gateway.close();
@@ -174,6 +185,7 @@ class _UsisaAppState extends State<UsisaApp> {
         );
       },
       home: _Shell(
+        ready: _ready,
         // Every Check from every screen is saved to History here.
         runCheck: history.recording(widget.runCheck ?? _runCheck),
         history: history,
@@ -189,6 +201,7 @@ class _UsisaAppState extends State<UsisaApp> {
 
 class _Shell extends StatefulWidget {
   const _Shell({
+    required this.ready,
     required this.runCheck,
     required this.readScreenshot,
     required this.history,
@@ -197,6 +210,7 @@ class _Shell extends StatefulWidget {
     required this.shares,
     required this.readSharedImage,
   });
+  final bool ready;
   final RunCheck runCheck;
   final SmsService sms;
   final HistoryStore history;
@@ -214,7 +228,25 @@ class _ShellState extends State<_Shell> {
   // One switch for the home card and Settings, backed by the native SMS bridge.
   // shortcut: without a bridge (web preview, widget tests) the switch is visual only.
   bool _previewSmsOn = false;
-  bool get _smsOn => widget.sms.bridgeAvailable ? widget.sms.enabled : _previewSmsOn;
+  bool get _smsOn => widget.sms.bridgeAvailable ? widget.sms.protectionOn : _previewSmsOn;
+
+  // Once shown, setup stays up until finished, even after turning protection on changes the bridge state.
+  bool _inSetup = false;
+  bool get _needsSetup {
+    if (widget.settings.onboarded) return false;
+    _inSetup |= widget.ready && widget.sms.bridgeAvailable && widget.sms.supported && !widget.sms.wanted;
+    return _inSetup;
+  }
+
+  Future<void> _finishSetup() => widget.settings.update(onboarded: true).catchError((_) {});
+
+  Future<void> _fixSms() async {
+    try {
+      await widget.sms.fix(language: widget.settings.language);
+    } catch (_) {
+      await widget.sms.refresh();
+    }
+  }
 
   Future<void> _setSms(bool on) async {
     if (!widget.sms.bridgeAvailable) return setState(() => _previewSmsOn = on);
@@ -326,6 +358,15 @@ class _ShellState extends State<_Shell> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    return ListenableBuilder(
+      listenable: widget.sms,
+      builder: (context, _) => _needsSetup
+          ? SmsSetupScreen(sms: widget.sms, language: widget.settings.language, onDone: _finishSetup)
+          : _tabs(l),
+    );
+  }
+
+  Widget _tabs(AppLocalizations l) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // Light status icons over the indigo home header, dark over the lavender tabs.
       value: SystemUiOverlayStyle(
@@ -346,6 +387,8 @@ class _ShellState extends State<_Shell> {
                 smsOn: _smsOn,
                 onSmsChanged: _setSms,
                 checkedToday: widget.sms.checkedToday,
+                protectionLost: widget.sms.bridgeAvailable && widget.sms.protectionLost,
+                onFix: _fixSms,
               ),
               HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
               const LearnScreen(),

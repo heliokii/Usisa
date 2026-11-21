@@ -86,11 +86,14 @@ class HistoryEntry {
 }
 
 class HistoryStore extends ChangeNotifier {
-  HistoryStore(this.storage, {DateTime Function()? clock, this.clearSmsPrivacy})
+  HistoryStore(this.storage, {DateTime Function()? clock, this.clearSmsPrivacy, this.forgetSmsWarning})
     : clock = clock ?? DateTime.now;
   final PrivateStorage storage;
   final DateTime Function() clock;
   final Future<void> Function()? clearSmsPrivacy;
+
+  /// Drops a deleted text warning from Android too, so the next open doesn't save it again.
+  final Future<void> Function(String id)? forgetSmsWarning;
   final _entries = <HistoryEntry>[];
 
   /// Newest first.
@@ -230,6 +233,9 @@ class HistoryStore extends ChangeNotifier {
 
   Future<void> delete(Set<String> ids) => _serial(() async {
     for (final id in ids) {
+      if (_entries.any((e) => e.id == id && e.source == CheckSource.sms)) {
+        await forgetSmsWarning?.call(id).catchError((_) {});
+      }
       await storage.delete('scan.$id');
     }
     _entries.removeWhere((r) => ids.contains(r.id));

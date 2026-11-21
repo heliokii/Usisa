@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +26,9 @@ void main() {
       return {
         'supported': true,
         'enabled': enabled,
+        'wanted': enabled,
         'smsPermission': enabled,
+        'notifications': enabled,
         'generation': 1,
         'checkedToday': checked,
       };
@@ -35,7 +39,7 @@ void main() {
     tester.view.physicalSize = const Size(412, 915);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(UsisaApp(storage: MemoryStorage(), sms: sms));
+    await tester.pumpWidget(UsisaApp(storage: _onboarded(), sms: sms));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
@@ -69,7 +73,7 @@ void main() {
     tester.view.physicalSize = const Size(412, 915);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(UsisaApp(storage: MemoryStorage(), sms: sms));
+    await tester.pumpWidget(UsisaApp(storage: _onboarded(), sms: sms));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
@@ -81,3 +85,6 @@ void main() {
     expect(find.text('Texts are not being checked'), findsOneWidget);
   });
 }
+
+/// Past first-run setup, so home shows straight away.
+MemoryStorage _onboarded() => MemoryStorage()..values['settings'] = jsonEncode({'onboarded': true});

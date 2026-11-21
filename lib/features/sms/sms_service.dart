@@ -38,6 +38,12 @@ class SmsService extends ChangeNotifier {
   bool smsPermission = false;
   bool notifications = false;
   bool degraded = false;
+
+  /// The person turned protection on; it stays wanted while Android has a permission revoked.
+  bool wanted = false;
+
+  /// Android's Build.MANUFACTURER.
+  String manufacturer = '';
   int generation = 0;
   int pendingCount = 0;
 
@@ -55,6 +61,8 @@ class SmsService extends ChangeNotifier {
     smsPermission = value['smsPermission'] == true;
     notifications = value['notifications'] == true;
     degraded = value['degraded'] == true;
+    wanted = supported && value['wanted'] == true;
+    manufacturer = value['manufacturer'] is String ? value['manufacturer'] as String : '';
     pendingCount = value['pending'] is int ? value['pending'] as int : 0;
     checkedToday = value['checkedToday'] is int ? value['checkedToday'] as int : 0;
     if (value['generation'] is int) {
@@ -91,6 +99,29 @@ class SmsService extends ChangeNotifier {
     }
     _status(await _channel.invokeMapMethod('setEnabled', {'enabled': value, 'language': language}));
   }
+
+  /// Texts are checked and warnings can reach the person: SMS and notifications both allowed.
+  bool get protectionOn => enabled && notifications;
+
+  /// Turned on, but Android has a permission revoked: the "protection is off" banner.
+  bool get protectionLost => wanted && !protectionOn;
+
+  /// Xiaomi, Oppo, Vivo and Samsung stop background work unless the person allows it.
+  bool get needsBackgroundStep =>
+      const {'xiaomi', 'oppo', 'vivo', 'samsung'}.contains(manufacturer.trim().toLowerCase());
+
+  /// Fix for a revoked permission: ask again, and send the person to the app's settings when Android won't.
+  Future<void> fix({String language = 'en'}) async {
+    await _channel.invokeMethod<void>('requestPermissions');
+    await refresh();
+    if (!smsPermission || !notifications) return _channel.invokeMethod<void>('openAppSettings');
+    if (!enabled) await setEnabled(true, language: language);
+  }
+
+  Future<void> openBackgroundSettings() => _channel.invokeMethod<void>('openBackgroundSettings');
+
+  /// Forgets a warned text on Android (its saved check and notification).
+  Future<void> dismiss(String id) => _channel.invokeMethod<void>('dismiss', id);
 
   Future<void> setLanguage(String value) async {
     if (bridgeAvailable) {
