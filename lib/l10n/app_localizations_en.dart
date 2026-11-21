@@ -248,6 +248,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkAgain => 'Check again';
 
   @override
+  String get askAiLookCloser => 'Ask AI to look closer';
+
+  @override
   String get aiScanIntro => 'What do you want the AI to look at?';
 
   @override

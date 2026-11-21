@@ -64,6 +64,7 @@
   "checkedOnDate": "Checked on {date}",
   "@checkedOnDate": {"description": "Label on a reopened History entry; date is the date and time of the Check.", "placeholders": {"date": {"type": "String"}}},
   "checkAgain": "Check again",
+  "askAiLookCloser": "Ask AI to look closer",
   "aiScanIntro": "What do you want the AI to look at?",
   "aiScanMessage": "A message",
   "aiScanLink": "A link",
