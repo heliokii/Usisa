@@ -94,6 +94,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkButton => 'Check';
 
   @override
+  String get screenshotIntro =>
+      'Pick a screenshot of the message. We\'ll read the text for you.';
+
+  @override
+  String get screenshotChoose => 'Choose a screenshot';
+
+  @override
+  String get screenshotReview => 'Check the text we read and fix any mistakes.';
+
+  @override
+  String get screenshotNoText =>
+      'We couldn\'t read any text in this picture. Try a clearer screenshot.';
+
+  @override
   String verdictWord(String verdict) {
     String _temp0 = intl.Intl.selectLogic(verdict, {
       'looksSafe': 'Looks safe',
