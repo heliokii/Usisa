@@ -250,4 +250,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiUnavailable => 'AI couldn\'t look at this right now';
+
+  @override
+  String get settingsDisplay => 'Display';
+
+  @override
+  String get settingsTextSize => 'Text size';
+
+  @override
+  String get textSizeNormal => 'Normal';
+
+  @override
+  String get textSizeLarge => 'Large';
+
+  @override
+  String get textSizeExtraLarge => 'Extra large';
+
+  @override
+  String get settingsTextSizeNote =>
+      'This adds to your phone\'s own text size.';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFilipino => 'Filipino';
+
+  @override
+  String get settingsProtection => 'Protection';
+
+  @override
+  String get settingsOnline => 'Online checks';
+
+  @override
+  String get settingsOnlineSwitch => 'Check links and use AI online';
+
+  @override
+  String get settingsOnlineOn =>
+      'Links go to Usisa\'s checking service. AI scan sends the message text to an AI service.';
+
+  @override
+  String get settingsOnlineOff =>
+      'Everything is checked on your phone only, so Usisa may miss some scams.';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get aboutGuide =>
+      'Usisa is a guide, not a guarantee. It looks for common scam signs, but it can be wrong. If something feels off, don\'t click, don\'t pay and don\'t share codes. Ask someone you trust.';
+
+  @override
+  String get aboutData =>
+      'Your checks and History are saved only on this phone. Nothing is sent anywhere unless online checks are on.';
 }

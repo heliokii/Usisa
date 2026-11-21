@@ -457,6 +457,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI couldn\'t look at this right now'**
   String get aiUnavailable;
+
+  /// No description provided for @settingsDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get settingsDisplay;
+
+  /// No description provided for @settingsTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsTextSize;
+
+  /// No description provided for @textSizeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get textSizeNormal;
+
+  /// No description provided for @textSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get textSizeLarge;
+
+  /// No description provided for @textSizeExtraLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra large'**
+  String get textSizeExtraLarge;
+
+  /// No description provided for @settingsTextSizeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This adds to your phone\'s own text size.'**
+  String get settingsTextSizeNote;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageFilipino.
+  ///
+  /// In en, this message translates to:
+  /// **'Filipino'**
+  String get languageFilipino;
+
+  /// No description provided for @settingsProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection'**
+  String get settingsProtection;
+
+  /// No description provided for @settingsOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online checks'**
+  String get settingsOnline;
+
+  /// No description provided for @settingsOnlineSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Check links and use AI online'**
+  String get settingsOnlineSwitch;
+
+  /// No description provided for @settingsOnlineOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Links go to Usisa\'s checking service. AI scan sends the message text to an AI service.'**
+  String get settingsOnlineOn;
+
+  /// No description provided for @settingsOnlineOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is checked on your phone only, so Usisa may miss some scams.'**
+  String get settingsOnlineOff;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @aboutGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa is a guide, not a guarantee. It looks for common scam signs, but it can be wrong. If something feels off, don\'t click, don\'t pay and don\'t share codes. Ask someone you trust.'**
+  String get aboutGuide;
+
+  /// No description provided for @aboutData.
+  ///
+  /// In en, this message translates to:
+  /// **'Your checks and History are saved only on this phone. Nothing is sent anywhere unless online checks are on.'**
+  String get aboutData;
 }
 
 class _AppLocalizationsDelegate
