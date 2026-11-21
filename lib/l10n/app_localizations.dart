@@ -349,6 +349,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No, phone only'**
   String get consentDeny;
+
+  /// No description provided for @historySavedOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved only on this phone'**
+  String get historySavedOnPhone;
+
+  /// No description provided for @historySaveSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my checks'**
+  String get historySaveSwitch;
+
+  /// No description provided for @historySaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning this off also clears your History.'**
+  String get historySaveNote;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved checks yet.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving is off.'**
+  String get historyOff;
+
+  /// No description provided for @historyClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get historyClearAll;
+
+  /// No description provided for @historyClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all History?'**
+  String get historyClearTitle;
+
+  /// No description provided for @historyClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every saved check from this phone. It can\'t be undone.'**
+  String get historyClearBody;
+
+  /// No description provided for @historyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get historyDelete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @fromYourTexts.
+  ///
+  /// In en, this message translates to:
+  /// **'From your texts'**
+  String get fromYourTexts;
+
+  /// Label on a reopened History entry; date is the date and time of the Check.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked on {date}'**
+  String checkedOnDate(String date);
+
+  /// No description provided for @checkAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get checkAgain;
 }
 
 class _AppLocalizationsDelegate

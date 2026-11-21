@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 
 import 'scan_models.dart';
 import 'scam_analyzer.dart';
-import '../history/history_store.dart';
 import 'ai_models.dart';
 import 'ai_scan_client.dart';
 
@@ -26,11 +25,8 @@ class ScanController extends ChangeNotifier {
   Future<void> checkAi(
     ReviewedAiInput value, {
     required AiScanClient client,
-    HistoryStore? history,
   }) async {
-    if (busy ||
-        _disposed ||
-        history != null && history.generation != value.privacyGeneration) {
+    if (busy || _disposed) {
       return;
     }
     input = ScanInput(value.text, source: value.source);
@@ -56,22 +52,8 @@ class ScanController extends ChangeNotifier {
     try {
       final assessment = await client.check(value);
       if (_disposed || revision != _revision) return;
-      if (history != null && value.privacyGeneration != history.generation) {
-        result = result!.withAi(const AiAssessment(AiScanState.cancelled));
-        return;
-      }
       result = result!.withAi(assessment);
       notifyListeners();
-      if (history != null) {
-        try {
-          await history.save(
-            result!,
-            expectedGeneration: value.privacyGeneration,
-          );
-        } catch (_) {
-          if (!_disposed && revision == _revision) error = 'saveFailed';
-        }
-      }
     } finally {
       client.close();
       if (!_disposed && revision == _revision) {
