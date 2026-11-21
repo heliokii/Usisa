@@ -5,6 +5,7 @@ import '../../app/motion.dart';
 import '../../app/read_aloud.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../learn/learn_screen.dart';
 import 'check.dart';
 import 'verdict_actions.dart';
 
@@ -151,6 +152,24 @@ class VerdictScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (learnTopicFor(result.reasons) case final topic?)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: TextButton(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => LearnTopicScreen(topic: topic, readAloud: readAloud),
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(48, 48),
+                              padding: EdgeInsets.zero,
+                              foregroundColor: UsisaColors.primary,
+                              textStyle: tt.titleMedium?.copyWith(decoration: TextDecoration.underline),
+                            ),
+                            child: Text(l.learnMore(l.learnTopicTitle(topic))),
+                          ),
+                        ),
                       for (final destination in result.destinations) ...[
                         const SizedBox(height: 16),
                         Text(l.reallyGoesTo(destination), style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),

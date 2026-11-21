@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+
+import '../l10n/app_localizations.dart';
 
 /// The phone's speech engine; widget tests pass a fake.
 abstract interface class TtsEngine {
@@ -57,4 +60,19 @@ class ReadAloud {
   }
 
   Future<void> stop() async => await _engine?.stop();
+}
+
+/// Speaks [textIn] in the app's language, with a note when it falls back to English or the phone has no voice.
+Future<void> readAloudWithNote(
+  BuildContext context,
+  ReadAloud readAloud,
+  String Function(AppLocalizations l) textIn,
+) async {
+  final l = AppLocalizations.of(context);
+  final language = Localizations.localeOf(context).languageCode;
+  final spoken = await readAloud.speak(language, (lang) => textIn(lookupAppLocalizations(Locale(lang))));
+  if (!context.mounted || spoken == language) return;
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(spoken == null ? l.readAloudUnavailable : l.readAloudNoFilipino)));
 }
