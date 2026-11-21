@@ -83,7 +83,8 @@ void main() {
     expect(find.text('Really goes to shop.example.ph/sale'), findsOneWidget);
     expect(find.textContaining('Checked on '), findsOneWidget);
 
-    await tester.dragUntilVisible(find.text('Check again'), find.byType(CustomScrollView), const Offset(0, -200));
+    await tester.ensureVisible(find.text('Check again'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Check again'));
     await settle(tester);
     expect(checks, 2);

@@ -252,6 +252,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiUnavailable => 'AI couldn\'t look at this right now';
 
   @override
+  String get sendToFamily => 'Send to family';
+
+  @override
+  String get readAloud => 'Read aloud';
+
+  @override
+  String get readAloudNoFilipino =>
+      'There\'s no Filipino voice on this phone, so it\'s reading in English.';
+
+  @override
+  String get readAloudUnavailable =>
+      'Read aloud isn\'t available on this phone.';
+
+  @override
+  String shareIntro(String verdict) {
+    return 'I checked a message with Usisa. It says: $verdict';
+  }
+
+  @override
   String get settingsDisplay => 'Display';
 
   @override

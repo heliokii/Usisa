@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/motion.dart';
+import '../../app/read_aloud.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 import 'check.dart';
+import 'verdict_actions.dart';
 
 /// Colour, tint and icon for each Verdict. Colour is never the only carrier: each also has an icon and a word.
 const verdictLooks = {
@@ -16,8 +18,12 @@ const verdictLooks = {
 
 /// Displays a Check result: verdict-coloured header, then a white sheet with the action line and reasons.
 class VerdictScreen extends StatelessWidget {
-  const VerdictScreen({super.key, required this.result, this.checkedAt, this.onCheckAgain});
+  const VerdictScreen({super.key, required this.result, this.checkedAt, this.onCheckAgain, this.readAloud, this.share});
   final CheckResult result;
+
+  /// Read aloud and Send to family; widget tests pass fakes, otherwise the phone's own.
+  final ReadAloud? readAloud;
+  final ShareText? share;
 
   /// Set when reopening a saved History entry: shows "Checked on" with the date and time.
   final DateTime? checkedAt;
@@ -149,6 +155,8 @@ class VerdictScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Text(l.reallyGoesTo(destination), style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
                       ],
+                      const SizedBox(height: 24),
+                      VerdictActions(result: result, readAloud: readAloud, share: share),
                       const SizedBox(height: 24),
                       EnterMotion(
                         index: 3,
