@@ -60,7 +60,7 @@ class SmsBridge(private val activity: MainActivity, messenger: BinaryMessenger) 
         val permitted = SmsReceiver.permitted(activity)
         return mapOf("supported" to BuildConfig.SMS_ENABLED, "enabled" to (store.enabled && permitted), "smsPermission" to permitted,
             "notifications" to (BuildConfig.SMS_ENABLED && SmsAlerts.allowed(activity)), "generation" to store.generation,
-            "degraded" to store.degraded, "pending" to if (BuildConfig.SMS_ENABLED) store.reviews().size else 0)
+            "degraded" to store.degraded, "checkedToday" to store.checkedToday, "pending" to if (BuildConfig.SMS_ENABLED) store.reviews().size else 0)
     }
     private fun jsonValue(value: Any?): Any? = when (value) {
         null, JSONObject.NULL -> null

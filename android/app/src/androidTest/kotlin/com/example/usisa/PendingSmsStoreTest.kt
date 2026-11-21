@@ -47,6 +47,29 @@ class PendingSmsStoreTest {
         store.setEnabled(false, "en")
     }
 
+    @Test fun harmlessTextOnlyCountsAndDelayedTextUnder24HoursIsStillChecked() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        var now = 1_000_000L
+        val store = PendingSmsStore(context, "sms_test_count") { now }
+        store.setEnabled(false, "en")
+        store.setEnabled(true, "en")
+        val before = store.checkedToday
+        val harmless = SmsPolicy.eventId(listOf(byteArrayOf(7, 7, 1)), 1)
+        assertEquals(PendingSmsStore.PutResult.ADDED, store.put(harmless, "Hi Ma, uuwi ako mamaya", store.generation))
+        assertTrue(store.complete(harmless, store.generation, JSONObject().put("result", JSONObject()).put("risk", "low")))
+        assertNull(store.read(harmless))
+        assertEquals(before + 1, store.checkedToday)
+
+        val delayed = SmsPolicy.eventId(listOf(byteArrayOf(7, 7, 2)), 1)
+        assertEquals(PendingSmsStore.PutResult.ADDED, store.put(delayed, "GCash: send your OTP", store.generation))
+        now += 23 * 60 * 60 * 1000L
+        assertTrue(store.complete(delayed, store.generation, JSONObject().put("result", JSONObject()).put("risk", "high")))
+        assertNotNull(store.read(delayed))
+        now += 60 * 60 * 1000L
+        assertNull(store.read(delayed))
+        store.setEnabled(false, "en")
+    }
+
     @Test fun boundedQueueDoesNotDeduplicateDistinctSameTextMessages() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val store = PendingSmsStore(context, "sms_test_bound")

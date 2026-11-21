@@ -21,12 +21,12 @@ class SmsReceiver : BroadcastReceiver() {
         val receiptGeneration = synchronized(PendingSmsStore.lock) { if (!store.enabled) return; store.generation }
         val receivedAt = System.currentTimeMillis()
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
-        if (messages.isEmpty() || messages.map { it.originatingAddress }.distinct().size != 1) return
+        // Android delivers every part of a multipart text in one broadcast; join them so the scam is judged whole.
+        val body = SmsPolicy.join(messages.map { it.originatingAddress to it.messageBody })?.second ?: return
         val pdus = intent.extras?.get("pdus") as? Array<*> ?: return
         val bytes = pdus.mapNotNull { it as? ByteArray }
         if (bytes.size != pdus.size || bytes.isEmpty()) return
         val id = SmsPolicy.eventId(bytes, intent.getIntExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX, -1))
-        val body = messages.joinToString("") { it.messageBody.orEmpty() }
         val pending = goAsync()
         io.execute {
             try {

@@ -23,6 +23,10 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
     val generation: Long get() = synchronized(lock) { prefs.getLong("generation", 0) }
     val enabled: Boolean get() = synchronized(lock) { prefs.getBoolean("enabled", false) }
     val degraded: Boolean get() = synchronized(lock) { prefs.getBoolean("degraded", false) }
+    /** Texts checked today; harmless ones leave only this count behind. */
+    val checkedToday: Int get() = synchronized(lock) {
+        if (prefs.getLong("checkedDay", -1) == SmsPolicy.day(clock())) prefs.getInt("checkedCount", 0) else 0
+    }
     val language: String get() = synchronized(lock) { prefs.getString("language", "en") ?: "en" }
     enum class PutResult { ADDED, DUPLICATE, FULL, DISABLED, STALE }
     companion object {
@@ -107,7 +111,7 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
             markDegraded(); return@synchronized PutResult.FULL
         }
         write(id, JSONObject().put("id", id).put("body", body).put("receivedAt", receivedAt).put("generation", receiptGeneration))
-        // shortcut: keep 200 fingerprints for 15 minutes; enlarge after measured carrier retry bursts.
+        // shortcut: keep 200 fingerprints for the 24 h window; enlarge after measured carrier retry bursts.
         if (seen.length() >= 200) seen.keys().asSequence().minByOrNull { seen.optLong(it) }?.let { seen.remove(it) }
         seen.put(id, now)
         check(prefs.edit().putString("seen", seen.toString()).commit())
@@ -116,11 +120,16 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
     fun complete(id: String, expected: Long, payload: JSONObject): Boolean = synchronized(lock) {
         if (!SmsPolicy.canCommit(expected, generation, enabled)) return@synchronized false
         val value = read(id) ?: return@synchronized false
+        if (payload.has("result")) countChecked()
         if (payload.optString("risk") == "low") { remove(id); return@synchronized true }
         if (payload.has("result")) value.put("result", payload.getJSONObject("result"))
         else value.put("error", payload.optString("error", "scanFailed"))
         write(id, value)
         true
+    }
+    private fun countChecked() {
+        val today = SmsPolicy.day(clock())
+        check(prefs.edit().putLong("checkedDay", today).putInt("checkedCount", checkedToday + 1).commit())
     }
     fun reviews(): List<String> = synchronized(lock) {
         ids().mapNotNull { id -> read(id)?.let { id to it.getLong("receivedAt") } }

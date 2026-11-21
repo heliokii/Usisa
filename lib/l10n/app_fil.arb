@@ -19,6 +19,7 @@
   "tileAiSubtitle": "Ipasuri nang mabuti sa AI",
   "smsCardTitle": "Awtomatikong proteksyon sa SMS",
   "smsCardOn": "Susuriin ang mga bagong text",
+  "smsCardChecked": "{count, plural, =1{1 text ang nasuri ngayong araw} other{{count} text ang nasuri ngayong araw}}",
   "smsCardOff": "Hindi sinusuri ang mga text",
   "comingSoon": "Malapit na",
   "aiFindingTitle": "{code, select, credential_request{Humihingi ng lihim na pangseguridad} payment_request{Humihingi ng bayad} urgency{Minamadali kang kumilos} impersonation{Posibleng pagpapanggap} prize{Nangangako ng premyo} suspicious_link{Kaduda-dudang konteksto ng link} gambling_ad{Patalastas ng sugal} other{Babalang nakita ng AI}}",
