@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usisa/l10n/app_localizations.dart';
 import 'package:usisa/features/scan/ai_models.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 import 'package:usisa/features/scan/scam_analyzer.dart';
@@ -93,6 +95,21 @@ void main() {
         throwsFormatException,
       );
     }
+  });
+  test('gateway ph-scam-v2 gambling_ad sign is accepted and titled', () async {
+    const ad = 'Libreng 888 bonus sa online casino!';
+    final ai = AiAssessment.fromJson({
+      ...assessment(risk: 'caution'),
+      'promptVersion': 'ph-scam-v2',
+      'warningSigns': [
+        {'code': 'gambling_ad', 'evidence': 'online casino'},
+      ],
+    }, text: ad);
+    expect(ai.findings.single.code, 'gambling_ad');
+    final en = await AppLocalizations.delegate.load(const Locale('en'));
+    final fil = await AppLocalizations.delegate.load(const Locale('fil'));
+    expect(en.aiFindingTitle('gambling_ad'), 'Gambling ad');
+    expect(fil.aiFindingTitle('gambling_ad'), 'Patalastas ng sugal');
   });
   test('AI roundtrip preserves model and quote, link updates preserve AI', () {
     final local = ScamAnalyzer().analyze(const ScanInput(text));

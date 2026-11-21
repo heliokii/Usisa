@@ -20,7 +20,7 @@
   "aiRetry": "Review and retry AI",
   "aiLimitations": "AI can miss scams or flag safe messages. Quotes show its input, not proof.",
   "aiSettingsBody": "AI can check text, links, and screenshot text you approve. Confirm each upload to Usisa and Groq. Auto SMS stays on-device. Link-check consent does not enable AI.",
-  "aiFindingTitle": "{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} other{AI warning sign}}",
+  "aiFindingTitle": "{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}",
   "@aiFindingTitle": {"placeholders":{"code":{"type":"String"}}},
   "aiAdvice": "{code, select, dont_share_secrets{Do not share OTPs, passwords or PINs with anyone requesting them.} pause_payment{Pause the payment. Confirm the recipient and reason independently.} contact_provider_if_shared{If you already shared details, contact your provider through its official app or your own trusted records.} other{Verify through the official app or a trusted channel you opened yourself.}}",
   "@aiAdvice": {"placeholders":{"code":{"type":"String"}}},

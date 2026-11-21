@@ -91,6 +91,7 @@ class AppLocalizationsFil extends AppLocalizations {
       'impersonation': 'Posibleng pagpapanggap',
       'prize': 'Nangangako ng premyo',
       'suspicious_link': 'Kaduda-dudang konteksto ng link',
+      'gambling_ad': 'Patalastas ng sugal',
       'other': 'Babalang nakita ng AI',
     });
     return '$_temp0';

@@ -27,7 +27,7 @@ test('fixed Groq endpoint uses strict independent PH assessment and exact eviden
   assert.equal(result.state,'completed');
   assert.equal(result.risk,'high');
   assert.equal(result.modelId,options.model);
-  assert.equal(result.promptVersion,'ph-scam-v1');
+  assert.equal(result.promptVersion,'ph-scam-v2');
   assert.equal(result.warningSigns[0].evidence,'Send your OTP');
 });
 
@@ -152,5 +152,43 @@ test('body limits, concurrency and client disconnects do not create extra provid
     assert.equal((await post({text,responseLanguage:'en'})).status,503);
     releases.forEach(resolve=>resolve());
     await Promise.all(jobs);
+  });
+});
+
+// Gateway over HTTP with a fake Groq provider behind the real scanner.
+const viaGateway = (groq, run) => gateway({scanAi:createAiScanner({...options,fetchImpl:groq})},run);
+
+test('gambling_ad is an approved warning code', async () => {
+  const ad = 'Mag-deposit ng 100, libreng 888 bonus sa online casino!';
+  await viaGateway(async()=>completion({risk:'caution',summary:'Gambling ad.',warningSigns:[{code:'gambling_ad',evidence:'online casino'}],recommendationCodes:[]}),async({post})=>{
+    const response = await post({text:ad,responseLanguage:'fil'});
+    assert.equal(response.status,200);
+    assert.deepEqual((await response.json()).warningSigns,[{code:'gambling_ad',evidence:'online casino'}]);
+  });
+});
+
+test('one mismatched quote drops only that sign; no quote left still fails closed', async () => {
+  const signs = [{code:'credential_request',evidence:'Send your OTP'},{code:'urgency',evidence:'not in the message'}];
+  await viaGateway(async()=>completion({...verdict,warningSigns:signs}),async({post})=>{
+    const response = await post({text,responseLanguage:'en'});
+    assert.equal(response.status,200);
+    const body = await response.json();
+    assert.equal(body.risk,'high');
+    assert.deepEqual(body.warningSigns,[signs[0]]);
+  });
+  await viaGateway(async()=>completion({...verdict,warningSigns:[signs[1]]}),async({post})=>
+    assert.equal((await post({text,responseLanguage:'en'})).status,503));
+});
+
+test('link destination and redirect steps reach the model input; malformed links are rejected', async () => {
+  const links = [{url:'https://bit.ly/x1',destination:'https://gcash-verify.example/login',hops:['https://t.example/r','https://gcash-verify.example/login']}];
+  let input;
+  await viaGateway(async(_,init)=>{ input = JSON.parse(JSON.parse(init.body).messages[1].content); return completion(); },async({post})=>{
+    assert.equal((await post({text,responseLanguage:'en',links})).status,200);
+    assert.deepEqual(input,{text,responseLanguage:'en',links});
+    assert.equal((await post({text,responseLanguage:'en',links:[{...links[0],destination:null,hops:[]}]})).status,200);
+    assert.deepEqual(input.links[0],{url:links[0].url,destination:null,hops:[]});
+    for (const bad of ['x',[{url:'https://a.example'}],[{...links[0],hops:'x'}],[{...links[0],extra:1}],[{...links[0],hops:Array(9).fill('https://a.example')}],Array(6).fill(links[0]),[{...links[0],destination:'x'.repeat(2049)}]])
+      assert.equal((await post({text,responseLanguage:'en',links:bad})).status,400);
   });
 });

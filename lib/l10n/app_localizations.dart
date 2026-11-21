@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiFindingTitle.
   ///
   /// In en, this message translates to:
-  /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} other{AI warning sign}}'**
+  /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}'**
   String aiFindingTitle(String code);
 
   /// No description provided for @aiAdvice.

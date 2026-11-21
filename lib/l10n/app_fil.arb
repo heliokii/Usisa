@@ -20,7 +20,7 @@
   "aiRetry": "Suriin at subukang muli ang AI",
   "aiLimitations": "Maaaring makaligtaan ng AI ang scam o magbigay ng maling babala. Ipinapakita ng sipi ang ginamit na teksto, hindi patunay.",
   "aiSettingsBody": "Tumutulong ang AI sa teksto, link, at tekstong inaprubahan mo mula sa screenshot. Kumpirmahin ang bawat upload sa Usisa at Groq. Sa device lang ang auto SMS. Hindi kasama ang AI sa pahintulot sa link check.",
-  "aiFindingTitle": "{code, select, credential_request{Humihingi ng lihim na pangseguridad} payment_request{Humihingi ng bayad} urgency{Minamadali kang kumilos} impersonation{Posibleng pagpapanggap} prize{Nangangako ng premyo} suspicious_link{Kaduda-dudang konteksto ng link} other{Babalang nakita ng AI}}",
+  "aiFindingTitle": "{code, select, credential_request{Humihingi ng lihim na pangseguridad} payment_request{Humihingi ng bayad} urgency{Minamadali kang kumilos} impersonation{Posibleng pagpapanggap} prize{Nangangako ng premyo} suspicious_link{Kaduda-dudang konteksto ng link} gambling_ad{Patalastas ng sugal} other{Babalang nakita ng AI}}",
   "@aiFindingTitle": {"placeholders":{"code":{"type":"String"}}},
   "aiAdvice": "{code, select, dont_share_secrets{Huwag ibahagi ang OTP, password o PIN sa sinumang humihingi nito.} pause_payment{Ipagpaliban ang pagbabayad. Hiwalay na kumpirmahin ang tatanggap at dahilan.} contact_provider_if_shared{Kung nagbahagi ka na ng detalye, kontakin ang provider sa opisyal na app o sarili mong pinagkakatiwalaang tala.} other{Magberipika sa opisyal na app o pinagkakatiwalaang paraang ikaw mismo ang nagbukas.}}",
   "@aiAdvice": {"placeholders":{"code":{"type":"String"}}},

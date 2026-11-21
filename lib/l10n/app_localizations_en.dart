@@ -88,6 +88,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'impersonation': 'Possible impersonation',
       'prize': 'Promises a prize',
       'suspicious_link': 'Questionable link context',
+      'gambling_ad': 'Gambling ad',
       'other': 'AI warning sign',
     });
     return '$_temp0';
