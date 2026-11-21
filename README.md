@@ -25,7 +25,7 @@ Those results predate recent external edits to the generated localization files 
 - The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
 - The current Android release configuration uses debug signing. Set a production application ID and release signing key before distribution, and confirm SMS permissions and Play distribution eligibility before publishing.
 - Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
-- Production gateway hosting, quotas, and operational monitoring remain deployment work.
+- The gateway runs on Render's Free plan, which is not meant for production. See [server/README.md](server/README.md) for deploy, keep-alive and quota settings.
 - There is no `LICENSE` file, so reuse and distribution terms are not specified.
 
 ## Requirements
@@ -74,6 +74,8 @@ flutter run --flavor manual --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
 ```
 
 For a USB-connected device, run `adb reverse tcp:8787 tcp:8787` and use `http://127.0.0.1:8787` as `USISA_GATEWAY_URL`.
+
+Environment variables, timeouts, rate limits, the Render deploy and the keep-alive pinger are documented in [server/README.md](server/README.md).
 
 ## Verification commands
 
