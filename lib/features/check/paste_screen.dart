@@ -7,16 +7,30 @@ import 'check.dart';
 import 'verdict_screen.dart';
 
 /// Scan a message: paste a text, tap Check, see the verdict.
+/// Scan a screenshot reuses it to review and correct the text read from the picture.
 class PasteScreen extends StatefulWidget {
-  const PasteScreen({super.key, required this.runCheck});
+  const PasteScreen({
+    super.key,
+    required this.runCheck,
+    this.source = CheckSource.message,
+    this.initialText = '',
+    this.title,
+    this.note,
+  });
   final RunCheck runCheck;
+  final CheckSource source;
+  final String initialText;
+  final String? title;
+
+  /// Shown above the text field.
+  final String? note;
 
   @override
   State<PasteScreen> createState() => _PasteScreenState();
 }
 
 class _PasteScreenState extends State<PasteScreen> {
-  final _text = TextEditingController();
+  late final _text = TextEditingController(text: widget.initialText);
   bool _busy = false;
 
   @override
@@ -28,7 +42,7 @@ class _PasteScreenState extends State<PasteScreen> {
   Future<void> _check() async {
     setState(() => _busy = true);
     try {
-      final result = await widget.runCheck(CheckInput(_text.text, source: CheckSource.message));
+      final result = await widget.runCheck(CheckInput(_text.text, source: widget.source));
       if (!mounted) return;
       // Pushed on top so Back returns to the pasted text.
       await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => VerdictScreen(result: result)));
@@ -49,12 +63,13 @@ class _PasteScreenState extends State<PasteScreen> {
       appBar: AppBar(
         backgroundColor: UsisaColors.background,
         surfaceTintColor: Colors.transparent,
-        title: Text(l.tileMessageTitle, style: tt.titleLarge),
+        title: Text(widget.title ?? l.tileMessageTitle, style: tt.titleLarge),
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
           children: [
+            if (widget.note != null) ...[Text(widget.note!, style: tt.bodyLarge), const SizedBox(height: 12)],
             TextField(
               controller: _text,
               minLines: 6,

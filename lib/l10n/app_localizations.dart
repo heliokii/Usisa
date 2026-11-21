@@ -242,6 +242,30 @@ abstract class AppLocalizations {
   /// **'Check'**
   String get checkButton;
 
+  /// No description provided for @screenshotIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a screenshot of the message. We\'ll read the text for you.'**
+  String get screenshotIntro;
+
+  /// No description provided for @screenshotChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a screenshot'**
+  String get screenshotChoose;
+
+  /// No description provided for @screenshotReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the text we read and fix any mistakes.'**
+  String get screenshotReview;
+
+  /// No description provided for @screenshotNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read any text in this picture. Try a clearer screenshot.'**
+  String get screenshotNoText;
+
   /// The Verdict word; values match Verdict in lib/features/check/check.dart.
   ///
   /// In en, this message translates to:

@@ -5,17 +5,22 @@ import 'app/theme.dart';
 import 'features/check/check.dart';
 import 'features/check/home_screen.dart';
 import 'features/check/paste_screen.dart';
+import 'features/check/screenshot_screen.dart';
 import 'features/history/history_store.dart';
+import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_store.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
-  const UsisaApp({super.key, this.storage, this.runCheck});
+  const UsisaApp({super.key, this.storage, this.runCheck, this.readScreenshot});
 
   final PrivateStorage? storage;
 
   /// Runs a Check; widget tests pass a fake. Phone-only until consent and the online clients are wired (#30, #33).
   final RunCheck? runCheck;
+
+  /// Picks a picture and reads its text; widget tests pass a fake.
+  final ScreenshotReader? readScreenshot;
 
   @override
   State<UsisaApp> createState() => _UsisaAppState();
@@ -49,14 +54,18 @@ class _UsisaAppState extends State<UsisaApp> {
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      home: _Shell(runCheck: widget.runCheck ?? const CheckPipeline().run),
+      home: _Shell(
+        runCheck: widget.runCheck ?? const CheckPipeline().run,
+        readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
+      ),
     ),
   );
 }
 
 class _Shell extends StatefulWidget {
-  const _Shell({required this.runCheck});
+  const _Shell({required this.runCheck, required this.readScreenshot});
   final RunCheck runCheck;
+  final ScreenshotReader readScreenshot;
 
   @override
   State<_Shell> createState() => _ShellState();
@@ -70,6 +79,14 @@ class _ShellState extends State<_Shell> {
   void _startCheck(CheckKind kind) {
     if (kind == CheckKind.message) {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PasteScreen(runCheck: widget.runCheck)));
+      return;
+    }
+    if (kind == CheckKind.screenshot) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ScreenshotScreen(readScreenshot: widget.readScreenshot, runCheck: widget.runCheck),
+        ),
+      );
       return;
     }
     final l = AppLocalizations.of(context);
