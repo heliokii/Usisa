@@ -21,5 +21,7 @@
   "smsCardTitle": "Auto SMS protection",
   "smsCardOn": "New texts will be checked",
   "smsCardOff": "Texts are not being checked",
-  "comingSoon": "Coming soon"
+  "comingSoon": "Coming soon",
+  "aiFindingTitle": "{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}",
+  "@aiFindingTitle": {"description": "Title for an AI warning sign; codes match server/ai_schema.mjs warningCodes.", "placeholders": {"code": {"type": "String"}}}
 }
