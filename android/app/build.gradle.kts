@@ -6,10 +6,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Release signing reads the git-ignored android/key.properties when present; otherwise it falls back to debug keys.
+// Release signing reads the git-ignored android/key.properties (see RELEASE.md).
 val keyProperties = Properties().apply {
     val file = rootProject.file("key.properties")
     if (file.exists()) file.inputStream().use { load(it) }
+}
+
+// A debug-signed release APK can't install over a project-key one, so refuse to build it instead of falling back.
+gradle.taskGraph.whenReady {
+    if (keyProperties.isEmpty && allTasks.any { it.project == project && it.name.contains("Release") }) {
+        throw GradleException("Release builds need android/key.properties with the project key. See RELEASE.md.")
+    }
 }
 
 android {
@@ -53,7 +60,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles("proguard-rules.pro")
         }
     }

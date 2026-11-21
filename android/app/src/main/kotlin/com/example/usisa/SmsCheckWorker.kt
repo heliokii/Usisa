@@ -1,11 +1,13 @@
 package com.example.usisa
 
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.Worker
@@ -31,7 +33,11 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
         private val engineMutex = Mutex()
         fun enqueue(context: Context, id: String) {
             val work = OneTimeWorkRequestBuilder<SmsCheckWorker>().setInputData(workDataOf("eventId" to id))
-                .addTag(TAG).setBackoffCriteria(androidx.work.BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS).build()
+                .addTag(TAG).setBackoffCriteria(androidx.work.BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+                // Expedited so the check runs within seconds. Below Android 12 expedited work needs a foreground
+                // notification (getForegroundInfo), so there it stays ordinary work, which starts promptly anyway.
+                .apply { if (Build.VERSION.SDK_INT >= 31) setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST) }
+                .build()
             WorkManager.getInstance(context).enqueueUniqueWork("usisa-$id", ExistingWorkPolicy.KEEP, work)
             val expiry = OneTimeWorkRequestBuilder<SmsExpiryWorker>().setInputData(workDataOf("eventId" to id))
                 .setInitialDelay(SmsPolicy.TTL_MS, TimeUnit.MILLISECONDS).addTag(TAG).build()

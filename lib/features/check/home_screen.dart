@@ -15,6 +15,8 @@ class HomeScreen extends StatelessWidget {
     required this.smsOn,
     required this.onSmsChanged,
     this.checkedToday = 0,
+    this.protectionLost = false,
+    this.onFix,
     this.clock = DateTime.now,
   });
 
@@ -24,6 +26,10 @@ class HomeScreen extends StatelessWidget {
 
   /// Texts the Incoming SMS check finished today, shown while protection is on.
   final int checkedToday;
+
+  /// Protection was turned on but Android has a permission revoked: show the banner with Fix.
+  final bool protectionLost;
+  final VoidCallback? onFix;
   final DateTime Function() clock;
 
   @override
@@ -62,6 +68,15 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (protectionLost) ...[
+                      _ProtectionOffBanner(
+                        title: l.smsOffBanner,
+                        body: l.smsOffBannerBody,
+                        fix: l.smsFix,
+                        onFix: onFix,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     EnterMotion(index: 1, child: Text(l.homePrompt, style: tt.titleLarge)),
                     const SizedBox(height: 16),
                     // Rows instead of a fixed-ratio grid so large text grows the tiles instead of clipping.
@@ -344,6 +359,54 @@ class _SmsCard extends StatelessWidget {
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProtectionOffBanner extends StatelessWidget {
+  const _ProtectionOffBanner({required this.title, required this.body, required this.fix, required this.onFix});
+  final String title;
+  final String body;
+  final String fix;
+  final VoidCallback? onFix;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
+        decoration: BoxDecoration(
+          color: UsisaColors.dangerTint,
+          borderRadius: BorderRadius.circular(UsisaRadius.card),
+          border: Border.all(color: UsisaColors.danger, width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: tt.titleMedium?.copyWith(color: UsisaColors.danger)),
+                  const SizedBox(height: 2),
+                  Text(body, style: tt.bodyMedium),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: onFix,
+              style: FilledButton.styleFrom(
+                backgroundColor: UsisaColors.danger,
+                shape: const StadiumBorder(),
+                minimumSize: const Size(64, 48),
+              ),
+              child: Text(fix),
             ),
           ],
         ),

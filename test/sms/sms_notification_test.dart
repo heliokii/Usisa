@@ -54,7 +54,7 @@ void main() {
         case 'review':
           return call.arguments == _id ? {'body': _scam, 'generation': 1, 'result': result} : null;
       }
-      return {'supported': true, 'enabled': true, 'smsPermission': true, 'generation': 1};
+      return {'supported': true, 'enabled': true, 'wanted': true, 'smsPermission': true, 'notifications': true, 'generation': 1};
     });
     final sms = SmsService(nativePlatform: true);
     addTearDown(sms.dispose);

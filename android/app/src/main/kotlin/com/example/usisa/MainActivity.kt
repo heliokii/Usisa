@@ -3,8 +3,10 @@ package com.example.usisa
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -43,10 +45,34 @@ class MainActivity : FlutterActivity() {
         if (permissionReply != null) { reply.error("busy", "Permission request already open", null); return }
         val permissions = mutableListOf<String>()
         if (!notificationsOnly && checkSelfPermission(Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) permissions.add(Manifest.permission.RECEIVE_SMS)
-        if (notificationsOnly && Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        // One setup step: SMS and notifications are asked for in the same dialog.
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         if (permissions.isEmpty()) { reply.success(null); return }
         permissionReply = reply
         requestPermissions(permissions.toTypedArray(), 7719)
+    }
+    /** The phone maker's page for letting apps run in the background; the app's own settings page if none opens. */
+    fun openBackgroundSettings() {
+        val pages = when (Build.MANUFACTURER.lowercase()) {
+            "xiaomi" -> listOf("com.miui.securitycenter" to "com.miui.permcenter.autostart.AutoStartManagementActivity")
+            "oppo" -> listOf("com.coloros.safecenter" to "com.coloros.safecenter.permission.startup.StartupAppListActivity",
+                "com.coloros.safecenter" to "com.coloros.safecenter.startupapp.StartupAppListActivity",
+                "com.oppo.safe" to "com.oppo.safe.permission.startup.StartupAppListActivity")
+            "vivo" -> listOf("com.vivo.permissionmanager" to "com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+                "com.iqoo.secure" to "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager")
+            "samsung" -> listOf("com.samsung.android.lool" to "com.samsung.android.sm.battery.ui.BatteryActivity",
+                "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.BatteryActivity")
+            else -> emptyList()
+        }
+        for ((pkg, cls) in pages) {
+            try { startActivity(Intent().setClassName(pkg, cls)); return } catch (_: Exception) { }
+        }
+        openAppSettings()
+    }
+    fun openAppSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+        } catch (_: Exception) { }
     }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

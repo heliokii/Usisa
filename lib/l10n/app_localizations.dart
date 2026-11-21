@@ -224,6 +224,72 @@ abstract class AppLocalizations {
   /// **'Texts are not being checked'**
   String get smsCardOff;
 
+  /// No description provided for @smsSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect me from scam texts'**
+  String get smsSetupTitle;
+
+  /// No description provided for @smsSetupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa checks each new text on your phone and warns you only when it may be a scam. Android will ask you to allow SMS and notifications.'**
+  String get smsSetupBody;
+
+  /// No description provided for @smsSetupTurnOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on protection'**
+  String get smsSetupTurnOn;
+
+  /// No description provided for @smsSetupNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get smsSetupNotNow;
+
+  /// No description provided for @smsBackgroundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let Usisa keep running'**
+  String get smsBackgroundTitle;
+
+  /// No description provided for @smsBackgroundBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone may stop apps that run in the background. On the next screen, allow Usisa to start on its own or remove its battery limit, so new texts keep getting checked.'**
+  String get smsBackgroundBody;
+
+  /// No description provided for @smsBackgroundOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get smsBackgroundOpen;
+
+  /// No description provided for @smsBackgroundDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get smsBackgroundDone;
+
+  /// No description provided for @smsOffBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Scam text protection is off'**
+  String get smsOffBanner;
+
+  /// No description provided for @smsOffBannerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa needs SMS and notification permission to check your texts.'**
+  String get smsOffBannerBody;
+
+  /// No description provided for @smsFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix'**
+  String get smsFix;
+
   /// No description provided for @comingSoon.
   ///
   /// In en, this message translates to:

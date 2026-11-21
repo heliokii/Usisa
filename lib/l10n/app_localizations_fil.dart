@@ -81,6 +81,42 @@ class AppLocalizationsFil extends AppLocalizations {
   String get smsCardOff => 'Hindi sinusuri ang mga text';
 
   @override
+  String get smsSetupTitle => 'Protektahan ako sa mga scam na text';
+
+  @override
+  String get smsSetupBody =>
+      'Sinusuri ng Usisa ang bawat bagong text sa phone mo at nagbababala lang kapag maaaring scam ito. Hihingi ang Android ng pahintulot para sa SMS at notification.';
+
+  @override
+  String get smsSetupTurnOn => 'I-on ang proteksyon';
+
+  @override
+  String get smsSetupNotNow => 'Hindi muna';
+
+  @override
+  String get smsBackgroundTitle => 'Hayaang tumakbo ang Usisa';
+
+  @override
+  String get smsBackgroundBody =>
+      'Maaaring patigilin ng phone mo ang mga app na tumatakbo sa background. Sa susunod na screen, payagang kusang magsimula ang Usisa o alisin ang limit nito sa baterya, para patuloy na masuri ang mga bagong text.';
+
+  @override
+  String get smsBackgroundOpen => 'Buksan ang settings';
+
+  @override
+  String get smsBackgroundDone => 'Tapos na';
+
+  @override
+  String get smsOffBanner => 'Naka-off ang proteksyon sa scam na text';
+
+  @override
+  String get smsOffBannerBody =>
+      'Kailangan ng Usisa ng pahintulot sa SMS at notification para masuri ang mga text mo.';
+
+  @override
+  String get smsFix => 'Ayusin';
+
+  @override
   String get comingSoon => 'Malapit na';
 
   @override
