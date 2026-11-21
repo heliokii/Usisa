@@ -67,5 +67,22 @@
   "readAloudNoFilipino": "There's no Filipino voice on this phone, so it's reading in English.",
   "readAloudUnavailable": "Read aloud isn't available on this phone.",
   "shareIntro": "I checked a message with Usisa. It says: {verdict}",
-  "@shareIntro": {"description": "First line of the Send to family message; verdict is the localized Verdict word.", "placeholders": {"verdict": {"type": "String"}}}
+  "@shareIntro": {"description": "First line of the Send to family message; verdict is the localized Verdict word.", "placeholders": {"verdict": {"type": "String"}}},
+  "settingsDisplay": "Display",
+  "settingsTextSize": "Text size",
+  "textSizeNormal": "Normal",
+  "textSizeLarge": "Large",
+  "textSizeExtraLarge": "Extra large",
+  "settingsTextSizeNote": "This adds to your phone's own text size.",
+  "settingsLanguage": "Language",
+  "languageEnglish": "English",
+  "languageFilipino": "Filipino",
+  "settingsProtection": "Protection",
+  "settingsOnline": "Online checks",
+  "settingsOnlineSwitch": "Check links and use AI online",
+  "settingsOnlineOn": "Links go to Usisa's checking service. AI scan sends the message text to an AI service.",
+  "settingsOnlineOff": "Everything is checked on your phone only, so Usisa may miss some scams.",
+  "settingsAbout": "About",
+  "aboutGuide": "Usisa is a guide, not a guarantee. It looks for common scam signs, but it can be wrong. If something feels off, don't click, don't pay and don't share codes. Ask someone you trust.",
+  "aboutData": "Your checks and History are saved only on this phone. Nothing is sent anywhere unless online checks are on."
 }

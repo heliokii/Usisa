@@ -16,6 +16,10 @@ class SettingsStore extends ChangeNotifier {
   bool onlineConsentAsked = false;
   bool aiScanning = true;
   bool onboarded = false;
+
+  /// In-app text size on top of the phone's own: one of [textSizes].
+  String textSize = 'normal';
+  static const textSizes = {'normal': 1.0, 'large': 1.2, 'extraLarge': 1.4};
   Future<void> _tail = Future.value();
   bool _disposed = false;
   void _changed() {
@@ -39,6 +43,7 @@ class SettingsStore extends ChangeNotifier {
     aiScanning = value['aiScanning'] != false;
     onboarded = value['onboarded'] == true;
     onlineConsentAsked = value['onlineConsentAsked'] == true;
+    textSize = textSizes.containsKey(value['textSize']) ? value['textSize'] as String : 'normal';
     onlineLinkChecks =
         value['onlineLinkChecks'] == true && value['onlineDisclosure'] == 2;
   }
@@ -51,6 +56,7 @@ class SettingsStore extends ChangeNotifier {
     bool? aiScanning,
     bool? onboarded,
     bool? onlineConsentAsked,
+    String? textSize,
   }) {
     final work = _tail.then((_) async {
       final value = {
@@ -62,6 +68,7 @@ class SettingsStore extends ChangeNotifier {
         'onlineDisclosure': 2,
         'onboarded': onboarded ?? this.onboarded,
         'onlineConsentAsked': onlineConsentAsked ?? this.onlineConsentAsked,
+        'textSize': textSize ?? this.textSize,
       };
       final oldLanguage = this.language;
       final oldAiScanning = this.aiScanning;
@@ -83,6 +90,7 @@ class SettingsStore extends ChangeNotifier {
       this.aiScanning = value['aiScanning'] as bool;
       this.onboarded = value['onboarded'] as bool;
       this.onlineConsentAsked = value['onlineConsentAsked'] as bool;
+      this.textSize = value['textSize'] as String;
       _changed();
     });
     _tail = work.then((_) {}, onError: (Object _, StackTrace _) {});

@@ -11,11 +11,13 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private var bridge: SmsBridge? = null
+    private var share: ShareBridge? = null
     private var permissionReply: MethodChannel.Result? = null
     private var notificationId: String? = null
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         bridge = SmsBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+        share = ShareBridge(this, flutterEngine.dartExecutor.binaryMessenger)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +30,7 @@ class MainActivity : FlutterActivity() {
     }
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); capture(intent, true) }
     private fun capture(intent: Intent?, notify: Boolean) {
+        share?.capture(intent, notify)
         val id = intent?.getStringExtra("usisa_event_id") ?: return
         intent.removeExtra("usisa_event_id")
         if (!id.matches(Regex("[0-9a-f-]{36}"))) return
@@ -50,7 +53,7 @@ class MainActivity : FlutterActivity() {
         if (requestCode == 7719) { permissionReply?.success(null); permissionReply = null }
     }
     override fun onDestroy() {
-        bridge?.dispose(); permissionReply?.error("interrupted", "Permission request interrupted", null); permissionReply = null
+        bridge?.dispose(); share?.dispose(); permissionReply?.error("interrupted", "Permission request interrupted", null); permissionReply = null
         super.onDestroy()
     }
 }

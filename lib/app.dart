@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 import 'app/theme.dart';
 import 'features/check/check.dart';
@@ -9,14 +13,24 @@ import 'features/check/gateway_link_checker.dart';
 import 'features/check/home_screen.dart';
 import 'features/check/paste_screen.dart';
 import 'features/check/screenshot_screen.dart';
+import 'features/check/share_source.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_store.dart';
 import 'features/scan/ocr_service.dart';
+import 'features/settings/settings_screen.dart';
 import 'features/settings/settings_store.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
-  const UsisaApp({super.key, this.storage, this.runCheck, this.readScreenshot, this.gatewayClient});
+  const UsisaApp({
+    super.key,
+    this.storage,
+    this.runCheck,
+    this.readScreenshot,
+    this.gatewayClient,
+    this.shares,
+    this.readSharedImage,
+  });
 
   final PrivateStorage? storage;
 
@@ -29,6 +43,12 @@ class UsisaApp extends StatefulWidget {
   /// Picks a picture and reads its text; widget tests pass a fake.
   final ScreenshotReader? readScreenshot;
 
+  /// Content shared in from other apps; widget tests pass a fake.
+  final Stream<SharedItem>? shares;
+
+  /// Reads the text in a shared picture (a cache path); widget tests pass a fake.
+  final Future<String> Function(String path)? readSharedImage;
+
   @override
   State<UsisaApp> createState() => _UsisaAppState();
 }
@@ -38,6 +58,7 @@ class _UsisaAppState extends State<UsisaApp> {
   late final HistoryStore history = HistoryStore(settings.storage);
   late final http.Client _gateway = widget.gatewayClient ?? http.Client();
   final _navigator = GlobalKey<NavigatorState>();
+  late final Stream<SharedItem> _shares = widget.shares ?? (kIsWeb ? const Stream.empty() : channelShares());
 
   @override
   void initState() {
@@ -92,23 +113,43 @@ class _UsisaAppState extends State<UsisaApp> {
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
+      // The in-app text size multiplies the phone's own setting, on every screen.
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        final factor = SettingsStore.textSizes[settings.textSize]!;
+        return MediaQuery(
+          data: media.copyWith(textScaler: _TimesTextScaler(media.textScaler, factor)),
+          child: child!,
+        );
+      },
       home: _Shell(
         // Every Check from every screen is saved to History here.
         runCheck: history.recording(widget.runCheck ?? _runCheck),
         history: history,
         settings: settings,
         readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
+        shares: _shares,
+        readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
       ),
     ),
   );
 }
 
 class _Shell extends StatefulWidget {
-  const _Shell({required this.runCheck, required this.readScreenshot, required this.history, required this.settings});
+  const _Shell({
+    required this.runCheck,
+    required this.readScreenshot,
+    required this.history,
+    required this.settings,
+    required this.shares,
+    required this.readSharedImage,
+  });
   final RunCheck runCheck;
   final HistoryStore history;
   final SettingsStore settings;
   final ScreenshotReader readScreenshot;
+  final Stream<SharedItem> shares;
+  final Future<String> Function(String path) readSharedImage;
 
   @override
   State<_Shell> createState() => _ShellState();
@@ -116,8 +157,47 @@ class _Shell extends StatefulWidget {
 
 class _ShellState extends State<_Shell> {
   int _tab = 0;
-  // shortcut: visual-only switch until SMS protection is wired to SmsService (ticket #40).
+  // shortcut: visual-only switch shared by the home card and Settings until SMS protection is wired (#42).
   bool _smsOn = false;
+  late final StreamSubscription<SharedItem> _shares;
+
+  @override
+  void initState() {
+    super.initState();
+    _shares = widget.shares.listen(_openShare);
+  }
+
+  @override
+  void dispose() {
+    _shares.cancel();
+    super.dispose();
+  }
+
+  /// A share opens the matching tile prefilled; nothing is checked until the person taps Check.
+  void _openShare(SharedItem item) {
+    final l = AppLocalizations.of(context);
+    final image = item.imagePath;
+    final text = item.text?.trim() ?? '';
+    final link = phoneCheck(text).links.singleOrNull == text;
+    Navigator.of(context)
+      ..popUntil((route) => route.isFirst)
+      ..push(
+        MaterialPageRoute<void>(
+          builder: (_) => image != null
+              ? ScreenshotScreen(
+                  readScreenshot: widget.readScreenshot,
+                  runCheck: widget.runCheck,
+                  readShared: () => widget.readSharedImage(image),
+                )
+              : PasteScreen(
+                  runCheck: widget.runCheck,
+                  source: link ? CheckSource.link : CheckSource.share,
+                  initialText: text,
+                  title: link ? l.tileLinkTitle : null,
+                ),
+        ),
+      );
+  }
 
   void _startCheck(CheckKind kind) {
     if (kind == CheckKind.message || kind == CheckKind.link) {
@@ -166,7 +246,12 @@ class _ShellState extends State<_Shell> {
             HomeScreen(onCheck: _startCheck, smsOn: _smsOn, onSmsChanged: (on) => setState(() => _smsOn = on)),
             HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
             _Placeholder(title: l.navLearn),
-            _Placeholder(title: l.navSettings),
+            SettingsScreen(
+              settings: widget.settings,
+              history: widget.history,
+              smsOn: _smsOn,
+              onSmsChanged: (on) => setState(() => _smsOn = on),
+            ),
           ],
         ),
         // Flat white nav with a hairline top border; square corners so no page colour shows through.
@@ -202,6 +287,26 @@ class _ShellState extends State<_Shell> {
       ),
     );
   }
+}
+
+/// The phone's text scaler times the in-app text size.
+class _TimesTextScaler extends TextScaler {
+  const _TimesTextScaler(this.phone, this.factor);
+  final TextScaler phone;
+  final double factor;
+
+  @override
+  double scale(double fontSize) => phone.scale(fontSize) * factor;
+
+  @override
+  @Deprecated('Use scale instead.')
+  double get textScaleFactor => scale(14) / 14;
+
+  @override
+  bool operator ==(Object other) => other is _TimesTextScaler && other.phone == phone && other.factor == factor;
+
+  @override
+  int get hashCode => Object.hash(phone, factor);
 }
 
 /// Stand-in for tabs that later tickets build.
