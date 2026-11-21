@@ -5,7 +5,7 @@ import '../../app/read_aloud.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 
-/// The eight common PH scam topics, in display order. Content lives in the .arb files; sources in docs/learn_sources.md.
+/// The eight common PH scam topics, in display order. Content lives in the .arb files; sources in SOURCES.md beside this file.
 const learnTopics = ['phishing', 'prize', 'family', 'aid', 'parcel', 'job', 'investment', 'gambling'];
 
 // Phone-check reason codes that point to a topic. Weak signs like urgency or brand_mention fit too many topics.
