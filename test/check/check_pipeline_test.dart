@@ -1,5 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:usisa/features/check/check.dart';
+import 'package:usisa/features/check/gateway_ai_checker.dart';
+
+import '../scan/ai_models_test.dart' show assessment;
+import '../scan/gateway_test_helpers.dart';
 
 const harmless = 'Hi Ma, nakauwi na ako. Ingat po kayo!';
 const harmlessWithLink = 'Sale ngayon sa shopee.ph/sale, tingnan mo';
@@ -82,6 +90,31 @@ void main() {
       expect(r.verdict, Verdict.beCareful);
       expect(r.reasons, contains('payment_request'));
       expect(r.reasons, isNot(contains('impersonation')));
+    });
+
+    test('a mismatched quote in the gateway answer drops only that reason, not the AI answer', () async {
+      final gateway = MockClient((request) async =>
+          gatewayHealthResponse(request) ??
+          http.Response(
+            jsonEncode({
+              ...assessment(risk: 'caution'),
+              'warningSigns': [
+                {'code': 'payment_request', 'evidence': 'Pay the fee'},
+                {'code': 'impersonation', 'evidence': 'not in the message'},
+              ],
+            }),
+            200,
+          ));
+      final r = await check(
+        'Pay the fee now',
+        aiScan: true,
+        aiChecker: gatewayAiChecker(gateway, Uri.parse('https://gateway.test'), language: () => 'en'),
+      );
+      expect(r.aiUnavailable, isFalse);
+      expect(r.verdict, Verdict.beCareful);
+      expect(r.reasons, contains('payment_request'));
+      expect(r.reasons, isNot(contains('impersonation')));
+      expect(r.evidence, ['Pay the fee']);
     });
   });
 
