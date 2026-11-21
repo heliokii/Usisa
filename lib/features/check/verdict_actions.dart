@@ -43,18 +43,7 @@ class _VerdictActionsState extends State<VerdictActions> {
     super.dispose();
   }
 
-  Future<void> _speak() async {
-    final l = AppLocalizations.of(context);
-    final language = Localizations.localeOf(context).languageCode;
-    final spoken = await _readAloud.speak(
-      language,
-      (lang) => verdictSpeech(lookupAppLocalizations(Locale(lang)), widget.result),
-    );
-    if (!mounted || spoken == language) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(spoken == null ? l.readAloudUnavailable : l.readAloudNoFilipino)));
-  }
+  Future<void> _speak() => readAloudWithNote(context, _readAloud, (l) => verdictSpeech(l, widget.result));
 
   @override
   Widget build(BuildContext context) {

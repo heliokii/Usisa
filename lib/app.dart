@@ -16,6 +16,7 @@ import 'features/check/screenshot_screen.dart';
 import 'features/check/share_source.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_store.dart';
+import 'features/learn/learn_screen.dart';
 import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/settings/settings_store.dart';
@@ -245,7 +246,7 @@ class _ShellState extends State<_Shell> {
           children: [
             HomeScreen(onCheck: _startCheck, smsOn: _smsOn, onSmsChanged: (on) => setState(() => _smsOn = on)),
             HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
-            _Placeholder(title: l.navLearn),
+            const LearnScreen(),
             SettingsScreen(
               settings: widget.settings,
               history: widget.history,
@@ -307,28 +308,4 @@ class _TimesTextScaler extends TextScaler {
 
   @override
   int get hashCode => Object.hash(phone, factor);
-}
-
-/// Stand-in for tabs that later tickets build.
-class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: tt.headlineSmall),
-            const SizedBox(height: 8),
-            Text(AppLocalizations.of(context).comingSoon, style: tt.bodyLarge),
-          ],
-        ),
-      ),
-    );
-  }
 }
