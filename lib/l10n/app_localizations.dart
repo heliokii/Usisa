@@ -229,6 +229,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}'**
   String aiFindingTitle(String code);
+
+  /// No description provided for @pasteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the text message here'**
+  String get pasteHint;
+
+  /// No description provided for @checkButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get checkButton;
+
+  /// The Verdict word; values match Verdict in lib/features/check/check.dart.
+  ///
+  /// In en, this message translates to:
+  /// **'{verdict, select, looksSafe{Looks safe} beCareful{Be careful} dangerous{Dangerous} other{Couldn\'t check}}'**
+  String verdictWord(String verdict);
+
+  /// One plain sentence telling the person what to do next.
+  ///
+  /// In en, this message translates to:
+  /// **'{verdict, select, looksSafe{Nothing suspicious found. Still, never share your OTP or PIN with anyone.} beCareful{Don\'t tap links or send money until you\'re sure who sent this.} dangerous{Don\'t tap the link, don\'t reply, and don\'t send money.} other{We couldn\'t check this fully. Don\'t open any link or enter any details until you\'re sure who sent it.}}'**
+  String verdictAction(String verdict);
+
+  /// No description provided for @verdictWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why'**
+  String get verdictWhy;
+
+  /// No description provided for @checkedOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked on your phone'**
+  String get checkedOnPhone;
+
+  /// No description provided for @youChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'You checked'**
+  String get youChecked;
+
+  /// One reason on the verdict screen; codes come from decideVerdict and server/ai_schema.mjs.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand\'s website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn\'t see where the link goes} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}'**
+  String reason(String code);
 }
 
 class _AppLocalizationsDelegate

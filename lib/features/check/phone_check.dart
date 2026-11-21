@@ -41,18 +41,14 @@ const _officialDomains = {
 PhoneCheck phoneCheck(String text) {
   // Lower-case and join lines so requests split across lines still match.
   final t = text.toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-  final links = [
-    for (final m in _link.allMatches(text)) m[0]!.replaceFirst(RegExp(r'[.,!?;:)]+$'), ''),
-  ];
+  final links = [for (final m in _link.allMatches(text)) m[0]!.replaceFirst(RegExp(r'[.,!?;:)]+$'), '')];
   final signs = <Sign>[
     if (links.isNotEmpty && _secret.hasMatch(t)) const Sign('otp_with_link', SignStrength.strong),
     if (links.any(_isLookalike)) const Sign('lookalike_domain', SignStrength.strong),
     if (_prize.hasMatch(t)) const Sign('prize_claim', SignStrength.strong),
     if (_urgency.hasMatch(t)) const Sign('urgency', SignStrength.weak),
   ];
-  final verdict = signs.any((s) => s.strength == SignStrength.strong)
-      ? Verdict.dangerous
-      : Verdict.looksSafe;
+  final verdict = signs.any((s) => s.strength == SignStrength.strong) ? Verdict.dangerous : Verdict.looksSafe;
   return PhoneCheck(verdict, signs, links);
 }
 

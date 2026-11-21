@@ -86,4 +86,67 @@ class AppLocalizationsFil extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get pasteHint => 'I-paste dito ang text message';
+
+  @override
+  String get checkButton => 'Suriin';
+
+  @override
+  String verdictWord(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'looksSafe': 'Mukhang ligtas',
+      'beCareful': 'Mag-ingat',
+      'dangerous': 'Delikado',
+      'other': 'Hindi masuri',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String verdictAction(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'looksSafe': 'Walang nakitang kahina-hinala. Pero huwag pa ring ibigay ang OTP o PIN mo kahit kanino.',
+      'beCareful': 'Huwag pindutin ang link o magpadala ng pera hangga\'t hindi ka sigurado kung sino ang nagpadala nito.',
+      'dangerous':
+          'Huwag pindutin ang link, huwag sumagot, at huwag magpadala ng pera.',
+      'other': 'Hindi namin ito lubos na masuri. Huwag magbukas ng link o maglagay ng anumang detalye hangga\'t hindi ka sigurado kung sino ang nagpadala.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get verdictWhy => 'Bakit';
+
+  @override
+  String get checkedOnPhone => 'Sinuri sa iyong phone';
+
+  @override
+  String get youChecked => 'Ang sinuri mo';
+
+  @override
+  String reason(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'no_signs': 'Wala kaming nakitang babala',
+      'otp_with_link':
+          'Humihingi ito ng OTP o password mo at may kasamang link',
+      'lookalike_domain': 'Nagpapanggap ang link na website ng kilalang brand',
+      'prize_claim':
+          'Sinasabi nitong nanalo ka ng premyong kailangan mong i-claim',
+      'urgency': 'Minamadali ka nitong kumilos',
+      'gambling_ad': 'Isa itong hindi hinihinging patalastas ng sugal',
+      'flagged_link': 'Nakalista sa Google na hindi ligtas ang link na ito',
+      'shortener_blocked': 'Hinarang na ng link shortener ang link na ito',
+      'opens_app': 'Nagbubukas ng app ang link sa halip na website',
+      'unresolved_link': 'Hindi namin makita kung saan papunta ang link',
+      'credential_request': 'Humihingi ito ng password, PIN o code',
+      'payment_request': 'Pinapabayad o pinapapadala ka nito ng pera',
+      'impersonation': 'Maaaring nagpapanggap ito bilang ibang tao',
+      'prize': 'Nangangako ito ng premyo',
+      'suspicious_link': 'Kahina-hinala ang link',
+      'other': 'May iba pa kaming nakitang babala',
+    });
+    return '$_temp0';
+  }
 }

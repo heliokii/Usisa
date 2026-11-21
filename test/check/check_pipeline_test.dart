@@ -13,14 +13,11 @@ LinkChecker links(LinkStatus status) =>
 AiChecker ai(AiLevel level, [List<AiSign> signs = const []]) =>
     (_) async => AiAnswer(level, signs);
 
-Future<CheckResult> check(
-  String text, {
-  bool aiScan = false,
-  LinkChecker? linkChecker,
-  AiChecker? aiChecker,
-}) => CheckPipeline(linkChecker: linkChecker, aiChecker: aiChecker).run(
-  CheckInput(text, source: CheckSource.message, aiScan: aiScan),
-);
+Future<CheckResult> check(String text, {bool aiScan = false, LinkChecker? linkChecker, AiChecker? aiChecker}) =>
+    CheckPipeline(
+      linkChecker: linkChecker,
+      aiChecker: aiChecker,
+    ).run(CheckInput(text, source: CheckSource.message, aiScan: aiScan));
 
 void main() {
   group('rule 1: flagged or shortener-blocked links are Dangerous', () {

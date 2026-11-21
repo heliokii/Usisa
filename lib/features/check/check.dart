@@ -41,12 +41,7 @@ class AiAnswer {
 
 /// What a Check returns; screens only display this.
 class CheckResult {
-  const CheckResult({
-    required this.text,
-    required this.verdict,
-    required this.reasons,
-    required this.checkedOnPhone,
-  });
+  const CheckResult({required this.text, required this.verdict, required this.reasons, required this.checkedOnPhone});
   final String text;
   final Verdict verdict;
 
@@ -59,6 +54,9 @@ class CheckResult {
 
 typedef LinkChecker = Future<List<LinkCheck>> Function(List<String> links);
 typedef AiChecker = Future<AiAnswer?> Function(String text);
+
+/// What screens call to run a Check; [CheckPipeline.run] in the app, a fake in widget tests.
+typedef RunCheck = Future<CheckResult> Function(CheckInput input);
 
 /// The one entry point that runs a Check: phone check, online link check, AI, then the verdict.
 /// Pass a checker only when the person has consented to online checks.
@@ -90,8 +88,7 @@ class CheckPipeline {
 
 const _order = [Verdict.looksSafe, Verdict.beCareful, Verdict.dangerous];
 
-Verdict _atLeast(Verdict v, Verdict floor) =>
-    _order.indexOf(v) < _order.indexOf(floor) ? floor : v;
+Verdict _atLeast(Verdict v, Verdict floor) => _order.indexOf(v) < _order.indexOf(floor) ? floor : v;
 
 /// The verdict decision: spec rules 1-6, in order. Pure.
 CheckResult decideVerdict({
@@ -102,8 +99,14 @@ CheckResult decideVerdict({
   AiAnswer? ai,
 }) {
   bool has(LinkStatus s) => links.any((l) => l.status == s);
-  final strong = [for (final s in phone.signs) if (s.strength == SignStrength.strong) s.code];
-  final weak = [for (final s in phone.signs) if (s.strength == SignStrength.weak) s.code];
+  final strong = [
+    for (final s in phone.signs)
+      if (s.strength == SignStrength.strong) s.code,
+  ];
+  final weak = [
+    for (final s in phone.signs)
+      if (s.strength == SignStrength.weak) s.code,
+  ];
   // A sign quoting words that aren't in the text is dropped on its own.
   final aiSigns = [
     for (final s in ai?.signs ?? const <AiSign>[])
@@ -117,9 +120,7 @@ CheckResult decideVerdict({
     verdict = Verdict.dangerous;
   } else {
     // Rules 2 and 3.
-    var v = useAi
-        ? _order[(ai.level.index + (strong.isEmpty ? 0 : 1)).clamp(0, 2)]
-        : phone.verdict;
+    var v = useAi ? _order[(ai.level.index + (strong.isEmpty ? 0 : 1)).clamp(0, 2)] : phone.verdict;
     // Rule 4.
     if (useAi && aiSigns.contains('gambling_ad')) v = _atLeast(v, Verdict.beCareful);
     // Rule 5.
@@ -140,10 +141,5 @@ CheckResult decideVerdict({
   }.take(3).toList();
   if (reasons.isEmpty && verdict == Verdict.looksSafe) reasons.add('no_signs');
 
-  return CheckResult(
-    text: text,
-    verdict: verdict,
-    reasons: reasons,
-    checkedOnPhone: links.isEmpty && ai == null,
-  );
+  return CheckResult(text: text, verdict: verdict, reasons: reasons, checkedOnPhone: links.isEmpty && ai == null);
 }

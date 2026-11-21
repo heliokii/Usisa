@@ -86,4 +86,65 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get pasteHint => 'Paste the text message here';
+
+  @override
+  String get checkButton => 'Check';
+
+  @override
+  String verdictWord(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'looksSafe': 'Looks safe',
+      'beCareful': 'Be careful',
+      'dangerous': 'Dangerous',
+      'other': 'Couldn\'t check',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String verdictAction(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'looksSafe': 'Nothing suspicious found. Still, never share your OTP or PIN with anyone.',
+      'beCareful':
+          'Don\'t tap links or send money until you\'re sure who sent this.',
+      'dangerous': 'Don\'t tap the link, don\'t reply, and don\'t send money.',
+      'other': 'We couldn\'t check this fully. Don\'t open any link or enter any details until you\'re sure who sent it.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get verdictWhy => 'Why';
+
+  @override
+  String get checkedOnPhone => 'Checked on your phone';
+
+  @override
+  String get youChecked => 'You checked';
+
+  @override
+  String reason(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'no_signs': 'We found no warning signs',
+      'otp_with_link': 'It asks for your OTP or password and has a link',
+      'lookalike_domain': 'The link pretends to be a known brand\'s website',
+      'prize_claim': 'It says you won a prize you have to claim',
+      'urgency': 'It rushes you to act quickly',
+      'gambling_ad': 'This is an unsolicited gambling ad',
+      'flagged_link': 'Google lists this link as unsafe',
+      'shortener_blocked': 'The link shortener has blocked this link',
+      'opens_app': 'The link opens an app instead of a website',
+      'unresolved_link': 'We couldn\'t see where the link goes',
+      'credential_request': 'It asks for a password, PIN or code',
+      'payment_request': 'It asks you to pay or send money',
+      'impersonation': 'It may be pretending to be someone else',
+      'prize': 'It promises a prize',
+      'suspicious_link': 'The link looks suspicious',
+      'other': 'We found another warning sign',
+    });
+    return '$_temp0';
+  }
 }

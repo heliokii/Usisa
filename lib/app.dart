@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app/theme.dart';
+import 'features/check/check.dart';
 import 'features/check/home_screen.dart';
+import 'features/check/paste_screen.dart';
 import 'features/history/history_store.dart';
 import 'features/settings/settings_store.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
-  const UsisaApp({super.key, this.storage});
+  const UsisaApp({super.key, this.storage, this.runCheck});
 
   final PrivateStorage? storage;
+
+  /// Runs a Check; widget tests pass a fake. Phone-only until consent and the online clients are wired (#30, #33).
+  final RunCheck? runCheck;
 
   @override
   State<UsisaApp> createState() => _UsisaAppState();
@@ -44,13 +49,14 @@ class _UsisaAppState extends State<UsisaApp> {
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      home: const _Shell(),
+      home: _Shell(runCheck: widget.runCheck ?? const CheckPipeline().run),
     ),
   );
 }
 
 class _Shell extends StatefulWidget {
-  const _Shell();
+  const _Shell({required this.runCheck});
+  final RunCheck runCheck;
 
   @override
   State<_Shell> createState() => _ShellState();
@@ -61,7 +67,11 @@ class _ShellState extends State<_Shell> {
   // shortcut: visual-only switch until SMS protection is wired to SmsService (ticket #40).
   bool _smsOn = false;
 
-  void _comingSoon(CheckKind _) {
+  void _startCheck(CheckKind kind) {
+    if (kind == CheckKind.message) {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PasteScreen(runCheck: widget.runCheck)));
+      return;
+    }
     final l = AppLocalizations.of(context);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -84,11 +94,7 @@ class _ShellState extends State<_Shell> {
         body: IndexedStack(
           index: _tab,
           children: [
-            HomeScreen(
-              onCheck: _comingSoon,
-              smsOn: _smsOn,
-              onSmsChanged: (on) => setState(() => _smsOn = on),
-            ),
+            HomeScreen(onCheck: _startCheck, smsOn: _smsOn, onSmsChanged: (on) => setState(() => _smsOn = on)),
             _Placeholder(title: l.navHistory),
             _Placeholder(title: l.navLearn),
             _Placeholder(title: l.navSettings),
