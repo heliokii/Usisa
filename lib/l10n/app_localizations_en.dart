@@ -157,6 +157,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'otp_with_link': 'It asks for your OTP or password and has a link',
       'lookalike_domain': 'The link pretends to be a known brand\'s website',
       'prize_claim': 'It says you won a prize you have to claim',
+      'account_threat':
+          'It threatens your account or parcel to make you tap a link',
+      'easy_money': 'It promises easy money, a job, a loan or an investment that\'s too good to be true',
+      'private_contact':
+          'It asks you to deal with a stranger by email or chat app',
       'urgency': 'It rushes you to act quickly',
       'gambling_ad': 'This is an unsolicited gambling ad',
       'flagged_link': 'Google lists this link as unsafe',

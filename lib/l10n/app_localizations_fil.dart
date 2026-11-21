@@ -160,6 +160,10 @@ class AppLocalizationsFil extends AppLocalizations {
       'lookalike_domain': 'Nagpapanggap ang link na website ng kilalang brand',
       'prize_claim':
           'Sinasabi nitong nanalo ka ng premyong kailangan mong i-claim',
+      'account_threat': 'Tinatakot ka nito tungkol sa account o parcel mo para i-tap mo ang link',
+      'easy_money': 'Nangangako ito ng madaling pera, trabaho, utang o investment na masyadong maganda para totoo',
+      'private_contact':
+          'Pinapakausap ka nito sa hindi kilala sa email o chat app',
       'urgency': 'Minamadali ka nitong kumilos',
       'gambling_ad': 'Isa itong hindi hinihinging patalastas ng sugal',
       'flagged_link': 'Nakalista sa Google na hindi ligtas ang link na ito',
