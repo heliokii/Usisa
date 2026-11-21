@@ -235,4 +235,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkAgain => 'Check again';
+
+  @override
+  String get sendToFamily => 'Send to family';
+
+  @override
+  String get readAloud => 'Read aloud';
+
+  @override
+  String get readAloudNoFilipino =>
+      'There\'s no Filipino voice on this phone, so it\'s reading in English.';
+
+  @override
+  String get readAloudUnavailable =>
+      'Read aloud isn\'t available on this phone.';
+
+  @override
+  String shareIntro(String verdict) {
+    return 'I checked a message with Usisa. It says: $verdict';
+  }
 }

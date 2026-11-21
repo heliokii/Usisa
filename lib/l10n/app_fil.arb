@@ -54,5 +54,10 @@
   "cancel": "Kanselahin",
   "fromYourTexts": "Mula sa iyong mga text",
   "checkedOnDate": "Sinuri noong {date}",
-  "checkAgain": "Suriin muli"
+  "checkAgain": "Suriin muli",
+  "sendToFamily": "Ipadala sa pamilya",
+  "readAloud": "Basahin nang malakas",
+  "readAloudNoFilipino": "Walang Filipino na boses sa phone na ito, kaya binabasa sa English.",
+  "readAloudUnavailable": "Hindi magagamit ang Basahin nang malakas sa phone na ito.",
+  "shareIntro": "Sinuri ko ang isang mensahe gamit ang Usisa. Ang sabi: {verdict}"
 }

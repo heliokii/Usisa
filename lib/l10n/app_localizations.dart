@@ -427,6 +427,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check again'**
   String get checkAgain;
+
+  /// No description provided for @sendToFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to family'**
+  String get sendToFamily;
+
+  /// No description provided for @readAloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get readAloud;
+
+  /// No description provided for @readAloudNoFilipino.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s no Filipino voice on this phone, so it\'s reading in English.'**
+  String get readAloudNoFilipino;
+
+  /// No description provided for @readAloudUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud isn\'t available on this phone.'**
+  String get readAloudUnavailable;
+
+  /// First line of the Send to family message; verdict is the localized Verdict word.
+  ///
+  /// In en, this message translates to:
+  /// **'I checked a message with Usisa. It says: {verdict}'**
+  String shareIntro(String verdict);
 }
 
 class _AppLocalizationsDelegate

@@ -61,5 +61,11 @@
   "fromYourTexts": "From your texts",
   "checkedOnDate": "Checked on {date}",
   "@checkedOnDate": {"description": "Label on a reopened History entry; date is the date and time of the Check.", "placeholders": {"date": {"type": "String"}}},
-  "checkAgain": "Check again"
+  "checkAgain": "Check again",
+  "sendToFamily": "Send to family",
+  "readAloud": "Read aloud",
+  "readAloudNoFilipino": "There's no Filipino voice on this phone, so it's reading in English.",
+  "readAloudUnavailable": "Read aloud isn't available on this phone.",
+  "shareIntro": "I checked a message with Usisa. It says: {verdict}",
+  "@shareIntro": {"description": "First line of the Send to family message; verdict is the localized Verdict word.", "placeholders": {"verdict": {"type": "String"}}}
 }

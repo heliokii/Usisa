@@ -239,4 +239,23 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get checkAgain => 'Suriin muli';
+
+  @override
+  String get sendToFamily => 'Ipadala sa pamilya';
+
+  @override
+  String get readAloud => 'Basahin nang malakas';
+
+  @override
+  String get readAloudNoFilipino =>
+      'Walang Filipino na boses sa phone na ito, kaya binabasa sa English.';
+
+  @override
+  String get readAloudUnavailable =>
+      'Hindi magagamit ang Basahin nang malakas sa phone na ito.';
+
+  @override
+  String shareIntro(String verdict) {
+    return 'Sinuri ko ang isang mensahe gamit ang Usisa. Ang sabi: $verdict';
+  }
 }
