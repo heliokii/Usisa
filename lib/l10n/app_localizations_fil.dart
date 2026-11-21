@@ -71,4 +71,19 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get comingSoon => 'Malapit na';
+
+  @override
+  String aiFindingTitle(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'credential_request': 'Humihingi ng lihim na pangseguridad',
+      'payment_request': 'Humihingi ng bayad',
+      'urgency': 'Minamadali kang kumilos',
+      'impersonation': 'Posibleng pagpapanggap',
+      'prize': 'Nangangako ng premyo',
+      'suspicious_link': 'Kaduda-dudang konteksto ng link',
+      'gambling_ad': 'Patalastas ng sugal',
+      'other': 'Babalang nakita ng AI',
+    });
+    return '$_temp0';
+  }
 }

@@ -2,6 +2,8 @@
 
 A plain `node:http` server (Node 24 or newer, no npm dependencies). It holds the API keys so the app never does. Endpoints: `GET /healthz`, `GET /v1/capabilities`, `POST /v1/ai-scan`, `POST /v1/link-check`.
 
+`POST /v1/ai-scan` takes `{text, responseLanguage: "en"|"fil", links?}`, where `links` (up to 5) is `[{url, destination, hops}]` copied from `/v1/link-check` results so the model sees where each link really goes. A warning sign whose quote is not in `text` is dropped; the answer is rejected only if a caution/high verdict is left without any quote.
+
 ```sh
 npm start   # loads ../.env if it exists
 npm test

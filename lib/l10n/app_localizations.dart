@@ -223,6 +223,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Coming soon'**
   String get comingSoon;
+
+  /// Title for an AI warning sign; codes match server/ai_schema.mjs warningCodes.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}'**
+  String aiFindingTitle(String code);
 }
 
 class _AppLocalizationsDelegate

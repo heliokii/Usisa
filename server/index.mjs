@@ -26,6 +26,14 @@ function readBody(req, limit = 8192) {
 // (lib/features/scan/ai_scan_client.dart 18 s, reputation_client.dart 5 s); gateway_ops.test.mjs checks this.
 export const TIMEOUTS = Object.freeze({aiMs:16000, linkCheckMs:8000});
 
+// AI context from /v1/link-check results: {url, destination, hops} per link, same bounds as the follower (8 hops, 2048-char URLs).
+const linkString = value => typeof value === 'string' && value.length > 0 && value.length <= 2048 && value.isWellFormed();
+function validLinks(links) {
+  return Array.isArray(links) && links.length <= 5 && links.every(link => link && typeof link === 'object' && !Array.isArray(link) &&
+    Object.keys(link).length === 3 && linkString(link.url) && (link.destination === null || linkString(link.destination)) &&
+    Array.isArray(link.hops) && link.hops.length <= 8 && link.hops.every(linkString));
+}
+
 // On Render, Cloudflare overwrites CF-Connecting-IP on every request; X-Forwarded-For is only appended to, so its entries are spoofable.
 function clientAddress(req, trustProxy) {
   const forwarded = trustProxy ? req.headers['cf-connecting-ip'] : undefined;
@@ -79,12 +87,12 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
     try {
       const body = JSON.parse(await readBody(req,isAi ? 65536 : 8192));
       if (isAi) {
-        if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length !== 2 || typeof body.text !== 'string' || !body.text.trim() || [...body.text].length > 10000 || !body.text.isWellFormed() || !['en','fil'].includes(body.responseLanguage)) { send(400,{error:'invalid_input'}); return; }
+        if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length !== (Object.hasOwn(body,'links') ? 3 : 2) || (Object.hasOwn(body,'links') && !validLinks(body.links)) || typeof body.text !== 'string' || !body.text.trim() || [...body.text].length > 10000 || !body.text.isWellFormed() || !['en','fil'].includes(body.responseLanguage)) { send(400,{error:'invalid_input'}); return; }
         const key = req.headers['idempotency-key'];
         if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{8,100}$/.test(key)) { send(400,{error:'invalid_submission'}); return; }
         if (!aiConfigured) { send(503,{error:'unavailable'}); return; }
         const id = `${ip}:${key}`;
-        const fingerprint = createHash('sha256').update(JSON.stringify({text:body.text,responseLanguage:body.responseLanguage})).digest('hex');
+        const fingerprint = createHash('sha256').update(JSON.stringify({text:body.text,responseLanguage:body.responseLanguage,links:body.links})).digest('hex');
         let entry = pending.get(id);
         if (entry && entry.fingerprint !== fingerprint) { send(409,{error:'submission_conflict'}); return; }
         if (!entry) {

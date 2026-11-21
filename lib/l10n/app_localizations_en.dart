@@ -71,4 +71,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get comingSoon => 'Coming soon';
+
+  @override
+  String aiFindingTitle(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'credential_request': 'Asks for a security secret',
+      'payment_request': 'Requests a payment',
+      'urgency': 'Pressures you to act',
+      'impersonation': 'Possible impersonation',
+      'prize': 'Promises a prize',
+      'suspicious_link': 'Questionable link context',
+      'gambling_ad': 'Gambling ad',
+      'other': 'AI warning sign',
+    });
+    return '$_temp0';
+  }
 }
