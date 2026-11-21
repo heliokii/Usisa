@@ -52,11 +52,19 @@ PhoneCheck phoneCheck(String text) {
   return PhoneCheck(verdict, signs, links);
 }
 
+String _host(String link) => Uri.tryParse(link.contains('://') ? link : 'http://$link')?.host.toLowerCase() ?? '';
+
+bool _onDomain(String host, String d) => host == d || host.endsWith('.$d');
+
 /// A host that names a known brand but isn't on that brand's own domain.
 bool _isLookalike(String link) {
-  final host = Uri.tryParse(link.contains('://') ? link : 'http://$link')?.host.toLowerCase() ?? '';
+  final host = _host(link);
   final words = host.split(RegExp(r'[.-]'));
-  return _officialDomains.entries.any(
-    (e) => words.contains(e.key) && !e.value.any((d) => host == d || host.endsWith('.$d')),
-  );
+  return _officialDomains.entries.any((e) => words.contains(e.key) && !e.value.any((d) => _onDomain(host, d)));
+}
+
+/// A link on a known brand's own domain, which the phone can judge without going online.
+bool isOfficialLink(String link) {
+  final host = _host(link);
+  return _officialDomains.values.any((ds) => ds.any((d) => _onDomain(host, d)));
 }

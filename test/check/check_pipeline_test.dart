@@ -11,7 +11,7 @@ LinkChecker links(LinkStatus status) =>
     (found) async => [for (final link in found) LinkCheck(link, status)];
 
 AiChecker ai(AiLevel level, [List<AiSign> signs = const []]) =>
-    (_) async => AiAnswer(level, signs);
+    (_, _) async => AiAnswer(level, signs);
 
 Future<CheckResult> check(String text, {bool aiScan = false, LinkChecker? linkChecker, AiChecker? aiChecker}) =>
     CheckPipeline(
@@ -98,10 +98,50 @@ void main() {
     });
 
     test('an AI scan whose AI could not answer keeps the phone verdict', () async {
-      final r = await check(harmless, aiScan: true, aiChecker: (_) async => null);
+      final r = await check(harmless, aiScan: true, aiChecker: (_, _) async => null);
       expect(r.verdict, Verdict.looksSafe);
-      final failing = await check(otpWithLink, aiScan: true, aiChecker: (_) => throw Exception('busy'));
+      final failing = await check(otpWithLink, aiScan: true, aiChecker: (_, _) => throw Exception('busy'));
       expect(failing.verdict, Verdict.dangerous);
+    });
+
+    test('an AI scan whose AI could not answer says so', () async {
+      final r = await check(harmless, aiScan: true, aiChecker: (_, _) async => null);
+      expect(r.aiUnavailable, isTrue);
+      expect(r.checkedOnPhone, isTrue);
+      expect((await check(harmless, aiScan: true, aiChecker: ai(AiLevel.low))).aiUnavailable, isFalse);
+      expect((await check(harmless, aiChecker: (_, _) async => null)).aiUnavailable, isFalse);
+    });
+  });
+
+  group('AI scan', () {
+    test("the AI sees each link's real destination and redirect steps", () async {
+      List<LinkCheck>? seen;
+      await check(
+        otpWithLink,
+        aiScan: true,
+        linkChecker: (found) async => [
+          for (final l in found)
+            LinkCheck(l, LinkStatus.clean, destination: 'https://gcash-verify.xyz/', hops: const ['https://gcash-verify.xyz/']),
+        ],
+        aiChecker: (text, links) async {
+          seen = links;
+          return const AiAnswer(AiLevel.high);
+        },
+      );
+      expect(seen!.single.destination, 'https://gcash-verify.xyz/');
+      expect(seen!.single.hops, ['https://gcash-verify.xyz/']);
+    });
+
+    test("the AI's quoted words are kept as evidence, mismatched ones dropped", () async {
+      final r = await check(
+        'Pay the fee now',
+        aiScan: true,
+        aiChecker: ai(AiLevel.caution, const [
+          AiSign('payment_request', quote: 'Pay the fee'),
+          AiSign('impersonation', quote: 'not in the message'),
+        ]),
+      );
+      expect(r.evidence, ['Pay the fee']);
     });
   });
 
@@ -131,6 +171,13 @@ void main() {
     test('a failed link check counts as could not check', () async {
       final r = await check(harmlessWithLink, linkChecker: (_) => throw Exception('offline'));
       expect(r.verdict, Verdict.couldntCheck);
+    });
+
+    test("with online checks declined, a link the phone can't judge is Couldn't check", () async {
+      final r = await check(harmlessWithLink);
+      expect(r.verdict, Verdict.couldntCheck);
+      expect(r.reasons, ['unresolved_link']);
+      expect(r.checkedOnPhone, isTrue);
     });
 
     test('a warning beats Couldn\'t check', () async {
