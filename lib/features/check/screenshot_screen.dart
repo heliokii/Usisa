@@ -11,9 +11,23 @@ typedef ScreenshotReader = Future<String?> Function();
 
 /// Scan a screenshot: pick a picture, review the text read from it, then Check.
 class ScreenshotScreen extends StatefulWidget {
-  const ScreenshotScreen({super.key, required this.readScreenshot, required this.runCheck});
+  const ScreenshotScreen({
+    super.key,
+    required this.readScreenshot,
+    required this.runCheck,
+    this.readShared,
+    this.aiScan = false,
+    this.title,
+  });
   final ScreenshotReader readScreenshot;
   final RunCheck runCheck;
+
+  /// Reads a picture shared into Usisa straight away; the Check itself still waits for a tap.
+  final ScreenshotReader? readShared;
+
+  /// Runs the Check as an AI scan.
+  final bool aiScan;
+  final String? title;
 
   @override
   State<ScreenshotScreen> createState() => _ScreenshotScreenState();
@@ -23,14 +37,24 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
   bool _busy = false;
   bool _failed = false;
 
-  Future<void> _choose() async {
+  @override
+  void initState() {
+    super.initState();
+    final shared = widget.readShared;
+    if (shared == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _choose(shared);
+    });
+  }
+
+  Future<void> _choose(ScreenshotReader read) async {
     setState(() {
       _busy = true;
       _failed = false;
     });
     String? text;
     try {
-      text = await widget.readScreenshot();
+      text = await read();
     } catch (_) {
       text = '';
     }
@@ -48,8 +72,9 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
           runCheck: widget.runCheck,
           source: CheckSource.screenshot,
           initialText: text!.trim(),
-          title: l.tileScreenshotTitle,
+          title: widget.title ?? l.tileScreenshotTitle,
           note: l.screenshotReview,
+          aiScan: widget.aiScan,
         ),
       ),
     );
@@ -63,7 +88,7 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
       appBar: AppBar(
         backgroundColor: UsisaColors.background,
         surfaceTintColor: Colors.transparent,
-        title: Text(l.tileScreenshotTitle, style: tt.titleLarge),
+        title: Text(widget.title ?? l.tileScreenshotTitle, style: tt.titleLarge),
       ),
       body: SafeArea(
         child: ListView(
@@ -77,7 +102,7 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
             const SizedBox(height: 20),
             PressScale(
               child: FilledButton(
-                onPressed: _busy ? null : _choose,
+                onPressed: _busy ? null : () => _choose(widget.readScreenshot),
                 style: FilledButton.styleFrom(
                   backgroundColor: UsisaColors.primary,
                   minimumSize: const Size.fromHeight(56),

@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import '../scan/scan_models.dart';
 import 'phone_check.dart';
 
-export 'phone_check.dart' show PhoneCheck, Sign, SignStrength, phoneCheck, officialDomains, shorteners;
+export 'phone_check.dart' show PhoneCheck, Sign, SignStrength, isOfficialLink, phoneCheck, officialDomains, shorteners;
 
 /// The single answer a Check gives (GLOSSARY.md).
 enum Verdict { looksSafe, beCareful, dangerous, couldntCheck }
@@ -27,12 +27,15 @@ class CheckInput {
 enum LinkStatus { clean, flagged, shortenerBlocked, opensApp, unresolved }
 
 class LinkCheck {
-  const LinkCheck(this.link, this.status, {this.destination});
+  const LinkCheck(this.link, this.status, {this.destination, this.hops = const []});
   final String link;
   final LinkStatus status;
 
   /// The Real destination after all redirects, when the gateway saw it.
   final String? destination;
+
+  /// The redirect steps the gateway followed.
+  final List<String> hops;
 }
 
 enum AiLevel { low, caution, high }
@@ -58,6 +61,8 @@ class CheckResult {
     required this.reasons,
     required this.checkedOnPhone,
     this.destinations = const [],
+    this.evidence = const [],
+    this.aiUnavailable = false,
   });
   final String text;
   final Verdict verdict;
@@ -70,10 +75,17 @@ class CheckResult {
 
   /// Real destinations of the checked links, shown as "Really goes to ...".
   final List<String> destinations;
+
+  /// Words from [text] the AI quoted as warning signs, highlighted on the verdict screen.
+  final List<String> evidence;
+
+  /// An AI scan the AI couldn't answer: shown as "AI couldn't look at this right now".
+  final bool aiUnavailable;
 }
 
 typedef LinkChecker = Future<List<LinkCheck>> Function(List<String> links);
-typedef AiChecker = Future<AiAnswer?> Function(String text);
+/// Asks the AI about [text], with what the online link check saw of its links. Null when it can't answer.
+typedef AiChecker = Future<AiAnswer?> Function(String text, List<LinkCheck> links);
 
 /// Reads the text in a picture (OCR). Throws [ScanException] when it can't.
 typedef TextReader = Future<String> Function(XFile image);
@@ -111,11 +123,14 @@ class CheckPipeline {
         // Any failure means the links weren't checked, never that they're clean.
         links = [...links, for (final l in web) LinkCheck(l, LinkStatus.unresolved)];
       }
+    } else {
+      // Online checks declined: a link the phone can't judge is unchecked, never safe (rule 6).
+      links = [...links, for (final l in web) if (!isOfficialLink(l)) LinkCheck(l, LinkStatus.unresolved)];
     }
     AiAnswer? ai;
     if (input.aiScan && aiChecker != null) {
       try {
-        ai = await aiChecker!(input.text);
+        ai = await aiChecker!(input.text, links);
       } catch (_) {}
     }
     return decideVerdict(
@@ -129,8 +144,9 @@ class CheckPipeline {
   }
 }
 
-/// Whether a Check would send anything online: it has a link, or came from Check a link.
-bool needsOnline(CheckInput input) => input.source == CheckSource.link || phoneCheck(input.text).links.isNotEmpty;
+/// Whether a Check would send anything online: an AI scan, a text with a link, or Check a link.
+bool needsOnline(CheckInput input) =>
+    input.aiScan || input.source == CheckSource.link || phoneCheck(input.text).links.isNotEmpty;
 
 /// A link with a non-web scheme (intent: and the like) that opens an app instead of a website.
 bool opensApp(String link) {
@@ -163,10 +179,11 @@ CheckResult decideVerdict({
       if (s.strength == SignStrength.weak) s.code,
   ];
   // A sign quoting words that aren't in the text is dropped on its own.
-  final aiSigns = [
+  final kept = [
     for (final s in ai?.signs ?? const <AiSign>[])
-      if (s.quote == null || text.contains(s.quote!)) s.code,
+      if (s.quote == null || text.contains(s.quote!)) s,
   ];
+  final aiSigns = [for (final s in kept) s.code];
   final useAi = aiScan && ai != null;
 
   final Verdict verdict;
@@ -202,5 +219,7 @@ CheckResult decideVerdict({
     reasons: reasons,
     checkedOnPhone: !(checkedOnline ?? links.isNotEmpty) && ai == null,
     destinations: {for (final l in links) ?l.destination}.toList(),
+    evidence: useAi ? {for (final s in kept) ?s.quote}.toList() : const [],
+    aiUnavailable: aiScan && ai == null,
   );
 }

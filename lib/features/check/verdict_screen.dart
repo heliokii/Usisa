@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../app/motion.dart';
+import '../../app/read_aloud.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 import 'check.dart';
+import 'verdict_actions.dart';
 
 /// Colour, tint and icon for each Verdict. Colour is never the only carrier: each also has an icon and a word.
 const verdictLooks = {
@@ -16,8 +18,12 @@ const verdictLooks = {
 
 /// Displays a Check result: verdict-coloured header, then a white sheet with the action line and reasons.
 class VerdictScreen extends StatelessWidget {
-  const VerdictScreen({super.key, required this.result, this.checkedAt, this.onCheckAgain});
+  const VerdictScreen({super.key, required this.result, this.checkedAt, this.onCheckAgain, this.readAloud, this.share});
   final CheckResult result;
+
+  /// Read aloud and Send to family; widget tests pass fakes, otherwise the phone's own.
+  final ReadAloud? readAloud;
+  final ShareText? share;
 
   /// Set when reopening a saved History entry: shows "Checked on" with the date and time.
   final DateTime? checkedAt;
@@ -79,6 +85,10 @@ class VerdictScreen extends StatelessWidget {
                                   if (result.checkedOnPhone) ...[
                                     const SizedBox(height: 4),
                                     Text(l.checkedOnPhone, style: tt.bodyMedium?.copyWith(color: Colors.white)),
+                                  ],
+                                  if (result.aiUnavailable) ...[
+                                    const SizedBox(height: 4),
+                                    Text(l.aiUnavailable, style: tt.bodyMedium?.copyWith(color: Colors.white)),
                                   ],
                                 ],
                               ),
@@ -146,6 +156,8 @@ class VerdictScreen extends StatelessWidget {
                         Text(l.reallyGoesTo(destination), style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
                       ],
                       const SizedBox(height: 24),
+                      VerdictActions(result: result, readAloud: readAloud, share: share),
+                      const SizedBox(height: 24),
                       EnterMotion(
                         index: 3,
                         child: Column(
@@ -153,7 +165,18 @@ class VerdictScreen extends StatelessWidget {
                           children: [
                             Text(l.youChecked, style: tt.titleMedium?.copyWith(color: UsisaColors.inkMuted)),
                             const SizedBox(height: 4),
-                            Text(result.text, style: tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted)),
+                            Text.rich(
+                              _highlight(
+                                result.text,
+                                result.evidence,
+                                const TextStyle(
+                                  color: UsisaColors.ink,
+                                  fontWeight: FontWeight.w700,
+                                  backgroundColor: UsisaColors.yellow,
+                                ),
+                              ),
+                              style: tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted),
+                            ),
                           ],
                         ),
                       ),
@@ -189,6 +212,26 @@ class VerdictScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// [text] with every occurrence of each AI quote marked, so the person sees the evidence themselves.
+TextSpan _highlight(String text, List<String> quotes, TextStyle mark) {
+  final marked = List.filled(text.length, false);
+  for (final q in quotes.where((q) => q.isNotEmpty)) {
+    for (var i = text.indexOf(q); i >= 0; i = text.indexOf(q, i + q.length)) {
+      marked.fillRange(i, i + q.length, true);
+    }
+  }
+  final spans = <TextSpan>[];
+  for (var start = 0; start < text.length;) {
+    var end = start;
+    while (end < text.length && marked[end] == marked[start]) {
+      end++;
+    }
+    spans.add(TextSpan(text: text.substring(start, end), style: marked[start] ? mark : null));
+    start = end;
+  }
+  return TextSpan(children: spans);
 }
 
 /// Date and time in the app's language, e.g. "Nov 21, 2026, 3:05 PM".

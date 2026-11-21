@@ -231,3 +231,9 @@ const _homoglyphs = {
   'Α': 'A', 'Β': 'B', 'Ε': 'E', 'Ζ': 'Z', 'Η': 'H', 'Ι': 'I', 'Κ': 'K', 'Μ': 'M', 'Ν': 'N', 'Ο': 'O', 'Ρ': 'P',
   'Τ': 'T', 'Υ': 'Y', 'Χ': 'X', 'ο': 'o', 'α': 'a', 'ν': 'v', 'ι': 'i', 'ɡ': 'g',
 };
+
+/// A link whose host is on a known brand's own domain, which the phone can judge without going online.
+bool isOfficialLink(String link) {
+  final host = Uri.tryParse(link.contains('://') ? link : 'http://$link')?.host.toLowerCase() ?? '';
+  return officialDomains.values.expand((ds) => ds).any((d) => host == d || host.endsWith('.$d'));
+}

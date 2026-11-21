@@ -16,31 +16,6 @@ class HistoryScreen extends StatelessWidget {
   /// Used by Check again; it saves the fresh result like any other Check.
   final RunCheck runCheck;
 
-  Future<void> _setSaving(bool on) async {
-    await settings.update(saveHistory: on);
-    await history.setEnabled(on);
-  }
-
-  Future<void> _confirmClear(BuildContext context) async {
-    final l = AppLocalizations.of(context);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l.historyClearTitle),
-        content: Text(l.historyClearBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: UsisaColors.danger),
-            child: Text(l.historyClearAll),
-          ),
-        ],
-      ),
-    );
-    if (ok == true) await history.clear();
-  }
-
   void _open(BuildContext context, HistoryEntry entry) {
     var busy = false;
     Navigator.of(context).push(
@@ -81,15 +56,7 @@ class HistoryScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(l.historySavedOnPhone, style: tt.bodyLarge?.copyWith(color: UsisaColors.inkMuted)),
               const SizedBox(height: 16),
-              _Card(
-                child: SwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                  title: Text(l.historySaveSwitch, style: tt.titleMedium),
-                  subtitle: Text(l.historySaveNote, style: tt.bodyMedium),
-                  value: settings.saveHistory,
-                  onChanged: _setSaving,
-                ),
-              ),
+              _Card(child: HistorySavingSwitch(history: history, settings: settings)),
               const SizedBox(height: 16),
               if (entries.isEmpty)
                 Padding(
@@ -103,7 +70,7 @@ class HistoryScreen extends StatelessWidget {
               else ...[
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton(onPressed: () => _confirmClear(context), child: Text(l.historyClearAll)),
+                  child: TextButton(onPressed: () => confirmClearHistory(context, history), child: Text(l.historyClearAll)),
                 ),
                 for (final entry in entries)
                   Padding(
@@ -121,6 +88,55 @@ class HistoryScreen extends StatelessWidget {
       },
     );
   }
+}
+
+/// The "Save my checks" switch, shared by the History tab and Settings. Off also clears History.
+class HistorySavingSwitch extends StatelessWidget {
+  const HistorySavingSwitch({super.key, required this.history, required this.settings});
+  final HistoryStore history;
+  final SettingsStore settings;
+
+  Future<void> _setSaving(bool on) async {
+    await settings.update(saveHistory: on);
+    await history.setEnabled(on);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final tt = Theme.of(context).textTheme;
+    return ListenableBuilder(
+      listenable: settings,
+      builder: (context, _) => SwitchListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        title: Text(l.historySaveSwitch, style: tt.titleMedium),
+        subtitle: Text(l.historySaveNote, style: tt.bodyMedium),
+        value: settings.saveHistory,
+        onChanged: _setSaving,
+      ),
+    );
+  }
+}
+
+/// Asks before clearing every saved check.
+Future<void> confirmClearHistory(BuildContext context, HistoryStore history) async {
+  final l = AppLocalizations.of(context);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(l.historyClearTitle),
+      content: Text(l.historyClearBody),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: TextButton.styleFrom(foregroundColor: UsisaColors.danger),
+          child: Text(l.historyClearAll),
+        ),
+      ],
+    ),
+  );
+  if (ok == true) await history.clear();
 }
 
 class _Card extends StatelessWidget {
