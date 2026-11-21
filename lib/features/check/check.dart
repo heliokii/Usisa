@@ -19,9 +19,12 @@ class CheckInput {
 enum LinkStatus { clean, flagged, shortenerBlocked, opensApp, unresolved }
 
 class LinkCheck {
-  const LinkCheck(this.link, this.status);
+  const LinkCheck(this.link, this.status, {this.destination});
   final String link;
   final LinkStatus status;
+
+  /// The Real destination after redirects, when the link check could follow it.
+  final String? destination;
 }
 
 enum AiLevel { low, caution, high }
@@ -41,7 +44,13 @@ class AiAnswer {
 
 /// What a Check returns; screens only display this.
 class CheckResult {
-  const CheckResult({required this.text, required this.verdict, required this.reasons, required this.checkedOnPhone});
+  const CheckResult({
+    required this.text,
+    required this.verdict,
+    required this.reasons,
+    required this.checkedOnPhone,
+    this.links = const [],
+  });
   final String text;
   final Verdict verdict;
 
@@ -50,6 +59,9 @@ class CheckResult {
 
   /// True when no online check (link or AI) gave an answer.
   final bool checkedOnPhone;
+
+  /// What the online link check found, with each link's Real destination.
+  final List<LinkCheck> links;
 }
 
 typedef LinkChecker = Future<List<LinkCheck>> Function(List<String> links);
@@ -141,5 +153,11 @@ CheckResult decideVerdict({
   }.take(3).toList();
   if (reasons.isEmpty && verdict == Verdict.looksSafe) reasons.add('no_signs');
 
-  return CheckResult(text: text, verdict: verdict, reasons: reasons, checkedOnPhone: links.isEmpty && ai == null);
+  return CheckResult(
+    text: text,
+    verdict: verdict,
+    reasons: reasons,
+    checkedOnPhone: links.isEmpty && ai == null,
+    links: links,
+  );
 }

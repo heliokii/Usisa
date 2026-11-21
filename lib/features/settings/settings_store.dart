@@ -8,7 +8,7 @@ class SettingsStore extends ChangeNotifier {
   SettingsStore(this.storage);
   final PrivateStorage storage;
   String language = 'en';
-  bool saveHistory = false;
+  bool saveHistory = true;
   bool restoreDraft = false;
   bool onlineLinkChecks = false;
   bool aiScanning = true;
@@ -24,9 +24,14 @@ class SettingsStore extends ChangeNotifier {
     if (json == null) {
       return;
     }
-    final value = jsonDecode(json) as Map<String, dynamic>;
+    final Map<String, dynamic> value;
+    try {
+      value = jsonDecode(json) as Map<String, dynamic>;
+    } catch (_) {
+      return; // Corrupt settings keep the defaults.
+    }
     language = value['language'] == 'fil' ? 'fil' : 'en';
-    saveHistory = value['saveHistory'] == true;
+    saveHistory = value['saveHistory'] != false;
     restoreDraft = value['restoreDraft'] == true;
     aiScanning = value['aiScanning'] != false;
     onboarded = value['onboarded'] == true;

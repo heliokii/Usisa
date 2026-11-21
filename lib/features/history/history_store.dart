@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../scan/scan_models.dart';
+import '../check/check.dart';
 
 abstract interface class PrivateStorage {
   Future<Map<String, String>> readAll();
@@ -38,20 +38,73 @@ class MemoryStorage implements PrivateStorage {
   }
 }
 
+/// One saved Check. Screenshots are kept as their extracted text only; no image is stored.
+class HistoryEntry {
+  const HistoryEntry({
+    required this.id,
+    required this.checkedAt,
+    required this.source,
+    required this.result,
+    this.aiScan = false,
+  });
+  final String id;
+  final DateTime checkedAt;
+  final CheckSource source;
+  final bool aiScan;
+  final CheckResult result;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'checkedAt': checkedAt.toIso8601String(),
+    'source': source.name,
+    'aiScan': aiScan,
+    'text': result.text,
+    'verdict': result.verdict.name,
+    'reasons': result.reasons,
+    'checkedOnPhone': result.checkedOnPhone,
+    'links': [
+      for (final l in result.links) {'link': l.link, 'status': l.status.name, 'destination': ?l.destination},
+    ],
+  };
+
+  factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
+    id: json['id'] as String,
+    checkedAt: DateTime.parse(json['checkedAt'] as String),
+    source: CheckSource.values.byName(json['source'] as String),
+    aiScan: json['aiScan'] == true,
+    result: CheckResult(
+      text: json['text'] as String,
+      verdict: Verdict.values.byName(json['verdict'] as String),
+      reasons: List<String>.from(json['reasons'] as List),
+      checkedOnPhone: json['checkedOnPhone'] == true,
+      links: [
+        for (final l in (json['links'] as List).cast<Map<String, dynamic>>())
+          LinkCheck(
+            l['link'] as String,
+            LinkStatus.values.byName(l['status'] as String),
+            destination: l['destination'] as String?,
+          ),
+      ],
+    ),
+  );
+}
+
 class HistoryStore extends ChangeNotifier {
   HistoryStore(this.storage, {DateTime Function()? clock, this.clearSmsPrivacy})
     : clock = clock ?? DateTime.now;
   final PrivateStorage storage;
   final DateTime Function() clock;
   final Future<void> Function()? clearSmsPrivacy;
-  final _entries = <ScanResult>[];
-  List<ScanResult> get entries => List.unmodifiable(
-    _entries.where((r) => _live(r.createdAt, const Duration(days: 30))),
+  final _entries = <HistoryEntry>[];
+
+  /// Newest first.
+  List<HistoryEntry> get entries => List.unmodifiable(
+    _entries.where((r) => _live(r.checkedAt, const Duration(days: 30))),
   );
   DateTime? _draftExpiresAt;
   DateTime? get nextExpiry {
     final dates = [
-      for (final r in _entries) r.createdAt.add(const Duration(days: 30)),
+      for (final r in _entries) r.checkedAt.add(const Duration(days: 30)),
       ?_draftExpiresAt,
     ]..sort();
     return dates.firstOrNull;
@@ -62,7 +115,8 @@ class HistoryStore extends ChangeNotifier {
     return !age.isNegative && age < ttl;
   }
 
-  bool enabled = false;
+  /// History is on by default; the app syncs this from the saved setting.
+  bool enabled = true;
   int generation = 0;
   int _historyRevision = 0;
   int _draftRevision = 0;
@@ -83,13 +137,13 @@ class HistoryStore extends ChangeNotifier {
 
   Future<void> load() => _serial(() async {
     final data = await storage.readAll();
-    final loaded = <ScanResult>[];
+    final loaded = <HistoryEntry>[];
     for (final entry in data.entries.where((e) => e.key.startsWith('scan.'))) {
       try {
-        final value = ScanResult.fromJson(
+        final value = HistoryEntry.fromJson(
           jsonDecode(entry.value) as Map<String, dynamic>,
         );
-        if (enabled && _live(value.createdAt, const Duration(days: 30))) {
+        if (enabled && _live(value.checkedAt, const Duration(days: 30))) {
           loaded.add(value);
         } else {
           await storage.delete(entry.key);
@@ -121,46 +175,54 @@ class HistoryStore extends ChangeNotifier {
     _changed();
   }
 
-  Future<void> save(ScanResult result, {required int expectedGeneration}) {
+  Future<void> save(HistoryEntry entry, {required int expectedGeneration}) {
     final revision = _historyRevision;
     return _serial(() async {
       if (!enabled ||
           revision != _historyRevision ||
           expectedGeneration != generation ||
-          !_live(result.createdAt, const Duration(days: 30))) {
+          !_live(entry.checkedAt, const Duration(days: 30))) {
         return;
       }
-      // Permanent history never caches Safe Browsing advisories beyond their lifetime.
-      final retained = result.withLinks(
-        result.links
-            .map(
-              (link) => link.provider == safeBrowsingProvider
-                  ? link.withReputation(
-                      ReputationState.unavailable,
-                      at: link.checkedAt,
-                    )
-                  : link,
-            )
-            .toList(),
-      );
-      await storage.write('scan.${result.id}', jsonEncode(retained.toJson()));
+      await storage.write('scan.${entry.id}', jsonEncode(entry.toJson()));
       if (expectedGeneration != generation ||
           revision != _historyRevision ||
           !enabled) {
-        await storage.delete('scan.${result.id}');
+        await storage.delete('scan.${entry.id}');
         return;
       }
-      _entries.removeWhere((r) => r.id == result.id);
-      _entries.add(result);
+      _entries.removeWhere((r) => r.id == entry.id);
+      _entries.add(entry);
       await _prune();
       _changed();
     });
   }
 
+  int _seq = 0;
+
+  /// Wraps [run] so every finished Check is saved. A clear while it runs discards the result,
+  /// and a failed save never blocks the verdict.
+  RunCheck recording(RunCheck run) => (input) async {
+    final expectedGeneration = generation;
+    final result = await run(input);
+    final now = clock();
+    save(
+      HistoryEntry(
+        id: '${now.microsecondsSinceEpoch}-${_seq++}',
+        checkedAt: now,
+        source: input.source,
+        aiScan: input.aiScan,
+        result: result,
+      ),
+      expectedGeneration: expectedGeneration,
+    ).ignore();
+    return result;
+  };
+
   Future<void> _prune() async {
-    _entries.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    _entries.sort((a, b) => b.checkedAt.compareTo(a.checkedAt));
     final remove = _entries
-        .where((r) => !_live(r.createdAt, const Duration(days: 30)))
+        .where((r) => !_live(r.checkedAt, const Duration(days: 30)))
         .toList();
     final current = _entries.where((r) => !remove.contains(r)).toList();
     remove.addAll(current.skip(100));
