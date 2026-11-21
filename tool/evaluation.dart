@@ -105,7 +105,7 @@ class Report {
       'Scams caught: ${pct(scamsCaught)} of ${n({scam})} (target >= ${combined ? 90 : 75}%)',
       'Scams Dangerous: ${pct(scamsDangerous)} (target >= ${combined ? 70 : 50}%)',
       'Gambling ads Be careful or above: ${pct(gamblingCareful)} of ${n({gamblingAd})} (target >= 90%)',
-      "Couldn't check (reported separately): ${couldntCheck.isEmpty ? 'none' : couldntCheck}",
+      "Couldn't check (not an alarm, not caught; reported separately): ${couldntCheck.isEmpty ? 'none' : couldntCheck}",
       missed.isEmpty ? 'All targets met.' : 'MISSED: ${missed.join('; ')}',
     ].join('\n');
   }
