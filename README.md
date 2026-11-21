@@ -9,9 +9,9 @@ Usisa is a Flutter Android app that helps people in the Philippines review suspi
 - Optional AI review through the gateway, sent only with consent and after the text is reviewed.
 - Optional Google Safe Browsing URL lookup, also requiring consent.
 - Optional saved history and drafts, stored locally using encrypted storage.
-- Home, History, Learn, and Settings screens.
+- New app shell (rebuild in progress): Check home with four tiles and the Auto SMS protection card; History, Learn and Settings are placeholders for now.
 - English and Filipino interface localization.
-- A separate Android `smsLab` development flavor for SMS-related flows.
+- Kotlin SMS receiver code is kept but switched off in the single build until it is wired in (ticket #40).
 
 ## What is complete and checked
 
@@ -21,9 +21,9 @@ Those results predate recent external edits to the generated localization files 
 
 ## Unfinished or not verified
 
-- The `smsLab` SMS receiving and notification flows were intentionally excluded from the recorded app check. Treat them as unverified.
+- SMS receiving and notification flows are switched off (`SMS_ENABLED=false`, no receiver in the manifest) and unverified.
 - The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
-- The current Android release configuration uses debug signing. Set a production application ID and release signing key before distribution, and confirm SMS permissions and Play distribution eligibility before publishing.
+- Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file they fall back to debug signing.
 - Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
 - The gateway runs on Render's Free plan, which is not meant for production. See [server/README.md](server/README.md) for deploy, keep-alive and quota settings.
 - There is no `LICENSE` file, so reuse and distribution terms are not specified.
@@ -36,24 +36,22 @@ Those results predate recent external edits to the generated localization files 
 
 ## Build and install
 
-From the project root, fetch packages and run the default Android flavor (`manual`):
+From the project root, fetch packages and run the app (there is one build, no flavors):
 
 ```sh
 flutter pub get
 flutter gen-l10n
-flutter run --flavor manual
+flutter run
 ```
 
 To build a debug APK and install it on a connected Android device or emulator:
 
 ```sh
-flutter build apk --debug --flavor manual
-adb install -r build/app/outputs/flutter-apk/app-manual-debug.apk
+flutter build apk --debug
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-The manual flavor uses application ID `com.example.usisa` and keeps the SMS feature disabled.
-
-The separate SMS development flavor can be launched with `flutter run --flavor smsLab`. It is for development and has not been verified as a release-ready or Play-eligible feature.
+The application ID is `com.usisa.app`.
 
 ## Optional local gateway
 
@@ -70,7 +68,7 @@ npm start
 For the Android emulator, run the app with the host gateway URL:
 
 ```sh
-flutter run --flavor manual --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
+flutter run --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
 ```
 
 For a USB-connected device, run `adb reverse tcp:8787 tcp:8787` and use `http://127.0.0.1:8787` as `USISA_GATEWAY_URL`.
@@ -101,4 +99,4 @@ flutter analyze --no-pub
 flutter test --no-pub
 ```
 
-The recorded check described above did not exercise the SMS Lab flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.
+The recorded check described above did not exercise SMS flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.
