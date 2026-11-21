@@ -1,7 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
+import '../../app/motion.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -45,7 +44,9 @@ class HomeScreen extends StatelessWidget {
         bottom: false,
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _Header(greeting: greeting, headline: l.homeHeadline)),
+            SliverToBoxAdapter(
+              child: _Header(greeting: greeting, headline: l.homeHeadline),
+            ),
             SliverFillRemaining(
               hasScrollBody: false,
               child: Container(
@@ -57,7 +58,7 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _Enter(index: 1, child: Text(l.homePrompt, style: tt.titleLarge)),
+                    EnterMotion(index: 1, child: Text(l.homePrompt, style: tt.titleLarge)),
                     const SizedBox(height: 16),
                     // Rows instead of a fixed-ratio grid so large text grows the tiles instead of clipping.
                     for (var row = 0; row < 2; row++) ...[
@@ -69,7 +70,7 @@ class HomeScreen extends StatelessWidget {
                             for (var col = 0; col < 2; col++) ...[
                               if (col > 0) const SizedBox(width: 14),
                               Expanded(
-                                child: _Enter(
+                                child: EnterMotion(
                                   index: 2 + row * 2 + col,
                                   child: _Tile(
                                     kind: tiles[row * 2 + col].$1,
@@ -85,7 +86,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                     const SizedBox(height: 20),
-                    _Enter(
+                    EnterMotion(
                       index: 6,
                       child: _SmsCard(
                         title: l.smsCardTitle,
@@ -105,18 +106,17 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-Widget _dot(double size, Color color, {double? top, double? left, double? right, double? bottom}) =>
-    Positioned(
-      top: top,
-      left: left,
-      right: right,
-      bottom: bottom,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      ),
-    );
+Widget _dot(double size, Color color, {double? top, double? left, double? right, double? bottom}) => Positioned(
+  top: top,
+  left: left,
+  right: right,
+  bottom: bottom,
+  child: Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  ),
+);
 
 class _Header extends StatelessWidget {
   const _Header({required this.greeting, required this.headline});
@@ -133,13 +133,15 @@ class _Header extends StatelessWidget {
           child: ExcludeSemantics(
             child: Stack(
               children: [
-                const _Drift(
+                const Positioned(
                   right: -36,
                   top: -30,
-                  child: SizedBox.square(
-                    dimension: 150,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(color: UsisaColors.yellow, shape: BoxShape.circle),
+                  child: Drift(
+                    child: SizedBox.square(
+                      dimension: 150,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: UsisaColors.yellow, shape: BoxShape.circle),
+                      ),
                     ),
                   ),
                 ),
@@ -176,7 +178,7 @@ class _Header extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 56, 24, 48),
-          child: _Enter(
+          child: EnterMotion(
             index: 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,19 +195,12 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _Tile extends StatefulWidget {
+class _Tile extends StatelessWidget {
   const _Tile({required this.kind, required this.title, required this.subtitle, required this.onTap});
   final CheckKind kind;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-
-  @override
-  State<_Tile> createState() => _TileState();
-}
-
-class _TileState extends State<_Tile> {
-  bool _down = false;
 
   // Tile colour and its motif colour; ink on each tile is 9.8:1 or better.
   static const _colors = {
@@ -215,13 +210,10 @@ class _TileState extends State<_Tile> {
     CheckKind.ai: (UsisaColors.coral, Color(0xFFE5484D)),
   };
 
-  Widget _motif(Color c) => switch (widget.kind) {
+  Widget _motif(Color c) => switch (kind) {
     // Two circles.
     CheckKind.message => Stack(
-      children: [
-        _dot(84, c.withValues(alpha: .35), right: -22, top: -22),
-        _dot(26, c, right: 50, top: 34),
-      ],
+      children: [_dot(84, c.withValues(alpha: .35), right: -22, top: -22), _dot(26, c, right: 50, top: 34)],
     ),
     // Quarter circle.
     CheckKind.link => Stack(
@@ -270,19 +262,14 @@ class _TileState extends State<_Tile> {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final (tint, accent) = _colors[widget.kind]!;
-    final still = MediaQuery.disableAnimationsOf(context);
-    return AnimatedScale(
-      scale: _down && !still ? .96 : 1,
-      duration: const Duration(milliseconds: 120),
-      curve: Curves.easeOut,
+    final (tint, accent) = _colors[kind]!;
+    return PressScale(
       child: Material(
         color: tint,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(UsisaRadius.card)),
         child: InkWell(
-          onTap: widget.onTap,
-          onHighlightChanged: (down) => setState(() => _down = down),
+          onTap: onTap,
           child: Stack(
             children: [
               Positioned.fill(child: ExcludeSemantics(child: _motif(accent))),
@@ -293,9 +280,9 @@ class _TileState extends State<_Tile> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(widget.title, style: tt.titleMedium?.copyWith(height: 1.15)),
+                    Text(title, style: tt.titleMedium?.copyWith(height: 1.15)),
                     const SizedBox(height: 4),
-                    Text(widget.subtitle, style: tt.bodySmall),
+                    Text(subtitle, style: tt.bodySmall),
                   ],
                 ),
               ),
@@ -359,72 +346,4 @@ class _SmsCard extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Staggered entrance: fade and 16px rise, 320ms ease-out, 60ms apart. Off under reduced motion.
-class _Enter extends StatelessWidget {
-  const _Enter({required this.index, required this.child});
-  final int index;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    if (MediaQuery.disableAnimationsOf(context)) return child;
-    final delay = index * 60;
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 320 + delay),
-      curve: Interval(delay / (320 + delay), 1, curve: Curves.easeOutCubic),
-      builder: (_, t, child) => Opacity(
-        opacity: t,
-        child: Transform.translate(offset: Offset(0, (1 - t) * 16), child: child),
-      ),
-      child: child,
-    );
-  }
-}
-
-/// The big header circle drifts slowly on a 6s loop. Still under reduced motion.
-class _Drift extends StatefulWidget {
-  const _Drift({required this.child, this.right, this.top});
-  final Widget child;
-  final double? right;
-  final double? top;
-
-  @override
-  State<_Drift> createState() => _DriftState();
-}
-
-class _DriftState extends State<_Drift> with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(vsync: this, duration: const Duration(seconds: 6));
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _c.stop();
-    } else if (!_c.isAnimating) {
-      _c.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Positioned(
-    right: widget.right,
-    top: widget.top,
-    child: AnimatedBuilder(
-      animation: _c,
-      builder: (_, child) {
-        final a = _c.value * 2 * math.pi;
-        return Transform.translate(offset: Offset(math.sin(a) * 6, math.cos(a) * 6), child: child);
-      },
-      child: widget.child,
-    ),
-  );
 }
