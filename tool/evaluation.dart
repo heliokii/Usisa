@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:usisa/features/check/check.dart';
 
+export 'evaluation_split.dart';
+
 const scam = 'scam', gamblingAd = 'gambling_ad', harmlessPromo = 'harmless_promo', normal = 'normal';
 const labels = [scam, gamblingAd, harmlessPromo, normal];
 
@@ -25,15 +27,6 @@ class LabelledMessage {
 }
 
 const _dir = 'test/fixtures/evaluation';
-
-/// A template is sealed when its FNV-1a hash ends in 0-2, so the 30% split never moves when rows are added.
-bool isSealedTemplate(String template) {
-  var hash = 0x811c9dc5;
-  for (final byte in utf8.encode(template)) {
-    hash = ((hash ^ byte) * 0x01000193) & 0xffffffff;
-  }
-  return hash % 10 < 3;
-}
 
 /// One fixture file: its licence text and its messages.
 (String, List<LabelledMessage>) readFile({required bool kaggle, required bool sealed}) {
