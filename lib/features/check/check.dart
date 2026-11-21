@@ -1,3 +1,6 @@
+import 'package:image_picker/image_picker.dart';
+
+import '../scan/scan_models.dart';
 import 'phone_check.dart';
 
 export 'phone_check.dart' show PhoneCheck, Sign, SignStrength, phoneCheck;
@@ -9,8 +12,13 @@ enum Verdict { looksSafe, beCareful, dangerous, couldntCheck }
 enum CheckSource { message, link, screenshot, share, sms }
 
 class CheckInput {
-  const CheckInput(this.text, {required this.source, this.aiScan = false});
+  const CheckInput(this.text, {required this.source, this.aiScan = false}) : image = null;
+
+  /// A screenshot whose text is read first (OCR).
+  const CheckInput.image(XFile this.image, {this.aiScan = false}) : text = '', source = CheckSource.screenshot;
+
   final String text;
+  final XFile? image;
   final CheckSource source;
   final bool aiScan;
 }
@@ -55,17 +63,28 @@ class CheckResult {
 typedef LinkChecker = Future<List<LinkCheck>> Function(List<String> links);
 typedef AiChecker = Future<AiAnswer?> Function(String text);
 
+/// Reads the text in a picture (OCR). Throws [ScanException] when it can't.
+typedef TextReader = Future<String> Function(XFile image);
+
 /// What screens call to run a Check; [CheckPipeline.run] in the app, a fake in widget tests.
 typedef RunCheck = Future<CheckResult> Function(CheckInput input);
 
 /// The one entry point that runs a Check: phone check, online link check, AI, then the verdict.
 /// Pass a checker only when the person has consented to online checks.
 class CheckPipeline {
-  const CheckPipeline({this.linkChecker, this.aiChecker});
+  const CheckPipeline({this.linkChecker, this.aiChecker, this.readText});
   final LinkChecker? linkChecker;
   final AiChecker? aiChecker;
+  final TextReader? readText;
 
+  /// Throws [ScanException] when a screenshot can't be read or has no text: no verdict is given.
   Future<CheckResult> run(CheckInput input) async {
+    if (input.image != null) {
+      if (readText == null) throw const ScanException('ocrUnavailable');
+      final text = await readText!(input.image!);
+      if (text.trim().isEmpty) throw const ScanException('noText');
+      input = CheckInput(text, source: input.source, aiScan: input.aiScan);
+    }
     final phone = phoneCheck(input.text);
     var links = const <LinkCheck>[];
     if (linkChecker != null && phone.links.isNotEmpty) {

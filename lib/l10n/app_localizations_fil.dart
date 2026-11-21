@@ -94,6 +94,21 @@ class AppLocalizationsFil extends AppLocalizations {
   String get checkButton => 'Suriin';
 
   @override
+  String get screenshotIntro =>
+      'Pumili ng screenshot ng mensahe. Babasahin namin ang text para sa iyo.';
+
+  @override
+  String get screenshotChoose => 'Pumili ng screenshot';
+
+  @override
+  String get screenshotReview =>
+      'Tingnan ang text na nabasa namin at ayusin ang anumang mali.';
+
+  @override
+  String get screenshotNoText =>
+      'Wala kaming mabasang text sa larawang ito. Subukan ang mas malinaw na screenshot.';
+
+  @override
   String verdictWord(String verdict) {
     String _temp0 = intl.Intl.selectLogic(verdict, {
       'looksSafe': 'Mukhang ligtas',
