@@ -468,13 +468,21 @@ void main() {
     test('an impersonated relative or a wrong-send refund asking for money is Dangerous', () async {
       for (final text in [
         'Ma, ako to, bagong number ko. Pa-send ng 2,000 sa GCash na ito, emergency.',
-        'Nagkamali ako ng send ng P1,000 sa account mo. Pakibalik naman po.',
+        'Nagkamali ako ng send ng P1,000 sa account mo. Pakibalik naman po sa number na ito 09171234567.',
+        'Ma, bagong number ko to. Pa-send ng 500, wag mo muna sabihin kay papa.',
       ]) {
         final r = await check(text);
         expect(r.verdict, Verdict.dangerous, reason: text);
         expect(r.reasons, contains('impersonation'), reason: text);
       }
       expect((await check('Ma, bagong number ko ito. Tawag ako mamaya.')).verdict, Verdict.looksSafe);
+      // Real relatives change numbers and people do mis-send: without secrecy or a new wallet, only Be careful.
+      for (final text in [
+        'Ma, bagong number ko ito. Pa-load ng 100 pag may time.',
+        'Nagkamali ako ng send sayo ng 300 kanina, pakibalik na lang. Salamat!',
+      ]) {
+        expect((await check(text)).verdict, Verdict.beCareful, reason: text);
+      }
     });
 
     test('easy money and contact-a-stranger hooks are Be careful, Dangerous with a link or a fee', () async {
@@ -513,6 +521,80 @@ void main() {
     test('a winner hook asking for your details or fee is Dangerous, a pickup at the office is not', () async {
       expect((await check('Your number won P500,000! Send your name and address to claim.')).verdict, Verdict.dangerous);
       expect((await check('Nanalo ka sa raffle! Kunin mo yung premyo sa admin office bukas.')).verdict, Verdict.looksSafe);
+    });
+
+    test('real bank promos, billers and in-person raffles are never Dangerous', () async {
+      for (final text in [
+        'BPI: Enjoy 0% installment on gadgets this month. Details at bit.ly/BPI-Promo',
+        'Your PLDT account has an unpaid balance of P1,699. Pay via GCash or visit pldthome.com to avoid disconnection.',
+        'Congratulations! You are one of the lucky winners of our raffle. Claim your prize at the mall customer service with a valid ID.',
+        'Maya: Get P50 cashback when you pay bills. Limited slots! maya.ph/promos',
+      ]) {
+        expect((await check(text)).verdict, isNot(Verdict.dangerous), reason: text);
+      }
+      expect((await check('Maya: Get P50 cashback when you pay bills. Limited slots!')).verdict, Verdict.looksSafe);
+    });
+
+    test('casino-style giveaways are gambling ads; the same words from real brands are not', () async {
+      for (final text in [
+        'Mag-recharge ng P100 ngayon at makakuha ng P200! panalo-ph.top',
+        'New players get FREE 777 bonus today! lucky-ph.icu',
+        'Receive a FREE PHP20 gift when you join! surewin-ph.xyz',
+        'Join now and win a brand new motorcycle! Sign up at moto-event.top',
+        'Legit 0NLINE CASIN0 dito! Register now.',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, isNot(anyOf(Verdict.looksSafe, Verdict.couldntCheck)), reason: text);
+        expect(r.reasons, contains('gambling_ad'), reason: text);
+      }
+      for (final text in [
+        'Download the GCash app and get P50 when you sign up with code HELLO. gcash.com',
+        'Join our Christmas raffle and win a car! Register your receipts at mallpromo.com.ph',
+        'Cash in P500 to your Maya wallet and get P20 cashback this weekend.',
+        'Get FREE P100 load when you refer a friend to the app! telco-refer.ph',
+        'Lotto 6/58 jackpot now at P49 million. Play at any PCSO outlet.',
+      ]) {
+        expect((await check(text)).reasons, isNot(contains('gambling_ad')), reason: text);
+      }
+    });
+
+    test('a bank or agency asking you to call or pay a mobile number is Dangerous', () async {
+      for (final text in [
+        'BPI: A transfer of PHP 9,000 is pending. To cancel, call our officer at 09171112233.',
+        'SSS: May multa ka. Bayaran sa GCash 09171112233 para hindi ma-hold ang pension mo.',
+      ]) {
+        expect((await check(text)).verdict, Verdict.dangerous, reason: text);
+      }
+      expect(
+        (await check('You have received PHP 50.00 of GCash from JU*N D. 09171112233. Ref 123.')).verdict,
+        Verdict.looksSafe,
+      );
+    });
+
+    test('an emergency about a relative with a secret money request is Dangerous', () async {
+      final r = await check('Nasa ospital po ang anak niyo. Magpadala ng P8,000 sa number na ito, wag niyo pong sabihin sa iba.');
+      expect(r.verdict, Verdict.dangerous);
+    });
+
+    test('a page-deletion or failed-delivery threat with a link is Dangerous', () async {
+      for (final text in [
+        'Your page will be permanently deleted. Submit an appeal at page-appeal-help.com',
+        'Hindi namin maihatid ang parcel mo. I-schedule ulit at bayaran ang P30 sa parcel-resched.shop',
+      ]) {
+        expect((await check(text)).verdict, Verdict.dangerous, reason: text);
+      }
+    });
+
+    test('a genuine OTP text carrying its code, or a brand app link, is never Dangerous', () async {
+      for (final text in [
+        'Enter OTP 482913 to complete your purchase at shop-checkout.ph/pay. Never share this code.',
+        'Please enter the OTP 908812 to confirm your GCash transaction. gcash.com',
+        'Get the GCash app here: gcash.onelink.me/promo and enjoy P50 off your first bills payment.',
+      ]) {
+        expect((await check(text)).verdict, isNot(Verdict.dangerous), reason: text);
+      }
+      // An affixed brand name on the same host is still a look-alike.
+      expect((await check('Verify now at bdoonlineapp.page.link/login')).verdict, Verdict.dangerous);
     });
 
     test('a scam warning that mentions an OTP is not an alarm', () async {

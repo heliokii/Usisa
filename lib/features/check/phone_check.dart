@@ -94,6 +94,9 @@ const _askVerb =
     r'(?:send|share|provide|enter|give|submit|reply(?: with| mo)?|type|input|forward|relay|i-?send|pa-?send|pa-?forward|'
     r'pakisend|ipadala|ibigay|ilagay|i-?type|i-?reply|ibahagi|sabihin|i-?forward)';
 final _secretRequest = RegExp('\\b$_askVerb\\b.{0,60}?\\b$_secret\\b');
+final _codeDelivery = RegExp(
+  '\\b$_secret\\b[^.!?]{0,25}?\\b\\d{4,8}\\b|\\b\\d{4,8}\\b[^.!?]{0,25}?\\b$_secret\\b',
+);
 final _negation = RegExp(r"\b(?:never|do not|don'?t|huwag|wag|hindi|not to|avoid|no|no one|nobody|walang)\b");
 
 /// A public scam warning ("Babala ... ito ay scam"): the requests it describes are not asked of the reader.
@@ -105,7 +108,8 @@ final _win = RegExp(
   r"\b(?:you(?:'ve| have)? won|you are (?:our |the |a )?(?:lucky )?winner|nanalo ka|panalo ka|napili (?:ka|kayo)|"
   r'(?:kayo|ikaw) ay napili|congratulations?\W+(?:you|your|winner|ikaw)|(?:number|sim\W*|account) (?:has |had )?won|'
   r'been awarded|(?:one of )?(?:the |our )?lucky winners? of|masuwerteng nanal|eligible for (?:a )?free|'
-  r'been selected (?:as|to receive)|beneficiary|free money|incoming (?:transfer|fund)|cash deposit of|tax refund)',
+  r'been selected (?:as|to receive)|beneficiary|free money|incoming (?:transfer|fund)|cash deposit of|tax refund|'
+  r'free \d{2,}\b(?! ?(?:gb|mb|minutes|mins|texts|sms|calls))|\d+ ?(?:p|php|₱) (?:for )?free|withdraw \d+ ?p for free)',
 );
 final _claim = RegExp(
   r'\b(?:claim|i-?claim|redeem|to receive|matanggap|entitlement|processing fee|release fee|magbayad)\b',
@@ -117,39 +121,53 @@ final _advanceFee = RegExp(
   r'(?:mag-?)?deposit muna|(?<!paki-?)\bbayad muna|munang mag-?deposit|kailangan (?:muna )?(?:ang |ng )?bayad|'
   r'personal (?:account|wallet|g-?cash)|personal kong|outside the app)\b',
 );
+final _inPerson = RegExp(
+  r'\b(?:office|hr|customer service|booth|counter|store|branch|desk|munisipyo|barangay|city hall)\b|\bvalid id\b',
+);
 final _aid = RegExp(r'\b(?:ayuda|allowance|cash aid|financial assistance|subsidy)\b');
 final _claimPrize = RegExp(r'\b(?:claim|i-?claim|kunin) (?:your |ang |mo ang )?(?:prize|reward|premyo)');
 
 // An account or delivery threat with a "do this now" step; with a link it's the classic phishing text.
 final _threat = RegExp(
   r'\b(?:suspend\w*|suspendido|deactivat\w*|disabled?|lock(?:ed)?|restricted|on-?hold|on hold|blocked|blocking|'
-  r'clos(?:ed|ure)|terminat\w*|expir\w*|mag-?e-?expire|unpaid|penalt\w*|violation|masususpinde|ma-?block|'
+  // Bills and expiring points are left out: real billers send those with links the phone doesn't know.
+  r'clos(?:ed|ure)|terminat\w*|masususpinde|ma-?block|'
   r'under review|cannot be delivered|hindi maipadala|security purposes|issues with account security|'
-  r'unrecognized attempts|login attempts|incomplete address|(?:continue|keep) receiving)\b',
+  r'unrecognized attempts|login attempts|incomplete address|(?:continue|keep) receiving|(?:permanently )?delet(?:ed|ion)|'
+  r'revoked?|hindi (?:namin )?(?:maihatid|maipadala)|delivery (?:attempt )?failed|failed (?:delivery|twice)|'
+  r'will be (?:returned|cancell?ed))\b',
 );
 final _threatAction = RegExp(
   r'\b(?:verify|verification|update|confirm|register|log ?in|appeal|settle|pay|redeem|convert|claim|regain|'
-  r'review|i-?update|i-?redeem|i-?confirm|magbayad|provide)\b',
+  r'review|i-?update|i-?redeem|i-?confirm|magbayad|bayaran|provide|re-?schedule|i-?schedule)\b',
 );
 
 final _newNumber = RegExp(
   r'\b(?:bagong (?:number|numero|sim)|new (?:number|phone|sim)|numerong gamit|nasira (?:ang )?(?:phone|cellphone|cp)|'
   r'nawala (?:ang )?(?:phone|cellphone|cp)|lost my phone)\b',
 );
-final _wrongSend = RegExp(r'\b(?:nagkamali (?:ako )?ng (?:send|padala)|wrong (?:send|transfer)|sent by mistake)\b');
+final _wrongSend = RegExp(r'\b(?:nagkamali (?:ako )?ng (?:send|padala)|wrong (?:send|transfer)|by mistake|napasa-?load)\b');
+// Someone claiming a relative is arrested, hurt or in hospital.
+final _emergency = RegExp(r'\b(?:presinto|pulis|police|nahuli|makulong|naaksidente|aksidente|ospital|hospital|kidnap\w*)\b');
 final _sendBack = RegExp(r'\b(?:pakibalik|ibalik|isauli|send (?:it )?back|return (?:it|the money))\b');
+// What turns a relative's or a wrong-send request into the scam: keep it secret, or pay a new number/wallet.
+final _secrecy = RegExp(r"\b(?:wag|huwag|don'?t) (?:mo )?(?:muna )?(?:sabihin|tawagan|ipaalam|tell|call)\b");
+final _newDestination = RegExp(
+  r'\b(?:g-?cash|wallet|account|number|numero) na ito\b|\bthis (?:g-?cash|wallet|account|number)\b|(?:\+?63|\b0)9\d{9}\b',
+);
 
 final _easyMoney = RegExp(
   r'\b(?:daily (?:salary|income)|salary of \d|(?:sweldo|suweld\w|sahod)\W+\d|\d+\W*(?:per|a|bawat) (?:day|araw|order)|'
-  r'earn(?:ing)? (?:up to )?\S*\d(?![\d%])|earn at|make money|kumita\b|kikita|kumikita ako|extra income|(?:part-?time|online|seller|easy|home) job|job offer|'
+  r'earn(?:ing)? (?:up to )?\S*\d(?![\d%])|\d+% (?:daily|weekly|monthly)|(?:daily|weekly) (?:profit|returns?)|airdrop|earn at|make money|kumita\b|kikita|kumikita ako|extra income|(?:part-?time|online|seller|easy|home) job|job offer|'
   r'work from home|\bwfh\b|home-?based|onliner|mag-?rate lang|doble ang pera|double your money|guaranteed|walang talo|'
-  r'crypto\w*|bitcoin|usdt|trading tutor|milyonaryo|red envelope|(?:personal|cash|easy) loans?|loan offer|'
+  r'crypto\w*|bitcoin|\d*usdt|trading tutor|milyonaryo|red envelope|(?:personal|cash|easy) loans?|loan offer|'
   r'offer you (?:a )?(?:personal )?loan)\b',
 );
 final _privateContact = RegExp(
-  r'(?:\b(?:contact|reply|message|msg|chat|add|pm|e-?mail)(?: me| us| our \w+ team)?\W+(?:\w+\W+){0,2}'
+  r'(?:\b(?:contact|reply|message|msg|chat|add|pm|e-?mail)(?: me| us| our \w+ team)\W+(?:\w+\W+){0,2}'
   r'(?:via |thru |through |on |at |by |sa |to )?(?:e-?mail|gmail|what\W?s\W?app|telegram|viber|wechat)\b|'
-  r'\b(?:via|thru|through|on) (?:telegram|viber|what\W?s\W?app|wechat)\b|\bpm (?:lang|me|mo ako)\b|\breply \W?yes\b|'
+  r'\b(?:via|thru|through|on) (?:telegram|viber|what\W?s\W?app|wechat)\b|\b(?:telegram|viber|what\W?s\W?app) group\b|'
+  r'\bsearch for \w+ to download\b|\bprocessing team\b|\bpm (?:lang|me|mo ako)\b|\breply \W?yes\b|'
   r'[\w.]+@(?:gmail|yahoo|ymail|hotmail|outlook)\.com|what\W?s\W?app\d? ?\+?\d)',
 );
 
@@ -171,28 +189,59 @@ final _family = RegExp(
   r'insan|bunso|bes|tol|pre)\b',
 );
 final _moneyAsk = RegExp(
-  r'\b(?:pa-?send|send|padala|ipadala|pahingi|pahiram|pautang|pa[- ]?load|pasaload)\b[^.!?]{0,40}?'
+  r'\b(?:pa-?send|send|padala|ipadala|magpadala|pahingi|pahiram|pautang|pa[- ]?load|pasaload)\b[^.!?]{0,40}?'
   r'\b(?:pera|money|load|pamasahe|gcash|wallet|libo|\d+)\b',
 );
 
 final _gamblingWord = RegExp(
-  r'\b(?:casino|slots?|e-?sabong|sabong|cockfighting|jili|baccarat|baraha|sportsbook|betting|\w*bingo\w*|poker|roulette|taya|'
-  r'pagcor|lucky wheel|\w*bet\d+\w*|\d+bets?\w?|[a-z]\d?bet|bet(?:fil|plus)\w*|gaming platform|big win|unang deposito|first deposit)\b|\b21 ?yo\+',
+  r'\b(?:casino|(?<!limited |few |available |remaining )slots?|e-?sabong|sabong|cockfighting|jili|baccarat|baraha|sportsbook|betting|\w*bingo\w*|poker|roulette|taya|'
+  r'pagcor|lucky wheel|\w*bet\d+\w*|\d+bets?\w?|[a-z]\d?bet|bet(?:fil|plus)\w*|gaming platform|big win|unang deposito|first deposit|'
+  r'free bets?|best odds|(?:libreng|free) deposit|new players?|fresh faces|winning (?:rates?|probability|spree)|'
+  r'lottery tickets?|casin[o0]|(?:1st|first) deposit|vip (?:rebate|perks|rewards?|reward plan|bonus\w*|url)|'
+  r'(?:rebate|perks|rewards?|bonus\w*)[^.!?]{0,30}\bvip\b)\b|\b21 ?yo\+',
+);
+// "Join and win a motorcycle: sign up at <unknown site>".
+final _winPitch = RegExp(r'\b(?:win|manalo|winner|panalo|raffle draw)\b');
+final _signUp = RegExp(r'\b(?:register|sign ?up|join|sumali|magrehistro|click)\b');
+final _purchase = RegExp(r'\b(?:receipts?|purchases?|bumili|bili|buy|shop|order)\b');
+// A peso gift for signing up somewhere: "FREE PHP20 gift", "libreng P50".
+final _freePeso = RegExp(
+  r'\b(?:free|libreng)\s?(?:p|php|₱)\s?\d+(?![\d,]*\s(?:load|data|cashback|off))|\b\d+ ?(?:p|php|₱)\s(?:for )?free\b',
+);
+// Pay in to get more back: "recharge 100, get 166", "cash in P50, get P100".
+final _topUpGet = RegExp(
+  r'\b(?:recharge|mag-?recharge|top[- ]?up|cash[- ]?in|deposit\w*|magdeposito)\b.{0,40}\b(?:get|maka(?:ka)?kuha|makatanggap|receive|naka-?p?\d)',
+);
+final _luckyOrPeso = RegExp(r'\b\d+ ?(?:p|php|pesos?)\b|₱|\bp ?\d');
+// Casino-style lucky amounts with a giveaway: "free 777", "8888 bonus", "P1,888 cash".
+final _luckyAmount = RegExp(r'\b[\d,]*(?:777|888)[\d,]*\s?(?:p|php|pesos?)?\b');
+final _giveaway = RegExp(r'\b(?:free|libre\w*|bonus\w*|claim|makakuha|receive|cash|reward\w*|gift|giveaway|credits?|wins?)\b');
+// "Download the app ... P117 cash": paid to install.
+final _paidDownload = RegExp(
+  r'\bdownload\w*\b.{0,60}(?:\b\d+ ?p\b|\bp ?\d|₱|\bphp ?\d|\bcash\b)|(?:\b\d+ ?p\b|\bp ?\d|₱).{0,60}\bdownload',
 );
 final _bonus = RegExp(
-  r'(?:bonus\w*|\bfree credits?|libreng (?:\d+\w*|pera)|free (?:\d+\w*|money)|cash ?back|rebate|spin)\b',
+  r'(?:bonus\w*|\bfree credits?|libreng (?:(?:p|php)?\d+\w*|pera)|free (?:\d+\w*|money)|cash ?back|rebate|spin)\b',
 );
 final _gamble = RegExp(
   r'\b(?:deposit\w*|deposito|withdraw|laro|maglaro|paglalaro|games?|play|sign[- ]?up|register|magrehistro|'
-  r'magparehistro|recharge|top[- ]?up|log ?in|claim|welcome|sumali|sali|join|win|winner|manalo|panalo|pagwawagi|'
-  r'prizes?|premyo|swerte|lucky)\b',
+  r'magparehistro|recharge|top[- ]?up|log ?in|sign[- ]?in|claim|welcome|sumali|sali|join|wins?|winner|manalo|panalo|pagwawagi|'
+  r'prizes?|premyo|swerte|suwerte|lucky)\b',
 );
 // Play our games and win.
-final _play = RegExp(r'\b(?:games?|laro|maglaro|manlalaro|play (?:now|here))\b');
+final _play = RegExp(r'\b(?:games?|laro\w*|maglaro|manlalaro|play)\b');
 final _prizeWord = RegExp(r'\b(?:win|wln|manalo|panalo|premyo|papremyo|prizes?|winning|winner|swerte|jackpot)\b'
 );
 // "Turn 20 pesos into 30k": a tiny stake for a big win.
 final _stakeWin = RegExp(r'\b\d+ ?pesos?\b.{0,60}\b\d+k\b|\b\d+k\b.{0,60}\b\d+ ?pesos?\b');
+
+// A bank or agency (not a wallet people pay through) asking you to call or pay a mobile number.
+final _officialSender = RegExp(
+  r'\b(?:bdo|banco de oro|bpi|landbank|metrobank|unionbank|rcbc|pnb|sss|philhealth|pag-?ibig|bir|dswd|lto|gsis|'
+  r'meralco)\b',
+);
+final _mobileNumber = RegExp(r'(?:\+?63|\b0)9\d{9}\b');
+final _callOrPay = RegExp(r'\b(?:call|tawag\w*|text|contact|pay|bayad\w*|bayar\w*|magbayad|send|magpadala|padala)\b');
 
 final _promo = RegExp(
   r'(?:\bpromo\b|\bsale\b|% off|\bdiscount|\bvouchers?\b|free shipping|shop now|register to|'
@@ -206,8 +255,9 @@ PhoneCheck phoneCheck(String text) {
   // so split requests still match.
   final t = n
       .replaceAllMapped(RegExp(r'(?<=[a-z])I(?=[a-z])'), (_) => 'l')
+      .replaceAllMapped(RegExp(r'(?<=[A-Z])l(?=[A-Z])'), (_) => 'I')
       .toLowerCase()
-      .replaceAllMapped(RegExp(r'(?<=[a-z])[0134@$5!](?=[a-z])|(?<!\w)\$(?=[a-z])'), (m) => _leet[m[0]]!)
+      .replaceAllMapped(RegExp(r'(?<=[a-z])[0134@$5!](?=[a-z])|(?<!\w)\$(?=[a-z])|(?<=[a-z]{3})[$0](?!\w)|(?<!\w)0(?=[a-z]{3})'), (m) => _leet[m[0]]!)
       .replaceAllMapped(RegExp(r'\b[a-z0-9](?:[ *][a-z0-9]\b){2,}'), (m) => m[0]!.replaceAll(RegExp('[ *]'), ''))
       .replaceAll(RegExp(r'\s+'), ' ');
   final links = _findLinks(n);
@@ -215,25 +265,53 @@ PhoneCheck phoneCheck(String text) {
   bool asked(RegExp r) => r.allMatches(t).any((m) => !_negated(t, m.start));
   final warning = _scamWarning.hasMatch(t);
 
-  final asksSecret = !warning && asked(_secretRequest);
+  // A text that carries the code ("Enter OTP 482913") is delivering it, not asking for it.
+  final asksSecret = !warning && !_codeDelivery.hasMatch(t) && asked(_secretRequest);
   final contact = !warning && _privateContact.hasMatch(t);
   final asksFee = !warning && asked(_advanceFee);
+  final details = _details.hasMatch(t);
+  final win = _win.hasMatch(t);
+  final remote = links.isNotEmpty || asksFee || details || contact;
+  // A prize claimed in person ("at the barangay hall, bring an ID") is often real; one claimed online, by fee or
+  // by sending details is not.
+  final inPerson = !remote && _inPerson.hasMatch(t);
   final prize =
-      (_win.hasMatch(t) && (_claim.hasMatch(t) || _details.hasMatch(t) || asksFee || links.isNotEmpty || contact)) ||
-      (_aid.hasMatch(t) && _claim.hasMatch(t) && unofficial) ||
-      _claimPrize.hasMatch(t);
+      !inPerson &&
+      ((win && (_claim.hasMatch(t) || remote)) ||
+          (_aid.hasMatch(t) && _claim.hasMatch(t) && unofficial) ||
+          _claimPrize.hasMatch(t));
+  final prizeHook = prize;
+  final unbranded = unofficial || !_brand.hasMatch(t);
   final gambling =
       _gamblingWord.hasMatch(t) ||
       _gamblingWord.hasMatch(n.toLowerCase()) ||
-      (!warning && _play.hasMatch(t) && _prizeWord.hasMatch(t)) ||
+      // Generic promo words below only count with a link the phone doesn't know, or no known brand: real
+      // brands run app, raffle and cash-in promos with the same words.
+      (!warning && unofficial && _play.hasMatch(t) && _prizeWord.hasMatch(t)) ||
       (_bonus.hasMatch(t) && _gamble.hasMatch(t)) ||
-      (_stakeWin.hasMatch(t) && _gamble.hasMatch(t));
+      (_stakeWin.hasMatch(t) && _gamble.hasMatch(t)) ||
+      (unbranded && _topUpGet.hasMatch(t) && _luckyOrPeso.hasMatch(t)) ||
+      (_luckyAmount.hasMatch(t) && _giveaway.hasMatch(t)) ||
+      (unbranded && _paidDownload.hasMatch(t)) ||
+      // Real raffles come with a purchase; casino "events" only want a sign-up.
+      (unofficial && _winPitch.hasMatch(t) && _signUp.hasMatch(t) && !_purchase.hasMatch(t)) ||
+      (unofficial && _freePeso.hasMatch(t));
   final moneyAsk = _moneyAsk.hasMatch(t);
-  final impersonation = (_newNumber.hasMatch(t) && moneyAsk) || (_wrongSend.hasMatch(t) && _sendBack.hasMatch(t));
+  // Banks and agencies use hotlines and their own apps, never a personal mobile number to call or pay.
+  final officialToMobile = _officialSender.hasMatch(t) && _mobileNumber.hasMatch(t) && _callOrPay.hasMatch(t);
+  final impersonation =
+      (_newNumber.hasMatch(t) && moneyAsk) ||
+      (_wrongSend.hasMatch(t) && _sendBack.hasMatch(t)) ||
+      (_emergency.hasMatch(t) && moneyAsk) ||
+      officialToMobile;
+  // Real relatives change numbers and real people mis-send; secrecy or a new wallet to pay is the scam.
+  final impersonationHook =
+      impersonation && (officialToMobile || _secrecy.hasMatch(t) || _newDestination.hasMatch(t) || unofficial);
 
   final signs = <Sign>[
-    if (asksSecret && links.isNotEmpty) const Sign('otp_with_link', SignStrength.strong),
-    if (asksSecret && links.isEmpty) const Sign('credential_request', SignStrength.strong),
+    // With only the brand's own links, the request isn't sending you to a fake page.
+    if (asksSecret && unofficial) const Sign('otp_with_link', SignStrength.strong),
+    if (asksSecret && !unofficial) const Sign('credential_request', SignStrength.strong),
     if (links.any(_isLookalike)) const Sign('lookalike_domain', SignStrength.strong),
     if (_threat.hasMatch(t) && _threatAction.hasMatch(t) && unofficial) const Sign('account_threat', SignStrength.strong),
     if (prize) const Sign('prize_claim', SignStrength.strong),
@@ -249,7 +327,7 @@ PhoneCheck phoneCheck(String text) {
   final codes = {for (final s in signs) s.code};
 
   final Verdict verdict;
-  if (codes.intersection(_decisive).isNotEmpty) {
+  if (codes.intersection(_decisive).isNotEmpty || prizeHook || impersonationHook) {
     verdict = Verdict.dangerous;
   } else if (codes.intersection(_hooks).isNotEmpty) {
     // A code or fee request, an easy-money offer or "contact me on email" alone may be innocent;
@@ -265,9 +343,9 @@ PhoneCheck phoneCheck(String text) {
   return PhoneCheck(verdict, signs, links, harmlessPromo: promo);
 }
 
-const _decisive = {'otp_with_link', 'lookalike_domain', 'account_threat', 'prize_claim', 'impersonation'};
-const _hooks = {'credential_request', 'payment_request', 'easy_money', 'private_contact'};
-const _backing = {..._hooks, 'brand_mention', 'urgency', 'gambling_ad'};
+const _decisive = {'otp_with_link', 'lookalike_domain', 'account_threat'};
+const _hooks = {'credential_request', 'payment_request', 'easy_money', 'private_contact', 'prize_claim', 'impersonation'};
+const _backing = {'credential_request', 'payment_request', 'easy_money', 'private_contact', 'brand_mention', 'urgency', 'gambling_ad'};
 
 const _leet = {'0': 'o', '1': 'i', '3': 'e', '4': 'a', '@': 'a', r'$': 's', '5': 's', '!': 'l'};
 
@@ -290,15 +368,25 @@ bool _isLookalike(String link) {
   final keep = labels.length > 2 && _twoLevelSuffixes.contains(labels.sublist(labels.length - 2).join('.')) ? 3 : 2;
   final registrable = labels.sublist(labels.length - keep).join('.');
   if (officialDomains.values.any((ds) => ds.contains(registrable))) return false;
+  // Brands publish app links on shared deep-link hosts as "<brand>.onelink.me"; affixed names stay look-alikes.
+  if (_deepLinkHosts.contains(registrable) && labels.length == 3 && officialDomains.containsKey(labels.first)) {
+    return false;
+  }
   // "https://bdo.com.ph@evil.example" really goes to evil.example, so the part before "@" counts too.
   final tokens = [
     ...labels.take(labels.length - 1),
     ...uri!.userInfo.toLowerCase().split(RegExp('[.:]')),
   ].expand((l) => l.split('-'));
   if (tokens.any((tok) => officialDomains.keys.any((b) => _namesBrand(tok, b)))) return true;
-  final path = uri.path.toLowerCase().split(RegExp('[^a-z0-9]'));
-  return path.any((tok) => _moneyBrands.any((b) => _namesBrand(tok, b)));
+  // In a path, a bank name alone is common in real promo short links ("bit.ly/BPI-Promo"); with a login word it's phishing.
+  final path = uri.path.toLowerCase();
+  return _pathPhish.hasMatch(path) &&
+      path.split(RegExp('[^a-z0-9]')).any((tok) => _moneyBrands.any((b) => _namesBrand(tok, b)));
 }
+
+const _deepLinkHosts = {'onelink.me', 'page.link', 'app.link'};
+
+final _pathPhish = RegExp('online|secure|login|verif|update|account|security|confirm|unlock|support|mobile|portal');
 
 /// [token] is [brand] with only scam affixes around it ("onlinebdoverify", "mylandbankph").
 bool _namesBrand(String token, String brand) {
