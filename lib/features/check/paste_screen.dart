@@ -17,6 +17,8 @@ class PasteScreen extends StatefulWidget {
     this.title,
     this.note,
     this.aiScan = false,
+    this.historyId,
+    this.autoRun = false,
   });
   final RunCheck runCheck;
   final CheckSource source;
@@ -29,6 +31,12 @@ class PasteScreen extends StatefulWidget {
   /// Runs the Check as an AI scan.
   final bool aiScan;
 
+  /// See [CheckInput.historyId].
+  final String? historyId;
+
+  /// Runs the Check as soon as the screen opens (a tapped text notification).
+  final bool autoRun;
+
   @override
   State<PasteScreen> createState() => _PasteScreenState();
 }
@@ -36,6 +44,14 @@ class PasteScreen extends StatefulWidget {
 class _PasteScreenState extends State<PasteScreen> {
   late final _text = TextEditingController(text: widget.initialText);
   bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoRun && widget.initialText.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => mounted ? _check() : null);
+    }
+  }
 
   @override
   void dispose() {
@@ -47,7 +63,7 @@ class _PasteScreenState extends State<PasteScreen> {
     setState(() => _busy = true);
     try {
       final text = _text.text;
-      final result = await widget.runCheck(CheckInput(text, source: widget.source, aiScan: widget.aiScan));
+      final result = await widget.runCheck(CheckInput(text, source: widget.source, aiScan: widget.aiScan, historyId: widget.historyId));
       if (!mounted) return;
       // A second opinion only for an unsure plain-tile verdict (spec story 25).
       final unsure = result.verdict == Verdict.beCareful || result.verdict == Verdict.couldntCheck;
@@ -63,7 +79,7 @@ class _PasteScreenState extends State<PasteScreen> {
                     if (asking) return;
                     asking = true;
                     try {
-                      final ai = await widget.runCheck(CheckInput(text, source: widget.source, aiScan: true));
+                      final ai = await widget.runCheck(CheckInput(text, source: widget.source, aiScan: true, historyId: widget.historyId));
                       if (!screen.mounted) return;
                       await Navigator.of(screen)
                           .pushReplacement(MaterialPageRoute<void>(builder: (_) => VerdictScreen(result: ai)));

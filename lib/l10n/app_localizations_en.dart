@@ -237,6 +237,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String smsAlertTitle(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'dangerous': 'Dangerous text',
+      'other': 'Be careful with this text',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String smsAlertFrom(String sender) {
+    return 'From $sender';
+  }
+
+  @override
+  String get smsAlertUnknownSender => 'an unknown number';
+
+  @override
   String get fromYourTexts => 'From your texts';
 
   @override

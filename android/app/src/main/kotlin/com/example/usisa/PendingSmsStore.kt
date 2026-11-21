@@ -98,7 +98,7 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
             value
         } catch (_: Exception) { remove(id); markDegraded(); null }
     }
-    fun put(id: String, body: String, receiptGeneration: Long, receivedAt: Long = clock()): PutResult = synchronized(lock) {
+    fun put(id: String, body: String, receiptGeneration: Long, receivedAt: Long = clock(), sender: String? = null): PutResult = synchronized(lock) {
         if (!enabled) return@synchronized PutResult.DISABLED
         if (receiptGeneration != generation || !SmsPolicy.isLive(receivedAt, clock())) return@synchronized PutResult.STALE
         require(idPattern.matches(id))
@@ -110,7 +110,8 @@ class PendingSmsStore(context: Context, namespace: String = "sms", private val c
         if (ids().size >= SmsPolicy.MAX_EVENTS || body.codePointCount(0, body.length) > 10000) {
             markDegraded(); return@synchronized PutResult.FULL
         }
-        write(id, JSONObject().put("id", id).put("body", body).put("receivedAt", receivedAt).put("generation", receiptGeneration))
+        write(id, JSONObject().put("id", id).put("body", body).put("receivedAt", receivedAt).put("generation", receiptGeneration)
+            .put("sender", sender?.take(64) ?: ""))
         // shortcut: keep 200 fingerprints for the 24 h window; enlarge after measured carrier retry bursts.
         if (seen.length() >= 200) seen.keys().asSequence().minByOrNull { seen.optLong(it) }?.let { seen.remove(it) }
         seen.put(id, now)

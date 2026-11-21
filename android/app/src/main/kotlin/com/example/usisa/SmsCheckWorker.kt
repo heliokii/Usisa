@@ -54,7 +54,8 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
         }
         synchronized(PendingSmsStore.lock) {
             if (SmsReceiver.permitted(applicationContext) && store.complete(id, event.getLong("generation"), payload)) {
-                if (payload.optString("risk") != "low") SmsAlerts.show(applicationContext, id, payload.has("error"))
+                if (payload.optString("risk") != "low") SmsAlerts.show(applicationContext, id, payload.has("error"),
+                    payload.optString("title"), payload.optString("from"), event.getString("body"))
             }
         }
         Handler(Looper.getMainLooper()).post { SmsBridge.onStateChanged?.invoke() }
@@ -69,7 +70,8 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
         val completion = CompletableDeferred<JSONObject>()
         channel.setMethodCallHandler { call, reply ->
             when (call.method) {
-                "takeEvent" -> reply.success(mapOf("id" to event.getString("id"), "body" to event.getString("body"), "generation" to event.getLong("generation")))
+                "takeEvent" -> reply.success(mapOf("id" to event.getString("id"), "body" to event.getString("body"), "generation" to event.getLong("generation"),
+                    "sender" to event.optString("sender"), "language" to PendingSmsStore(applicationContext).language))
                 "complete" -> {
                     try {
                         val payload = JSONObject(call.arguments as Map<*, *>)
@@ -78,6 +80,8 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
                             val result = payload.getJSONObject("result")
                             require(result.getString("id") == event.getString("id") && result.getString("text") == event.getString("body"))
                             require(result.getString("source") == "sms" && payload.getString("risk") in listOf("low", "caution", "high"))
+                            require(payload.optString("title").length <= 80 && payload.optString("from").length <= 120)
+                            require(payload.getString("risk") == "low" || payload.optString("title").isNotBlank())
                         } else require(payload.optString("error") in listOf("emptyInput", "textTooLong", "urlTooLong", "tooManyLinks", "scanFailed"))
                         reply.success(null); completion.complete(payload)
                     } catch (_: Exception) { reply.error("invalid_result", "Background result was invalid", null); completion.completeExceptionally(IllegalStateException("Invalid background result")) }

@@ -416,6 +416,24 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// Title of the notification for an incoming text; verdict is dangerous or beCareful.
+  ///
+  /// In en, this message translates to:
+  /// **'{verdict, select, dangerous{Dangerous text} other{Be careful with this text}}'**
+  String smsAlertTitle(String verdict);
+
+  /// Notification line naming who sent the text; shown on the lock screen, never the message itself.
+  ///
+  /// In en, this message translates to:
+  /// **'From {sender}'**
+  String smsAlertFrom(String sender);
+
+  /// No description provided for @smsAlertUnknownSender.
+  ///
+  /// In en, this message translates to:
+  /// **'an unknown number'**
+  String get smsAlertUnknownSender;
+
   /// No description provided for @fromYourTexts.
   ///
   /// In en, this message translates to:

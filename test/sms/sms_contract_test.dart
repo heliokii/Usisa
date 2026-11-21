@@ -110,6 +110,22 @@ void main() {
       );
     },
   );
+  test('a warning carries a notification title that states the verdict and who sent it', () async {
+    Map<String, dynamic>? completion;
+    messenger.setMockMethodCallHandler(worker, (call) async {
+      if (call.method == 'takeEvent') {
+        return {'id': 'scam', 'body': 'GCash: Send your OTP now.', 'sender': '09171234567', 'language': 'fil'};
+      }
+      completion = Map<String, dynamic>.from(call.arguments as Map);
+      return true;
+    });
+    await runSmsBackground(channel: worker);
+    expect(completion?['title'], 'Delikadong text');
+    expect(completion?['from'], 'Mula sa 09171234567');
+    // The body never travels in the notification strings; Android shows it only when unlocked.
+    expect('${completion?['title']}${completion?['from']}'.contains('OTP'), isFalse);
+  });
+
   test('a harmless family text completes as low risk so it is only counted', () async {
     Map<String, dynamic>? completion;
     messenger.setMockMethodCallHandler(worker, (call) async {
@@ -121,6 +137,8 @@ void main() {
     });
     await runSmsBackground(channel: worker);
     expect(completion?['risk'], 'low');
+    // No notification for Looks safe texts.
+    expect(completion?['title'], isNull);
   });
   test(
     'unsupported SMS content completes as an error, never low risk',

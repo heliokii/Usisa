@@ -105,7 +105,7 @@ cd android && ./gradlew :app:connectedDebugAndroidTest  # instrumentation tests,
 
 1. `flutter run` on an emulator, then turn on **Auto SMS protection** on the home card and allow SMS.
 2. Send a harmless text: `adb emu sms send 09171234567 "Hi Ma, uuwi ako mamaya"`. Within a few seconds the card changes from "0 texts checked today" to "1 text checked today". Nothing is saved for it.
-3. Send a scam text: `adb emu sms send 09171234567 "Your GCash account is locked. Verify at http://gcash-verify.example now"`. The count goes up again and, with notifications allowed, a review notification appears.
+3. Send a scam text: `adb emu sms send 09171234567 "Your GCash account is locked. Verify at http://gcash-verify.example now"`. The count goes up again and, with notifications allowed, a notification titled "Dangerous text" from 09171234567 appears (the message itself is hidden on the lock screen). Tapping it opens Scan a message with the text and runs the check; the text is also in History marked "From your texts". Notification permission is not requested yet (#42); on Android 13+ allow it in the app's system settings.
 4. If nothing changes, watch `adb logcat -s WM-WorkerWrapper:I flutter:I`.
 
 The recorded check described above did not exercise SMS flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.

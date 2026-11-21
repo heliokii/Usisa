@@ -204,7 +204,7 @@ class HistoryStore extends ChangeNotifier {
     final now = clock();
     save(
       HistoryEntry(
-        id: '${now.microsecondsSinceEpoch}-${_seq++}',
+        id: input.historyId ?? '${now.microsecondsSinceEpoch}-${_seq++}',
         checkedAt: now,
         source: input.source,
         aiScan: input.aiScan,

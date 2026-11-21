@@ -12,15 +12,18 @@ enum Verdict { looksSafe, beCareful, dangerous, couldntCheck }
 enum CheckSource { message, link, screenshot, share, sms }
 
 class CheckInput {
-  const CheckInput(this.text, {required this.source, this.aiScan = false}) : image = null;
+  const CheckInput(this.text, {required this.source, this.aiScan = false, this.historyId}) : image = null;
 
   /// A screenshot whose text is read first (OCR).
-  const CheckInput.image(XFile this.image, {this.aiScan = false}) : text = '', source = CheckSource.screenshot;
+  const CheckInput.image(XFile this.image, {this.aiScan = false}) : text = '', source = CheckSource.screenshot, historyId = null;
 
   final String text;
   final XFile? image;
   final CheckSource source;
   final bool aiScan;
+
+  /// Saves the result over this History entry instead of adding one (an incoming text keeps one entry).
+  final String? historyId;
 }
 
 /// What the online link check found for one link.

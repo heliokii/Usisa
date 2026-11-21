@@ -241,6 +241,23 @@ class AppLocalizationsFil extends AppLocalizations {
   String get cancel => 'Kanselahin';
 
   @override
+  String smsAlertTitle(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'dangerous': 'Delikadong text',
+      'other': 'Mag-ingat sa text na ito',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String smsAlertFrom(String sender) {
+    return 'Mula sa $sender';
+  }
+
+  @override
+  String get smsAlertUnknownSender => 'hindi kilalang numero';
+
+  @override
   String get fromYourTexts => 'Mula sa iyong mga text';
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../check/check.dart';
 import '../scan/scan_models.dart';
 
@@ -40,7 +41,16 @@ Future<void> runSmsBackground({MethodChannel channel = const MethodChannel('usis
       createdAt: DateTime.now(),
       ruleVersion: 'phone-v2',
     );
-    await channel.invokeMethod<void>('complete', {'result': result.toJson(), 'risk': risk.name});
+    // Notification strings come from the .arb files; they name the verdict and sender, never the body.
+    final l = lookupAppLocalizations(Locale(value['language'] == 'fil' ? 'fil' : 'en'));
+    final sender = value['sender'] is String && (value['sender'] as String).trim().isNotEmpty
+        ? (value['sender'] as String).trim()
+        : l.smsAlertUnknownSender;
+    await channel.invokeMethod<void>('complete', {
+      'result': result.toJson(),
+      'risk': risk.name,
+      if (risk != RiskLevel.low) ...{'title': l.smsAlertTitle(phone.verdict.name), 'from': l.smsAlertFrom(sender)},
+    });
   } on ScanException catch (error) {
     await channel.invokeMethod<void>('complete', {'error': error.code});
   } catch (_) {

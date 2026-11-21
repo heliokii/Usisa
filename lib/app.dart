@@ -19,6 +19,7 @@ import 'features/check/share_source.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_store.dart';
 import 'features/learn/learn_screen.dart';
+import 'features/scan/scan_models.dart';
 import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/settings/settings_store.dart';
@@ -63,15 +64,49 @@ class UsisaApp extends StatefulWidget {
 
 class _UsisaAppState extends State<UsisaApp> {
   late final SettingsStore settings = SettingsStore(widget.storage ?? MemoryStorage());
-  late final HistoryStore history = HistoryStore(settings.storage);
+  // Clearing History also wipes the warned texts Android still holds, so they can't come back.
+  late final HistoryStore history = HistoryStore(
+    settings.storage,
+    clearSmsPrivacy: () async {
+      if (sms.bridgeAvailable) await sms.invalidatePrivacy().catchError((_) => 0);
+    },
+  );
   late final http.Client _gateway = widget.gatewayClient ?? http.Client();
   late final SmsService sms = widget.sms ?? SmsService();
   final _navigator = GlobalKey<NavigatorState>();
   late final Stream<SharedItem> _shares = widget.shares ?? (kIsWeb ? const Stream.empty() : channelShares());
 
+  final _savedTexts = <String>{};
+  bool _savingTexts = false;
+
+  /// Saves each warned incoming text to History, marked From your texts, with the phone check's verdict.
+  /// The entry keeps the text's ID, so tapping its notification later updates it rather than adding one.
+  Future<void> _saveWarnedTexts() async {
+    if (_savingTexts || !sms.supported) return;
+    _savingTexts = true;
+    try {
+      for (final id in await sms.reviewIds()) {
+        // shortcut: remembered for this app run only, so a deleted warning returns on the next open while Android keeps it (24 h).
+        if (_savedTexts.contains(id) || history.entries.any((e) => e.id == id)) continue;
+        final review = await sms.review(id);
+        if (review?.result == null) continue;
+        _savedTexts.add(id);
+        if (review!.result!.risk == RiskLevel.low) continue;
+        final input = CheckInput(review.body, source: CheckSource.sms, historyId: id);
+        // Phone check only: nothing about a text goes online until the person opens it.
+        await history.recording(const CheckPipeline().run)(input);
+      }
+    } catch (_) {
+      // A text that can't be read now is tried again the next time the bridge reports a change.
+    } finally {
+      _savingTexts = false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    sms.addListener(_saveWarnedTexts);
     sms.refresh();
     // Corrupt or unreadable settings keep the defaults rather than blocking the app.
     settings
@@ -83,6 +118,7 @@ class _UsisaAppState extends State<UsisaApp> {
           history.enabled = settings.saveHistory;
           return history.load();
         })
+        .then((_) => _saveWarnedTexts())
         .catchError((_) {})
         .whenComplete(() {
           if (mounted) setState(() {});
@@ -91,6 +127,7 @@ class _UsisaAppState extends State<UsisaApp> {
 
   @override
   void dispose() {
+    sms.removeListener(_saveWarnedTexts);
     settings.dispose();
     history.dispose();
     if (widget.gatewayClient == null) _gateway.close();
@@ -190,17 +227,45 @@ class _ShellState extends State<_Shell> {
   }
 
   late final StreamSubscription<SharedItem> _shares;
+  late final StreamSubscription<String> _textAlerts;
 
   @override
   void initState() {
     super.initState();
     _shares = widget.shares.listen(_openShare);
+    _textAlerts = widget.sms.notificationOpens.listen(_openTextAlert);
+    // The notification the app was launched from.
+    widget.sms
+        .refresh()
+        .then((_) => widget.sms.takeNotification())
+        .then((id) => id == null ? null : _openTextAlert(id))
+        .catchError((_) {});
   }
 
   @override
   void dispose() {
     _shares.cancel();
+    _textAlerts.cancel();
     super.dispose();
+  }
+
+  /// A tapped text notification opens Scan a message for that text and runs it (phone plus online link check).
+  Future<void> _openTextAlert(String id) async {
+    final review = await widget.sms.review(id).catchError((_) => null);
+    if (review == null || !mounted) return;
+    Navigator.of(context)
+      ..popUntil((route) => route.isFirst)
+      ..push(
+        MaterialPageRoute<void>(
+          builder: (_) => PasteScreen(
+            runCheck: widget.runCheck,
+            source: CheckSource.sms,
+            initialText: review.body,
+            historyId: id,
+            autoRun: true,
+          ),
+        ),
+      );
   }
 
   /// A share opens the matching tile prefilled; nothing is checked until the person taps Check.
