@@ -25,7 +25,7 @@ Those results predate recent external edits to the generated localization files 
 - The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
 - Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file they fall back to debug signing.
 - Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
-- Production gateway hosting, quotas, and operational monitoring remain deployment work.
+- The gateway runs on Render's Free plan, which is not meant for production. See [server/README.md](server/README.md) for deploy, keep-alive and quota settings.
 - There is no `LICENSE` file, so reuse and distribution terms are not specified.
 
 ## Requirements
@@ -72,6 +72,25 @@ flutter run --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
 ```
 
 For a USB-connected device, run `adb reverse tcp:8787 tcp:8787` and use `http://127.0.0.1:8787` as `USISA_GATEWAY_URL`.
+
+Environment variables, timeouts, rate limits, the Render deploy and the keep-alive pinger are documented in [server/README.md](server/README.md).
+
+### Link check response
+
+`POST /v1/link-check {"url": "..."}` follows the link's redirects on the gateway (GET only, at most 8 hops, 2.5 s per hop, 6 s total, ports 80/443, internal addresses refused), then sends the raw link and every hop to Safe Browsing in one call. A finished check answers HTTP 200 with:
+
+| Field | Meaning |
+|---|---|
+| `status` | `matched` (some URL is flagged), `blockedByShortener` (the shortener itself refused the link), `noMatch` (every hop followed and none flagged; not proof of safety), `unavailable` (Couldn't check) |
+| `destination` | Real destination URL, or `null` when it is unconfirmed. For `non_web_destination` it is the non-web link (for example `intent://...`) |
+| `hops` | Every URL reached after the submitted one, in order. Partial when unfinished: show it as "so far" only |
+| `expansion` | `expanded`, `blocked` or `unresolved` |
+| `reason` | Only when `expansion` is `unresolved`: `timeout_hop`, `timeout_total`, `dns_error`, `blocked_address`, `blocked_port`, `credentials_in_url`, `fetch_error`, `http_error`, `too_many_hops`, `loop`, `non_web_destination`, `interstitial` (stopped on a shortener's preview page) |
+| `blockedUrl` | Only with `blockedByShortener`: the link the shortener blocked |
+| `flaggedUrls`, `threatTypes`, `expiresAt` | Which URLs Safe Browsing flagged, the threat types, and until when the match may be used |
+| `checkedAt`, `provider` | Check time and `Google Safe Browsing` |
+
+A flagged hop wins over an unfinished expansion. Anything other than `noMatch` must never show as Looks safe. HTTP 503 `{"error":"unavailable"}` still means the gateway is not configured or busy. Results are cached in memory: chains 10 min, clean results 5 min, unfinished chains 30 s.
 
 ## Verification commands
 

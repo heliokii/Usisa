@@ -15,7 +15,7 @@ test('fixed provider endpoint returns threat and never requests the submitted ho
       {threatType:'MALWARE',threatEntryType:'URL',threat:{url:'https://example.test/path'},cacheDuration:'60.5s'},
     ]});
   }});
-  const result = await lookup('https://example.test/path');
+  const result = await lookup(['https://example.test/path']);
   assert.equal(result.status, 'matched');
   assert.deepEqual(result.threatTypes, ['SOCIAL_ENGINEERING','MALWARE']);
   assert.equal(result.provider, 'Google Safe Browsing');
@@ -23,14 +23,14 @@ test('fixed provider endpoint returns threat and never requests the submitted ho
 });
 test('empty successful provider response means no match, not verified safe', async () => {
   const lookup = createReputationLookup({ apiKey: 'synthetic', fetchImpl: async () => Response.json({}) });
-  assert.equal((await lookup('https://example.test')).status, 'noMatch');
+  assert.equal((await lookup(['https://example.test'])).status, 'noMatch');
 });
 test('malformed, unrelated or zero-duration matches remain unavailable', async () => {
   const valid = {threatType:'MALWARE',threatEntryType:'URL',threat:{url:'https://example.test/'},cacheDuration:'300s'};
   for (const patch of [{cacheDuration:'0s'},{cacheDuration:'NaNs'},{cacheDuration:'1e99s'},
     {cacheDuration:'300.1234567890s'},{threat:{url:'https://unrelated.test/'}},{threatType:'MADE_UP'},{threatEntryType:'EXECUTABLE'}]) {
     const lookup = createReputationLookup({apiKey:'synthetic',fetchImpl:async()=>Response.json({matches:[{...valid,...patch}]})});
-    assert.equal((await lookup('https://example.test/')).status,'unavailable');
+    assert.equal((await lookup(['https://example.test/'])).status,'unavailable');
   }
 });
 test('provider work is aborted after five seconds with a sanitized unavailable result', async () => {
@@ -45,25 +45,26 @@ test('provider work is aborted after five seconds with a sanitized unavailable r
       }, {once: true});
     })});
   const start = performance.now();
-  const result = await lookup('https://example.test/private');
+  const result = await lookup(['https://example.test/private']);
   assert.equal(aborted, true);
   assert.equal(result.status, 'unavailable');
   assert.ok(performance.now() - start < 9000);
   assert.ok(!JSON.stringify(result).includes('private'));
 });
 test('missing configuration, provider quota, network and malformed output stay unavailable', async () => {
-  assert.equal((await createReputationLookup({})('https://example.test')).status, 'unavailable');
+  assert.equal((await createReputationLookup({})(['https://example.test'])).status, 'unavailable');
   for (const response of [new Response('', {status: 429}), Response.json({wrong: true}), Response.json({matches:[{}]})]) {
-    const result = await createReputationLookup({apiKey:'synthetic', fetchImpl:async () => response})('https://example.test');
+    const result = await createReputationLookup({apiKey:'synthetic', fetchImpl:async () => response})(['https://example.test']);
     assert.equal(result.status, 'unavailable');
   }
-  const result = await createReputationLookup({apiKey:'synthetic', fetchImpl:async () => {throw new Error('secret upstream details');}})('https://example.test');
+  const result = await createReputationLookup({apiKey:'synthetic', fetchImpl:async () => {throw new Error('secret upstream details');}})(['https://example.test']);
   assert.equal(result.status, 'unavailable');
   assert.ok(!JSON.stringify(result).includes('secret'));
 });
 test('gateway validates trust boundaries, method, rate limit and capabilities', async () => {
   let calls = 0;
-  const server = createGateway({lookup: async () => {calls++; return {status:'noMatch',threatTypes:[],checkedAt:'2026-11-09T00:00:00Z',expiresAt:null,provider:'Google Safe Browsing'};}, configured:true});
+  const server = createGateway({lookup: async () => {calls++; return {status:'noMatch',threatTypes:[],checkedAt:'2026-11-09T00:00:00Z',expiresAt:null,provider:'Google Safe Browsing'};}, configured:true,
+    resolve:async () => [{address:'93.184.216.34',family:4}], request:async () => ({status:200,headers:{},body:''})});
   await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   try {

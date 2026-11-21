@@ -64,7 +64,7 @@ class ReputationClient {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'url': uri.removeFragment().toString()}),
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode != 200 || response.bodyBytes.length > 8192) {
         return unavailable;
       }
