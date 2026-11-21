@@ -23,7 +23,7 @@ Those results predate recent external edits to the generated localization files 
 
 - The SMS flow has unit tests (Kotlin `SmsPolicyTest`, Dart contract and home card tests); the end-to-end path on an emulator or phone still needs the manual check below. OEM battery managers (Xiaomi, Oppo, Vivo, Samsung) can stop it on real phones.
 - The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
-- Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file they fall back to debug signing.
+- Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file a release build fails on purpose. Release steps, the manual full-AI evaluation and the demo-day checklist are in [RELEASE.md](RELEASE.md).
 - Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
 - The gateway runs on Render's Free plan, which is not meant for production. See [server/README.md](server/README.md) for deploy, keep-alive and quota settings.
 - There is no `LICENSE` file, so reuse and distribution terms are not specified.
@@ -97,6 +97,7 @@ A flagged hop wins over an unfinished expansion. Anything other than `noMatch` m
 ```sh
 flutter analyze --no-pub
 flutter test --no-pub
+dart run tool/release_gate.dart                         # analyze + tests + phone-only evaluation; fails on any miss
 cd android && ./gradlew :app:testDebugUnitTest          # Kotlin unit tests (SmsPolicyTest)
 cd android && ./gradlew :app:connectedDebugAndroidTest  # instrumentation tests, needs a device/emulator
 ```
