@@ -22,11 +22,22 @@ function readBody(req, limit = 8192) {
   });
 }
 
+// Server-side answer deadlines. Keep each at least 1 s below the app's request timeout
+// (lib/features/scan/ai_scan_client.dart 18 s, reputation_client.dart 5 s); gateway_ops.test.mjs checks this.
+export const TIMEOUTS = Object.freeze({aiMs:16000, linkCheckMs:8000});
+
+// On Render, Cloudflare overwrites CF-Connecting-IP on every request; X-Forwarded-For is only appended to, so its entries are spoofable.
+function clientAddress(req, trustProxy) {
+  const forwarded = trustProxy ? req.headers['cf-connecting-ip'] : undefined;
+  return typeof forwarded === 'string' && forwarded ? forwarded : req.socket.remoteAddress ?? 'unknown';
+}
+
 export function createGateway({lookup = createReputationLookup({apiKey:process.env.SAFE_BROWSING_API_KEY}),
   configured = Boolean(process.env.SAFE_BROWSING_API_KEY), allowedOrigin = process.env.ALLOWED_ORIGIN ?? '',
   scanAi = createAiScanner({apiKey:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL}),
   aiConfigured = isAiConfigured(process.env.GROQ_API_KEY,process.env.GROQ_MODEL),
-  aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 50), resolve, request, now} = {}) {
+  aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 50),
+  trustProxy = process.env.RENDER === 'true', timeouts = TIMEOUTS, resolve, request, now} = {}) {
   const checkLink = createLinkChecker({lookup, resolve, request, now});
   const rates = new Map();
   const pending = new Map();
@@ -55,10 +66,11 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
     const isAi = req.url === '/v1/ai-scan';
     if (!isAi && req.url !== '/v1/link-check') { send(404,{error:'not_found'}); return; }
     if (req.method !== 'POST') { res.setHeader('Allow','POST'); send(405,{error:'method_not_allowed'}); return; }
+    const deadline = setTimeout(()=>send(503,{error:'unavailable'}),isAi ? timeouts.aiMs : timeouts.linkCheckMs);
+    res.once('close',()=>clearTimeout(deadline));
     const now = Date.now();
     for (const [key,value] of rates) if (value.reset <= now) rates.delete(key);
-    // Use the actual socket peer; a public deployment must configure trusted ingress limits.
-    const ip = `${isAi ? 'ai' : 'url'}:${req.socket.remoteAddress ?? 'unknown'}`;
+    const ip = `${isAi ? 'ai' : 'url'}:${clientAddress(req,trustProxy)}`;
     if (!rates.has(ip) && rates.size >= 10000) { send(429,{error:'rate_limited'}); return; }
     const rate = rates.get(ip) ?? {count:0,reset:now+60000};
     rate.count++; rates.set(ip,rate);
