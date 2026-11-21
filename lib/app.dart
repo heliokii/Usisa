@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 import 'app/theme.dart';
 import 'features/check/check.dart';
@@ -9,6 +13,7 @@ import 'features/check/gateway_link_checker.dart';
 import 'features/check/home_screen.dart';
 import 'features/check/paste_screen.dart';
 import 'features/check/screenshot_screen.dart';
+import 'features/check/share_source.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_store.dart';
 import 'features/scan/ocr_service.dart';
@@ -18,7 +23,16 @@ import 'features/sms/sms_service.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
-  const UsisaApp({super.key, this.storage, this.runCheck, this.readScreenshot, this.gatewayClient, this.sms});
+  const UsisaApp({
+    super.key,
+    this.storage,
+    this.runCheck,
+    this.readScreenshot,
+    this.gatewayClient,
+    this.shares,
+    this.readSharedImage,
+    this.sms,
+  });
 
   final PrivateStorage? storage;
 
@@ -30,6 +44,12 @@ class UsisaApp extends StatefulWidget {
 
   /// Picks a picture and reads its text; widget tests pass a fake.
   final ScreenshotReader? readScreenshot;
+
+  /// Content shared in from other apps; widget tests pass a fake.
+  final Stream<SharedItem>? shares;
+
+  /// Reads the text in a shared picture (a cache path); widget tests pass a fake.
+  final Future<String> Function(String path)? readSharedImage;
 
   /// The native SMS bridge; widget tests pass one over a fake channel.
   final SmsService? sms;
@@ -44,6 +64,7 @@ class _UsisaAppState extends State<UsisaApp> {
   late final http.Client _gateway = widget.gatewayClient ?? http.Client();
   late final SmsService sms = widget.sms ?? SmsService();
   final _navigator = GlobalKey<NavigatorState>();
+  late final Stream<SharedItem> _shares = widget.shares ?? (kIsWeb ? const Stream.empty() : channelShares());
 
   @override
   void initState() {
@@ -116,6 +137,8 @@ class _UsisaAppState extends State<UsisaApp> {
         settings: settings,
         sms: sms,
         readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
+        shares: _shares,
+        readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
       ),
     ),
   );
@@ -128,12 +151,16 @@ class _Shell extends StatefulWidget {
     required this.history,
     required this.settings,
     required this.sms,
+    required this.shares,
+    required this.readSharedImage,
   });
   final RunCheck runCheck;
   final SmsService sms;
   final HistoryStore history;
   final SettingsStore settings;
   final ScreenshotReader readScreenshot;
+  final Stream<SharedItem> shares;
+  final Future<String> Function(String path) readSharedImage;
 
   @override
   State<_Shell> createState() => _ShellState();
@@ -154,6 +181,46 @@ class _ShellState extends State<_Shell> {
       // A failed request leaves the switch showing what the phone really has.
       await widget.sms.refresh();
     }
+  }
+
+  late final StreamSubscription<SharedItem> _shares;
+
+  @override
+  void initState() {
+    super.initState();
+    _shares = widget.shares.listen(_openShare);
+  }
+
+  @override
+  void dispose() {
+    _shares.cancel();
+    super.dispose();
+  }
+
+  /// A share opens the matching tile prefilled; nothing is checked until the person taps Check.
+  void _openShare(SharedItem item) {
+    final l = AppLocalizations.of(context);
+    final image = item.imagePath;
+    final text = item.text?.trim() ?? '';
+    final link = phoneCheck(text).links.singleOrNull == text;
+    Navigator.of(context)
+      ..popUntil((route) => route.isFirst)
+      ..push(
+        MaterialPageRoute<void>(
+          builder: (_) => image != null
+              ? ScreenshotScreen(
+                  readScreenshot: widget.readScreenshot,
+                  runCheck: widget.runCheck,
+                  readShared: () => widget.readSharedImage(image),
+                )
+              : PasteScreen(
+                  runCheck: widget.runCheck,
+                  source: link ? CheckSource.link : CheckSource.share,
+                  initialText: text,
+                  title: link ? l.tileLinkTitle : null,
+                ),
+        ),
+      );
   }
 
   void _startCheck(CheckKind kind) {
