@@ -1,7 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/features/history/history_store.dart';
-import 'package:usisa/features/scan/scam_analyzer.dart';
 import 'package:usisa/features/scan/scan_models.dart';
+
+var _ids = 0;
+
+/// A stored scan result with the given text and local findings.
+ScanResult scan(String text, [List<Finding> findings = const []]) => ScanResult(
+  id: 'scan-${_ids++}',
+  text: text,
+  source: ScanSource.text,
+  findings: findings,
+  links: const [],
+  createdAt: DateTime.now(),
+);
 
 void main() {
   test('expired history disappears during an active session and startup purges old drafts', () async {
@@ -77,7 +88,7 @@ void main() {
     () async {
       final storage = MemoryStorage();
       final history = HistoryStore(storage);
-      final result = ScamAnalyzer().analyze(const ScanInput('private message'));
+      final result = scan('private message');
       await history.save(result, expectedGeneration: history.generation);
       expect(storage.values, isEmpty);
       await history.setEnabled(true);
@@ -94,7 +105,7 @@ void main() {
     final generation = history.generation;
     await history.clear();
     await history.save(
-      ScamAnalyzer().analyze(const ScanInput('old result')),
+      scan('old result'),
       expectedGeneration: generation,
     );
     expect(history.entries, isEmpty);
@@ -136,7 +147,7 @@ void main() {
     await history.setEnabled(true);
     await expectLater(
       history.save(
-        ScamAnalyzer().analyze(const ScanInput('hello')),
+        scan('hello'),
         expectedGeneration: history.generation,
       ),
       throwsStateError,

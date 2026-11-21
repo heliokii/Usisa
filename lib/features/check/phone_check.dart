@@ -56,11 +56,10 @@ const _tlds =
     'space|website|tech|buzz|monster|cyou|sbs|bond|lol|page|dev|at|gy|ink|xin|work|support|help|services';
 
 final _link = RegExp(
-  r'''\b[a-z][a-z0-9+.-]*://[^\s<>"']+'''
-  r'''|\bwww\.[^\s<>"']+'''
-  r'''|(?<![\w@.-])(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:''' +
-      _tlds +
-      r''')(?![\w-])(?::\d{1,5})?(?:[/?#][^\s<>"']*)?''',
+  '${r'''\b[a-z][a-z0-9+.-]*://[^\s<>"']+'''}'
+  '${r'''|\bwww\.[^\s<>"']+'''}'
+  '${r'''|(?<![\w@.-])(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:'''}$_tlds'
+  '${r''')(?![\w-])(?::\d{1,5})?(?:[/?#][^\s<>"']*)?'''}',
   caseSensitive: false,
 );
 
@@ -68,7 +67,7 @@ const _secret =
     r'(?:otp|one ?time (?:pin|password|passcode)|password|passcode|m?pin|security code|verification code|'
     r'\d-digit code)';
 const _askVerb =
-    r'(?:send|share|provide|enter|give|submit|reply with|type|input|forward|i-?send|pa-?send|pakisend|ipadala|'
+    r'(?:send|share|provide|enter|give|submit|reply with|type|input|forward|relay|i-?send|pa-?send|pa-?forward|pakisend|ipadala|'
     r'ibigay|ilagay|i-?type|i-?reply|ibahagi|sabihin|i-?forward)';
 final _secretRequest = RegExp('\\b$_askVerb\\b.{0,60}?\\b$_secret\\b');
 final _negation = RegExp(r"\b(?:never|do not|don'?t|huwag|wag|hindi|not to|avoid|no one|nobody|walang)\b");
@@ -78,6 +77,9 @@ final _win = RegExp(
   r'congratulations?,? (?:you|winner))',
 );
 final _claim = RegExp(r'\b(?:claim|i-?claim|kunin|redeem|processing fee|release fee|magbayad|bayad)\b');
+final _advanceFee = RegExp(
+  r'\b(?:(?:release|processing|clearance|activation|handling|unlock) fee|bayad muna|pay first|advance payment)\b',
+);
 final _claimPrize = RegExp(r'\b(?:claim|i-?claim|kunin) (?:your |ang |mo ang )?(?:prize|reward|premyo)');
 
 final _urgency = RegExp(
@@ -128,6 +130,7 @@ PhoneCheck phoneCheck(String text) {
     if (asksSecret && links.isEmpty) const Sign('credential_request', SignStrength.strong),
     if (links.any(_isLookalike)) const Sign('lookalike_domain', SignStrength.strong),
     if (prize) const Sign('prize_claim', SignStrength.strong),
+    if (_advanceFee.hasMatch(t)) const Sign('payment_request', SignStrength.strong),
     if (gambling) const Sign('gambling_ad', SignStrength.weak),
     if (_urgency.hasMatch(t)) const Sign('urgency', SignStrength.weak),
     if (_brand.hasMatch(t)) const Sign('brand_mention', SignStrength.weak),
@@ -138,8 +141,8 @@ PhoneCheck phoneCheck(String text) {
   final Verdict verdict;
   if (codes.intersection(const {'otp_with_link', 'lookalike_domain', 'prize_claim'}).isNotEmpty) {
     verdict = Verdict.dangerous;
-  } else if (codes.contains('credential_request')) {
-    // An OTP request alone may be a mix-up; with a brand, a rush or a gambling ad it's the classic scam.
+  } else if (codes.contains('credential_request') || codes.contains('payment_request')) {
+    // A code or fee request alone may be a mix-up; with a brand, a rush or a gambling ad it's the classic scam.
     final backed = codes.intersection(const {'brand_mention', 'urgency', 'gambling_ad'}).isNotEmpty;
     verdict = backed ? Verdict.dangerous : Verdict.beCareful;
   } else if (gambling) {
@@ -172,7 +175,11 @@ bool _isLookalike(String link) {
   final keep = labels.length > 2 && _twoLevelSuffixes.contains(labels.sublist(labels.length - 2).join('.')) ? 3 : 2;
   final registrable = labels.sublist(labels.length - keep).join('.');
   if (officialDomains.values.any((ds) => ds.contains(registrable))) return false;
-  final tokens = labels.take(labels.length - 1).expand((l) => l.split('-'));
+  // "https://bdo.com.ph@evil.example" really goes to evil.example, so the part before "@" counts too.
+  final tokens = [
+    ...labels.take(labels.length - 1),
+    ...uri!.userInfo.toLowerCase().split(RegExp('[.:]')),
+  ].expand((l) => l.split('-'));
   return tokens.any((tok) => officialDomains.keys.any((b) => _namesBrand(tok, b)));
 }
 
@@ -202,7 +209,21 @@ String _normalize(String text) {
   return out.toString();
 }
 
-const _invisible = {0x00AD, 0x180E, 0x200B, 0x200C, 0x200D, 0x200E, 0x200F, 0x2060, 0x2061, 0x2062, 0x2063, 0x2064, 0xFEFF};
+const _invisible = {
+  0x00AD,
+  0x180E,
+  0x200B,
+  0x200C,
+  0x200D,
+  0x200E,
+  0x200F,
+  0x2060,
+  0x2061,
+  0x2062,
+  0x2063,
+  0x2064,
+  0xFEFF,
+};
 
 const _homoglyphs = {
   'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T', 'Х': 'X', //

@@ -284,6 +284,19 @@ void main() {
       }
     });
 
+    test('a brand name hidden before "@" in a link is a look-alike', () async {
+      final r = await check('BDO: visit https://bdo.com.ph@verification.example to restore access.');
+      expect(r.verdict, Verdict.dangerous);
+      expect(r.reasons, contains('lookalike_domain'));
+    });
+
+    test('a fee to release money is Be careful; with a brand it is Dangerous', () async {
+      final r = await check('Your package is on hold. Pay the release fee to receive it.');
+      expect(r.verdict, Verdict.beCareful);
+      expect(r.reasons, contains('payment_request'));
+      expect((await check('BIR refund ready na! Pay the processing fee para ma-release.')).verdict, Verdict.dangerous);
+    });
+
     test('an OTP request split across lines is caught', () async {
       final r = await check('GCash Advisory:\nPlease send\nyour\nOTP\nimmediately to avoid suspension');
       expect(r.verdict, Verdict.dangerous);
