@@ -140,6 +140,10 @@ class AppLocalizationsFil extends AppLocalizations {
       'shortener_blocked': 'Hinarang na ng link shortener ang link na ito',
       'opens_app': 'Nagbubukas ng app ang link sa halip na website',
       'unresolved_link': 'Hindi namin makita kung saan papunta ang link',
+      'harmless_promo': 'Mukhang karaniwang promo lang ito',
+      'brand_mention':
+          'Binabanggit nito ang isang bangko, e-wallet o ahensya ng gobyerno',
+      'family_money': 'Humihingi ito ng pera o load, na karaniwan sa pamilya',
       'credential_request': 'Humihingi ito ng password, PIN o code',
       'payment_request': 'Pinapabayad o pinapapadala ka nito ng pera',
       'impersonation': 'Maaaring nagpapanggap ito bilang ibang tao',

@@ -138,6 +138,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'shortener_blocked': 'The link shortener has blocked this link',
       'opens_app': 'The link opens an app instead of a website',
       'unresolved_link': 'We couldn\'t see where the link goes',
+      'harmless_promo': 'This looks like an ordinary promo',
+      'brand_mention': 'It mentions a bank, e-wallet or government office',
+      'family_money':
+          'It asks for money or load, which is normal between family',
       'credential_request': 'It asks for a password, PIN or code',
       'payment_request': 'It asks you to pay or send money',
       'impersonation': 'It may be pretending to be someone else',
