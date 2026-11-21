@@ -63,6 +63,8 @@ class HistoryEntry {
     'reasons': result.reasons,
     'checkedOnPhone': result.checkedOnPhone,
     'destinations': result.destinations,
+    'evidence': result.evidence,
+    'aiUnavailable': result.aiUnavailable,
   };
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
@@ -76,6 +78,9 @@ class HistoryEntry {
       reasons: List<String>.from(json['reasons'] as List),
       checkedOnPhone: json['checkedOnPhone'] == true,
       destinations: List<String>.from(json['destinations'] as List),
+      // Entries saved before AI scan shipped have no evidence.
+      evidence: List<String>.from(json['evidence'] as List? ?? const []),
+      aiUnavailable: json['aiUnavailable'] == true,
     ),
   );
 }

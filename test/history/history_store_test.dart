@@ -44,6 +44,8 @@ void main() {
           reasons: ['flagged_link', 'urgency'],
           checkedOnPhone: false,
           destinations: ['https://bad.example/claim'],
+          evidence: ['Claim at'],
+          aiUnavailable: true,
         ),
       ),
       expectedGeneration: 0,
@@ -59,6 +61,8 @@ void main() {
     expect(saved.result.reasons, ['flagged_link', 'urgency']);
     expect(saved.result.checkedOnPhone, isFalse);
     expect(saved.result.destinations, ['https://bad.example/claim']);
+    expect(saved.result.evidence, ['Claim at']);
+    expect(saved.result.aiUnavailable, isTrue);
   });
   test('recording wraps a Check so each finished result is saved', () async {
     final now = DateTime.utc(2026, 11, 10);

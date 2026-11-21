@@ -11,9 +11,19 @@ typedef ScreenshotReader = Future<String?> Function();
 
 /// Scan a screenshot: pick a picture, review the text read from it, then Check.
 class ScreenshotScreen extends StatefulWidget {
-  const ScreenshotScreen({super.key, required this.readScreenshot, required this.runCheck});
+  const ScreenshotScreen({
+    super.key,
+    required this.readScreenshot,
+    required this.runCheck,
+    this.aiScan = false,
+    this.title,
+  });
   final ScreenshotReader readScreenshot;
   final RunCheck runCheck;
+
+  /// Runs the Check as an AI scan.
+  final bool aiScan;
+  final String? title;
 
   @override
   State<ScreenshotScreen> createState() => _ScreenshotScreenState();
@@ -48,8 +58,9 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
           runCheck: widget.runCheck,
           source: CheckSource.screenshot,
           initialText: text!.trim(),
-          title: l.tileScreenshotTitle,
+          title: widget.title ?? l.tileScreenshotTitle,
           note: l.screenshotReview,
+          aiScan: widget.aiScan,
         ),
       ),
     );
@@ -63,7 +74,7 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
       appBar: AppBar(
         backgroundColor: UsisaColors.background,
         surfaceTintColor: Colors.transparent,
-        title: Text(l.tileScreenshotTitle, style: tt.titleLarge),
+        title: Text(widget.title ?? l.tileScreenshotTitle, style: tt.titleLarge),
       ),
       body: SafeArea(
         child: ListView(

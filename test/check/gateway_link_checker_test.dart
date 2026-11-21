@@ -48,6 +48,7 @@ void main() {
     final r = await checkAnswer(answer('noMatch', destination: 'https://shopee.ph/sale'));
     expect(r.status, LinkStatus.clean);
     expect(r.destination, 'https://shopee.ph/sale');
+    expect(r.hops, ['https://shopee.ph/sale']);
     expect(r.link, 'bit.ly/abc');
   });
 

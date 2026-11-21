@@ -61,5 +61,11 @@
   "fromYourTexts": "From your texts",
   "checkedOnDate": "Checked on {date}",
   "@checkedOnDate": {"description": "Label on a reopened History entry; date is the date and time of the Check.", "placeholders": {"date": {"type": "String"}}},
-  "checkAgain": "Check again"
+  "checkAgain": "Check again",
+  "aiScanIntro": "What do you want the AI to look at?",
+  "aiScanMessage": "A message",
+  "aiScanLink": "A link",
+  "aiScanScreenshot": "A screenshot",
+  "aiUnavailable": "AI couldn't look at this right now",
+  "@aiUnavailable": {"description": "Label on an AI scan verdict when the AI gave no answer; the verdict comes from the phone and link checks."}
 }

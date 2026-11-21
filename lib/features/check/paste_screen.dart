@@ -16,6 +16,7 @@ class PasteScreen extends StatefulWidget {
     this.initialText = '',
     this.title,
     this.note,
+    this.aiScan = false,
   });
   final RunCheck runCheck;
   final CheckSource source;
@@ -24,6 +25,9 @@ class PasteScreen extends StatefulWidget {
 
   /// Shown above the text field.
   final String? note;
+
+  /// Runs the Check as an AI scan.
+  final bool aiScan;
 
   @override
   State<PasteScreen> createState() => _PasteScreenState();
@@ -42,7 +46,7 @@ class _PasteScreenState extends State<PasteScreen> {
   Future<void> _check() async {
     setState(() => _busy = true);
     try {
-      final result = await widget.runCheck(CheckInput(_text.text, source: widget.source));
+      final result = await widget.runCheck(CheckInput(_text.text, source: widget.source, aiScan: widget.aiScan));
       if (!mounted) return;
       // Pushed on top so Back returns to the pasted text.
       await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => VerdictScreen(result: result)));

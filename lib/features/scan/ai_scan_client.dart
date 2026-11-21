@@ -16,9 +16,12 @@ class AiScanClient {
   }) : baseUri =
            baseUri ??
            Uri.tryParse(const String.fromEnvironment('USISA_GATEWAY_URL')),
+       _ownsClient = client == null,
        _client = client ?? http.Client();
   final Uri? baseUri;
   final http.Client _client;
+  // A client passed in is shared (the app's gateway client), so close() leaves it open.
+  final bool _ownsClient;
   final Duration timeout;
   final _abort = Completer<void>();
   bool get configured {
@@ -75,6 +78,7 @@ class AiScanClient {
           ..body = jsonEncode({
             'text': input.text,
             'responseLanguage': input.responseLanguage,
+            if (input.links.isNotEmpty) 'links': input.links,
           });
     final response = await _client.send(request);
     if (response.statusCode != 200) {
@@ -108,6 +112,6 @@ class AiScanClient {
   void close() {
     if (_abort.isCompleted) return;
     _abort.complete();
-    _client.close();
+    if (_ownsClient) _client.close();
   }
 }

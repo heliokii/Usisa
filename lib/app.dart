@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 
 import 'app/theme.dart';
 import 'features/check/check.dart';
+import 'features/check/ai_scan_screen.dart';
 import 'features/check/consent_screen.dart';
+import 'features/check/gateway_ai_checker.dart';
 import 'features/check/gateway_link_checker.dart';
 import 'features/check/home_screen.dart';
 import 'features/check/paste_screen.dart';
@@ -78,7 +80,10 @@ class _UsisaAppState extends State<UsisaApp> {
       }
     }
     final online = settings.onlineLinkChecks;
-    return CheckPipeline(linkChecker: online ? gatewayLinkChecker(_gateway, gatewayBase) : null).run(input);
+    return CheckPipeline(
+      linkChecker: online ? gatewayLinkChecker(_gateway, gatewayBase) : null,
+      aiChecker: online ? gatewayAiChecker(_gateway, gatewayBase, language: () => settings.language) : null,
+    ).run(input);
   }
 
   @override
@@ -141,10 +146,11 @@ class _ShellState extends State<_Shell> {
       );
       return;
     }
-    final l = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l.comingSoon)));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AiScanScreen(runCheck: widget.runCheck, readScreenshot: widget.readScreenshot),
+      ),
+    );
   }
 
   @override

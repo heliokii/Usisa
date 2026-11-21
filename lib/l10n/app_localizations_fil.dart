@@ -235,4 +235,19 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get checkAgain => 'Suriin muli';
+
+  @override
+  String get aiScanIntro => 'Ano ang gusto mong tingnan ng AI?';
+
+  @override
+  String get aiScanMessage => 'Isang mensahe';
+
+  @override
+  String get aiScanLink => 'Isang link';
+
+  @override
+  String get aiScanScreenshot => 'Isang screenshot';
+
+  @override
+  String get aiUnavailable => 'Hindi ito natingnan ng AI ngayon';
 }
