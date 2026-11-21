@@ -299,7 +299,7 @@ abstract class AppLocalizations {
   /// One reason on the verdict screen; codes come from decideVerdict and server/ai_schema.mjs.
   ///
   /// In en, this message translates to:
-  /// **'{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand\'s website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn\'t see where the link goes} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}'**
+  /// **'{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand\'s website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn\'t see where the link goes} harmless_promo{This looks like an ordinary promo} brand_mention{It mentions a bank, e-wallet or government office} family_money{It asks for money or load, which is normal between family} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}'**
   String reason(String code);
 
   /// No description provided for @linkHint.
@@ -349,6 +349,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No, phone only'**
   String get consentDeny;
+
+  /// No description provided for @historySavedOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved only on this phone'**
+  String get historySavedOnPhone;
+
+  /// No description provided for @historySaveSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my checks'**
+  String get historySaveSwitch;
+
+  /// No description provided for @historySaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning this off also clears your History.'**
+  String get historySaveNote;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved checks yet.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving is off.'**
+  String get historyOff;
+
+  /// No description provided for @historyClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get historyClearAll;
+
+  /// No description provided for @historyClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all History?'**
+  String get historyClearTitle;
+
+  /// No description provided for @historyClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every saved check from this phone. It can\'t be undone.'**
+  String get historyClearBody;
+
+  /// No description provided for @historyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get historyDelete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @fromYourTexts.
+  ///
+  /// In en, this message translates to:
+  /// **'From your texts'**
+  String get fromYourTexts;
+
+  /// Label on a reopened History entry; date is the date and time of the Check.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked on {date}'**
+  String checkedOnDate(String date);
+
+  /// No description provided for @checkAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get checkAgain;
+
+  /// No description provided for @settingsDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get settingsDisplay;
+
+  /// No description provided for @settingsTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsTextSize;
+
+  /// No description provided for @textSizeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get textSizeNormal;
+
+  /// No description provided for @textSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get textSizeLarge;
+
+  /// No description provided for @textSizeExtraLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra large'**
+  String get textSizeExtraLarge;
+
+  /// No description provided for @settingsTextSizeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This adds to your phone\'s own text size.'**
+  String get settingsTextSizeNote;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageFilipino.
+  ///
+  /// In en, this message translates to:
+  /// **'Filipino'**
+  String get languageFilipino;
+
+  /// No description provided for @settingsProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection'**
+  String get settingsProtection;
+
+  /// No description provided for @settingsOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online checks'**
+  String get settingsOnline;
+
+  /// No description provided for @settingsOnlineSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Check links and use AI online'**
+  String get settingsOnlineSwitch;
+
+  /// No description provided for @settingsOnlineOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Links go to Usisa\'s checking service. AI scan sends the message text to an AI service.'**
+  String get settingsOnlineOn;
+
+  /// No description provided for @settingsOnlineOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is checked on your phone only, so Usisa may miss some scams.'**
+  String get settingsOnlineOff;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @aboutGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa is a guide, not a guarantee. It looks for common scam signs, but it can be wrong. If something feels off, don\'t click, don\'t pay and don\'t share codes. Ask someone you trust.'**
+  String get aboutGuide;
+
+  /// No description provided for @aboutData.
+  ///
+  /// In en, this message translates to:
+  /// **'Your checks and History are saved only on this phone. Nothing is sent anywhere unless online checks are on.'**
+  String get aboutData;
 }
 
 class _AppLocalizationsDelegate

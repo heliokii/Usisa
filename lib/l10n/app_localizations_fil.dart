@@ -155,6 +155,10 @@ class AppLocalizationsFil extends AppLocalizations {
       'shortener_blocked': 'Hinarang na ng link shortener ang link na ito',
       'opens_app': 'Nagbubukas ng app ang link sa halip na website',
       'unresolved_link': 'Hindi namin makita kung saan papunta ang link',
+      'harmless_promo': 'Mukhang karaniwang promo lang ito',
+      'brand_mention':
+          'Binabanggit nito ang isang bangko, e-wallet o ahensya ng gobyerno',
+      'family_money': 'Humihingi ito ng pera o load, na karaniwan sa pamilya',
       'credential_request': 'Humihingi ito ng password, PIN o code',
       'payment_request': 'Pinapabayad o pinapapadala ka nito ng pera',
       'impersonation': 'Maaaring nagpapanggap ito bilang ibang tao',
@@ -192,4 +196,104 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get consentDeny => 'Hindi, sa phone lang';
+
+  @override
+  String get historySavedOnPhone => 'Sa phone na ito lang naka-save';
+
+  @override
+  String get historySaveSwitch => 'I-save ang mga check ko';
+
+  @override
+  String get historySaveNote =>
+      'Kapag pinatay ito, mabubura rin ang History mo.';
+
+  @override
+  String get historyEmpty => 'Wala pang naka-save na check.';
+
+  @override
+  String get historyOff => 'Naka-off ang pag-save.';
+
+  @override
+  String get historyClearAll => 'Burahin lahat';
+
+  @override
+  String get historyClearTitle => 'Burahin ang buong History?';
+
+  @override
+  String get historyClearBody =>
+      'Mabubura ang lahat ng naka-save na check sa phone na ito. Hindi na ito maibabalik.';
+
+  @override
+  String get historyDelete => 'Burahin';
+
+  @override
+  String get cancel => 'Kanselahin';
+
+  @override
+  String get fromYourTexts => 'Mula sa iyong mga text';
+
+  @override
+  String checkedOnDate(String date) {
+    return 'Sinuri noong $date';
+  }
+
+  @override
+  String get checkAgain => 'Suriin muli';
+
+  @override
+  String get settingsDisplay => 'Itsura';
+
+  @override
+  String get settingsTextSize => 'Laki ng text';
+
+  @override
+  String get textSizeNormal => 'Karaniwan';
+
+  @override
+  String get textSizeLarge => 'Malaki';
+
+  @override
+  String get textSizeExtraLarge => 'Napakalaki';
+
+  @override
+  String get settingsTextSizeNote =>
+      'Dagdag ito sa sariling laki ng text ng phone mo.';
+
+  @override
+  String get settingsLanguage => 'Wika';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFilipino => 'Filipino';
+
+  @override
+  String get settingsProtection => 'Proteksyon';
+
+  @override
+  String get settingsOnline => 'Pagsuri online';
+
+  @override
+  String get settingsOnlineSwitch =>
+      'Suriin online ang mga link at gamitin ang AI';
+
+  @override
+  String get settingsOnlineOn =>
+      'Ipinapadala ang mga link sa serbisyong pansuri ng Usisa. Ipinapadala ng AI scan ang text ng mensahe sa isang AI service.';
+
+  @override
+  String get settingsOnlineOff =>
+      'Sa phone mo lang sinusuri ang lahat, kaya baka may scam na hindi mahuli ng Usisa.';
+
+  @override
+  String get settingsAbout => 'Tungkol sa Usisa';
+
+  @override
+  String get aboutGuide =>
+      'Gabay ang Usisa, hindi garantiya. Naghahanap ito ng mga karaniwang senyales ng scam, pero puwede itong magkamali. Kung may kakaiba, huwag mag-click, huwag magbayad at huwag ibigay ang mga code. Magtanong sa taong pinagkakatiwalaan mo.';
+
+  @override
+  String get aboutData =>
+      'Sa phone na ito lang naka-save ang mga sinuri mo at ang History. Walang ipinapadala kahit saan maliban kung naka-on ang pagsuri online.';
 }

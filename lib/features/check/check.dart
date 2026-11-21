@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import '../scan/scan_models.dart';
 import 'phone_check.dart';
 
-export 'phone_check.dart' show PhoneCheck, Sign, SignStrength, phoneCheck;
+export 'phone_check.dart' show PhoneCheck, Sign, SignStrength, phoneCheck, officialDomains, shorteners;
 
 /// The single answer a Check gives (GLOSSARY.md).
 enum Verdict { looksSafe, beCareful, dangerous, couldntCheck }
@@ -177,7 +177,7 @@ CheckResult decideVerdict({
     // Rules 2 and 3.
     var v = useAi ? _order[(ai.level.index + (strong.isEmpty ? 0 : 1)).clamp(0, 2)] : phone.verdict;
     // Rule 4.
-    if (useAi && aiSigns.contains('gambling_ad')) v = _atLeast(v, Verdict.beCareful);
+    if ((useAi && aiSigns.contains('gambling_ad')) || weak.contains('gambling_ad')) v = _atLeast(v, Verdict.beCareful);
     // Rule 5.
     if (has(LinkStatus.opensApp)) v = _atLeast(v, Verdict.beCareful);
     // Rule 6: a warning beats Couldn't check, and Couldn't check beats Looks safe.
@@ -194,7 +194,7 @@ CheckResult decideVerdict({
     if (has(LinkStatus.unresolved)) 'unresolved_link',
     ...weak,
   }.take(3).toList();
-  if (reasons.isEmpty && verdict == Verdict.looksSafe) reasons.add('no_signs');
+  if (reasons.isEmpty && verdict == Verdict.looksSafe) reasons.add(phone.harmlessPromo ? 'harmless_promo' : 'no_signs');
 
   return CheckResult(
     text: text,

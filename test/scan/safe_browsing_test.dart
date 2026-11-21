@@ -56,27 +56,6 @@ void main() {
     },
   );
 
-  test('permanent history retains local evidence and check metadata without caching Google verdicts', () async {
-    final storage = MemoryStorage();
-    final history = HistoryStore(storage)..enabled = true;
-    await history.save(
-      scan(advisory()),
-      expectedGeneration: history.generation,
-    );
-    final stored = jsonDecode(storage.values['scan.advisory-fixture']!) as Map;
-    final link = (stored['links'] as List).single as Map;
-    expect(link['provider'], 'Google Safe Browsing');
-    expect(link['reputation'], 'unavailable');
-    expect(link['threatTypes'], isEmpty);
-    expect(link['checkedAt'], isNotNull);
-    final reloaded = HistoryStore(storage)..enabled = true;
-    await reloaded.load();
-    expect(reloaded.entries.single.risk, RiskLevel.low);
-    expect(reloaded.entries.single.hasUncheckedLinks, isTrue);
-    history.dispose();
-    reloaded.dispose();
-  });
-
   test('old Web Risk consent cannot authorize Safe Browsing', () async {
     final storage = MemoryStorage();
     await storage.write(

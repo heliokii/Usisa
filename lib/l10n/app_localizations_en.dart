@@ -152,6 +152,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'shortener_blocked': 'The link shortener has blocked this link',
       'opens_app': 'The link opens an app instead of a website',
       'unresolved_link': 'We couldn\'t see where the link goes',
+      'harmless_promo': 'This looks like an ordinary promo',
+      'brand_mention': 'It mentions a bank, e-wallet or government office',
+      'family_money':
+          'It asks for money or load, which is normal between family',
       'credential_request': 'It asks for a password, PIN or code',
       'payment_request': 'It asks you to pay or send money',
       'impersonation': 'It may be pretending to be someone else',
@@ -189,4 +193,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentDeny => 'No, phone only';
+
+  @override
+  String get historySavedOnPhone => 'Saved only on this phone';
+
+  @override
+  String get historySaveSwitch => 'Save my checks';
+
+  @override
+  String get historySaveNote => 'Turning this off also clears your History.';
+
+  @override
+  String get historyEmpty => 'No saved checks yet.';
+
+  @override
+  String get historyOff => 'Saving is off.';
+
+  @override
+  String get historyClearAll => 'Clear all';
+
+  @override
+  String get historyClearTitle => 'Clear all History?';
+
+  @override
+  String get historyClearBody =>
+      'This removes every saved check from this phone. It can\'t be undone.';
+
+  @override
+  String get historyDelete => 'Delete';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get fromYourTexts => 'From your texts';
+
+  @override
+  String checkedOnDate(String date) {
+    return 'Checked on $date';
+  }
+
+  @override
+  String get checkAgain => 'Check again';
+
+  @override
+  String get settingsDisplay => 'Display';
+
+  @override
+  String get settingsTextSize => 'Text size';
+
+  @override
+  String get textSizeNormal => 'Normal';
+
+  @override
+  String get textSizeLarge => 'Large';
+
+  @override
+  String get textSizeExtraLarge => 'Extra large';
+
+  @override
+  String get settingsTextSizeNote =>
+      'This adds to your phone\'s own text size.';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFilipino => 'Filipino';
+
+  @override
+  String get settingsProtection => 'Protection';
+
+  @override
+  String get settingsOnline => 'Online checks';
+
+  @override
+  String get settingsOnlineSwitch => 'Check links and use AI online';
+
+  @override
+  String get settingsOnlineOn =>
+      'Links go to Usisa\'s checking service. AI scan sends the message text to an AI service.';
+
+  @override
+  String get settingsOnlineOff =>
+      'Everything is checked on your phone only, so Usisa may miss some scams.';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get aboutGuide =>
+      'Usisa is a guide, not a guarantee. It looks for common scam signs, but it can be wrong. If something feels off, don\'t click, don\'t pay and don\'t share codes. Ask someone you trust.';
+
+  @override
+  String get aboutData =>
+      'Your checks and History are saved only on this phone. Nothing is sent anywhere unless online checks are on.';
 }

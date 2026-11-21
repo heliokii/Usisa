@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:usisa/features/scan/scam_analyzer.dart';
-import 'package:usisa/features/scan/scan_models.dart';
+import 'package:usisa/features/check/check.dart';
 
 List<int> counts(Iterable<(bool, bool)> rows) {
   final values = [0, 0, 0, 0]; // TP, FP, FN, TN
@@ -31,19 +30,18 @@ void main() {
   final fixtures = (jsonDecode(
     File('test/fixtures/evaluation_messages.json').readAsStringSync(),
   ) as List).cast<Map<String, dynamic>>();
-  final analyzer = ScamAnalyzer();
-  final results = <(Map<String, dynamic>, RiskLevel)>[];
+  final results = <(Map<String, dynamic>, Verdict)>[];
   final ids = <String>{};
   for (final row in fixtures) {
     if (!ids.add(row['id'] as String) ||
         (row['scam'] != null && row['scam'] is! bool)) {
       throw FormatException('Invalid evaluation fixture');
     }
-    results.add((row, analyzer.analyze(ScanInput(row['text'] as String)).risk));
+    results.add((row, phoneCheck(row['text'] as String).verdict));
   }
   final output = StringBuffer('''# Local rules evaluation
 
-Frozen rules-v1, evaluated 10 November 2026. These 36 synthetic, manually labeled examples were written after the development tests and were not used to tune rules. This is a small diagnostic set authored by the implementer, not an independently annotated corpus or a real-world accuracy estimate. A caution or high result counts as an alert. Four ambiguous examples are excluded from binary metrics.
+The rewritten phone check (#25). These 36 synthetic, manually labeled examples were written after the development tests and were not used to tune rules. This is a small diagnostic set authored by the implementer, not an independently annotated corpus or a real-world accuracy estimate. A Be careful or Dangerous verdict counts as an alert. Four ambiguous examples are excluded from binary metrics.
 
 | Slice | N | TP | FP | FN | TN | Precision | Recall | False positive rate |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -63,7 +61,7 @@ Frozen rules-v1, evaluated 10 November 2026. These 36 synthetic, manually labele
         )
         .toList();
     final c = counts(
-      rows.map((r) => (r.$1['scam'] as bool, r.$2 != RiskLevel.low)),
+      rows.map((r) => (r.$1['scam'] as bool, r.$2 != Verdict.looksSafe)),
     );
     output.writeln(
       '| $slice | ${rows.length} | ${c.join(' | ')} | ${percent(c[0], c[0] + c[1])} | ${percent(c[0], c[0] + c[2])} | ${percent(c[1], c[1] + c[3])} |',
@@ -84,7 +82,7 @@ Frozen rules-v1, evaluated 10 November 2026. These 36 synthetic, manually labele
   output.writeln('''
 ## Interpretation and release gates
 
-Paraphrased requests and obfuscated characters can evade rules. Ordinary payment requests or urgent notices may raise caution despite being legitimate. Low risk means no configured warning was found, never a verified sender or safe destination. This report does not evaluate live URL reputation or AI.
+Paraphrased requests and obfuscated characters can evade rules. Ordinary payment requests or urgent notices may raise caution despite being legitimate. Looks safe means no configured warning was found, never a verified sender or safe destination. This report does not evaluate live URL reputation or AI.
 
 Do not advertise a detection percentage or enable unrestricted monitoring from this set. Before public release, obtain an independently labeled PH corpus, agree deployment thresholds, review Filipino copy with a speaker, and measure on physical Android devices. OCR transcription and URL recovery need separate image fixtures; the app requires text review before scanning. The optional AI plan should evaluate contextual misses against the same frozen examples without replacing local checks.
 
