@@ -139,6 +139,46 @@ void main() {
     });
   });
 
+  group('Check a link', () {
+    Future<CheckResult> link(String text, {LinkChecker? linkChecker}) =>
+        CheckPipeline(linkChecker: linkChecker).run(CheckInput(text, source: CheckSource.link));
+
+    test('a clean link Looks safe and shows its real destination', () async {
+      final r = await link(
+        'bit.ly/shopee-sale',
+        linkChecker: (found) async => [for (final l in found) LinkCheck(l, LinkStatus.clean, destination: 'https://shopee.ph/sale')],
+      );
+      expect(r.verdict, Verdict.looksSafe);
+      expect(r.destinations, ['https://shopee.ph/sale']);
+      expect(r.checkedOnPhone, isFalse);
+    });
+
+    test('an intent: link is Be careful without asking the gateway', () async {
+      var asked = false;
+      final r = await link(
+        'intent://open#Intent;package=com.fake.wallet;end',
+        linkChecker: (found) async {
+          asked = true;
+          return [];
+        },
+      );
+      expect(asked, isFalse);
+      expect(r.verdict, Verdict.beCareful);
+      expect(r.reasons, contains('opens_app'));
+    });
+
+    test('an intent: link is Be careful even with online checks off', () async {
+      final r = await link('intent://open#Intent;package=com.fake.wallet;end');
+      expect(r.verdict, Verdict.beCareful);
+      expect(r.checkedOnPhone, isTrue);
+    });
+
+    test('a link the phone cannot spot is still checked online, never passed as safe', () async {
+      final r = await link('weird-host.example', linkChecker: links(LinkStatus.unresolved));
+      expect(r.verdict, Verdict.couldntCheck);
+    });
+  });
+
   test('a Check gives at most 3 reasons', () async {
     final r = await check('URGENT: $otpWithLink. $lookalike. You won, claim your prize!');
     expect(r.verdict, Verdict.dangerous);

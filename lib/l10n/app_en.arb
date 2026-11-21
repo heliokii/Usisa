@@ -26,6 +26,10 @@
   "@aiFindingTitle": {"description": "Title for an AI warning sign; codes match server/ai_schema.mjs warningCodes.", "placeholders": {"code": {"type": "String"}}},
   "pasteHint": "Paste the text message here",
   "checkButton": "Check",
+  "screenshotIntro": "Pick a screenshot of the message. We'll read the text for you.",
+  "screenshotChoose": "Choose a screenshot",
+  "screenshotReview": "Check the text we read and fix any mistakes.",
+  "screenshotNoText": "We couldn't read any text in this picture. Try a clearer screenshot.",
   "verdictWord": "{verdict, select, looksSafe{Looks safe} beCareful{Be careful} dangerous{Dangerous} other{Couldn't check}}",
   "@verdictWord": {"description": "The Verdict word; values match Verdict in lib/features/check/check.dart.", "placeholders": {"verdict": {"type": "String"}}},
   "verdictAction": "{verdict, select, looksSafe{Nothing suspicious found. Still, never share your OTP or PIN with anyone.} beCareful{Don't tap links or send money until you're sure who sent this.} dangerous{Don't tap the link, don't reply, and don't send money.} other{We couldn't check this fully. Don't open any link or enter any details until you're sure who sent it.}}",
@@ -34,5 +38,14 @@
   "checkedOnPhone": "Checked on your phone",
   "youChecked": "You checked",
   "reason": "{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand's website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn't see where the link goes} harmless_promo{This looks like an ordinary promo} brand_mention{It mentions a bank, e-wallet or government office} family_money{It asks for money or load, which is normal between family} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}",
-  "@reason": {"description": "One reason on the verdict screen; codes come from decideVerdict and server/ai_schema.mjs.", "placeholders": {"code": {"type": "String"}}}
+  "@reason": {"description": "One reason on the verdict screen; codes come from decideVerdict and server/ai_schema.mjs.", "placeholders": {"code": {"type": "String"}}},
+  "linkHint": "Paste the link here",
+  "reallyGoesTo": "Really goes to {destination}",
+  "@reallyGoesTo": {"description": "The Real destination of a checked link after all redirects.", "placeholders": {"destination": {"type": "String"}}},
+  "consentTitle": "Check links online?",
+  "consentBody": "To see where a link really goes and whether Google lists it as unsafe, Usisa sends the link to its checking service. If you use AI scan, the message text is sent to an AI service too.",
+  "consentDecline": "If you say no, Usisa checks everything on your phone only. It can't see where links really go, so it may miss some scams.",
+  "consentLater": "You can change this later in Settings.",
+  "consentAllow": "Yes, check online",
+  "consentDeny": "No, phone only"
 }

@@ -135,6 +135,10 @@ class VerdictScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      for (final destination in result.destinations) ...[
+                        const SizedBox(height: 16),
+                        Text(l.reallyGoesTo(destination), style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
+                      ],
                       const SizedBox(height: 24),
                       EnterMotion(
                         index: 3,

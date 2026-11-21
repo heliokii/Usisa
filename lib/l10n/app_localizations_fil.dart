@@ -94,6 +94,21 @@ class AppLocalizationsFil extends AppLocalizations {
   String get checkButton => 'Suriin';
 
   @override
+  String get screenshotIntro =>
+      'Pumili ng screenshot ng mensahe. Babasahin namin ang text para sa iyo.';
+
+  @override
+  String get screenshotChoose => 'Pumili ng screenshot';
+
+  @override
+  String get screenshotReview =>
+      'Tingnan ang text na nabasa namin at ayusin ang anumang mali.';
+
+  @override
+  String get screenshotNoText =>
+      'Wala kaming mabasang text sa larawang ito. Subukan ang mas malinaw na screenshot.';
+
+  @override
   String verdictWord(String verdict) {
     String _temp0 = intl.Intl.selectLogic(verdict, {
       'looksSafe': 'Mukhang ligtas',
@@ -153,4 +168,32 @@ class AppLocalizationsFil extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get linkHint => 'I-paste dito ang link';
+
+  @override
+  String reallyGoesTo(String destination) {
+    return 'Talagang pupunta sa $destination';
+  }
+
+  @override
+  String get consentTitle => 'Suriin online ang mga link?';
+
+  @override
+  String get consentBody =>
+      'Para makita kung saan talaga pupunta ang link at kung tinatawag itong delikado ng Google, ipapadala ng Usisa ang link sa serbisyo nitong pansuri. Kung gagamit ka ng AI scan, ipapadala rin ang text ng mensahe sa isang AI service.';
+
+  @override
+  String get consentDecline =>
+      'Kung hindi, sa phone mo lang susuriin ng Usisa ang lahat. Hindi nito makikita kung saan talaga pupunta ang mga link, kaya baka may scam itong hindi mahuli.';
+
+  @override
+  String get consentLater => 'Puwede mo itong baguhin mamaya sa Settings.';
+
+  @override
+  String get consentAllow => 'Oo, suriin online';
+
+  @override
+  String get consentDeny => 'Hindi, sa phone lang';
 }
