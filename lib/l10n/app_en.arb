@@ -39,6 +39,15 @@
   "youChecked": "You checked",
   "reason": "{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand's website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn't see where the link goes} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}",
   "@reason": {"description": "One reason on the verdict screen; codes come from decideVerdict and server/ai_schema.mjs.", "placeholders": {"code": {"type": "String"}}},
+  "linkHint": "Paste the link here",
+  "reallyGoesTo": "Really goes to {destination}",
+  "@reallyGoesTo": {"description": "The Real destination of a checked link after all redirects.", "placeholders": {"destination": {"type": "String"}}},
+  "consentTitle": "Check links online?",
+  "consentBody": "To see where a link really goes and whether Google lists it as unsafe, Usisa sends the link to its checking service. If you use AI scan, the message text is sent to an AI service too.",
+  "consentDecline": "If you say no, Usisa checks everything on your phone only. It can't see where links really go, so it may miss some scams.",
+  "consentLater": "You can change this later in Settings.",
+  "consentAllow": "Yes, check online",
+  "consentDeny": "No, phone only",
   "historySavedOnPhone": "Saved only on this phone",
   "historySaveSwitch": "Save my checks",
   "historySaveNote": "Turning this off also clears your History.",
@@ -52,7 +61,5 @@
   "fromYourTexts": "From your texts",
   "checkedOnDate": "Checked on {date}",
   "@checkedOnDate": {"description": "Label on a reopened History entry; date is the date and time of the Check.", "placeholders": {"date": {"type": "String"}}},
-  "checkAgain": "Check again",
-  "reallyGoesTo": "Really goes to {destination}",
-  "@reallyGoesTo": {"description": "The Real destination of a link after redirects.", "placeholders": {"destination": {"type": "String"}}}
+  "checkAgain": "Check again"
 }

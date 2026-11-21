@@ -11,6 +11,9 @@ class SettingsStore extends ChangeNotifier {
   bool saveHistory = true;
   bool restoreDraft = false;
   bool onlineLinkChecks = false;
+
+  /// Whether the first-use consent for online checks got an answer (yes or no).
+  bool onlineConsentAsked = false;
   bool aiScanning = true;
   bool onboarded = false;
   Future<void> _tail = Future.value();
@@ -35,6 +38,7 @@ class SettingsStore extends ChangeNotifier {
     restoreDraft = value['restoreDraft'] == true;
     aiScanning = value['aiScanning'] != false;
     onboarded = value['onboarded'] == true;
+    onlineConsentAsked = value['onlineConsentAsked'] == true;
     onlineLinkChecks =
         value['onlineLinkChecks'] == true && value['onlineDisclosure'] == 2;
   }
@@ -46,6 +50,7 @@ class SettingsStore extends ChangeNotifier {
     bool? onlineLinkChecks,
     bool? aiScanning,
     bool? onboarded,
+    bool? onlineConsentAsked,
   }) {
     final work = _tail.then((_) async {
       final value = {
@@ -56,6 +61,7 @@ class SettingsStore extends ChangeNotifier {
         'aiScanning': aiScanning ?? this.aiScanning,
         'onlineDisclosure': 2,
         'onboarded': onboarded ?? this.onboarded,
+        'onlineConsentAsked': onlineConsentAsked ?? this.onlineConsentAsked,
       };
       final oldLanguage = this.language;
       final oldAiScanning = this.aiScanning;
@@ -76,6 +82,7 @@ class SettingsStore extends ChangeNotifier {
       this.onlineLinkChecks = value['onlineLinkChecks'] as bool;
       this.aiScanning = value['aiScanning'] as bool;
       this.onboarded = value['onboarded'] as bool;
+      this.onlineConsentAsked = value['onlineConsentAsked'] as bool;
       _changed();
     });
     _tail = work.then((_) {}, onError: (Object _, StackTrace _) {});

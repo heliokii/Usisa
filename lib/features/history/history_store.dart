@@ -62,9 +62,7 @@ class HistoryEntry {
     'verdict': result.verdict.name,
     'reasons': result.reasons,
     'checkedOnPhone': result.checkedOnPhone,
-    'links': [
-      for (final l in result.links) {'link': l.link, 'status': l.status.name, 'destination': ?l.destination},
-    ],
+    'destinations': result.destinations,
   };
 
   factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
@@ -77,14 +75,7 @@ class HistoryEntry {
       verdict: Verdict.values.byName(json['verdict'] as String),
       reasons: List<String>.from(json['reasons'] as List),
       checkedOnPhone: json['checkedOnPhone'] == true,
-      links: [
-        for (final l in (json['links'] as List).cast<Map<String, dynamic>>())
-          LinkCheck(
-            l['link'] as String,
-            LinkStatus.values.byName(l['status'] as String),
-            destination: l['destination'] as String?,
-          ),
-      ],
+      destinations: List<String>.from(json['destinations'] as List),
     ),
   );
 }

@@ -34,6 +34,14 @@
   "checkedOnPhone": "Sinuri sa iyong phone",
   "youChecked": "Ang sinuri mo",
   "reason": "{code, select, no_signs{Wala kaming nakitang babala} otp_with_link{Humihingi ito ng OTP o password mo at may kasamang link} lookalike_domain{Nagpapanggap ang link na website ng kilalang brand} prize_claim{Sinasabi nitong nanalo ka ng premyong kailangan mong i-claim} urgency{Minamadali ka nitong kumilos} gambling_ad{Isa itong hindi hinihinging patalastas ng sugal} flagged_link{Nakalista sa Google na hindi ligtas ang link na ito} shortener_blocked{Hinarang na ng link shortener ang link na ito} opens_app{Nagbubukas ng app ang link sa halip na website} unresolved_link{Hindi namin makita kung saan papunta ang link} credential_request{Humihingi ito ng password, PIN o code} payment_request{Pinapabayad o pinapapadala ka nito ng pera} impersonation{Maaaring nagpapanggap ito bilang ibang tao} prize{Nangangako ito ng premyo} suspicious_link{Kahina-hinala ang link} other{May iba pa kaming nakitang babala}}",
+  "linkHint": "I-paste dito ang link",
+  "reallyGoesTo": "Talagang pupunta sa {destination}",
+  "consentTitle": "Suriin online ang mga link?",
+  "consentBody": "Para makita kung saan talaga pupunta ang link at kung tinatawag itong delikado ng Google, ipapadala ng Usisa ang link sa serbisyo nitong pansuri. Kung gagamit ka ng AI scan, ipapadala rin ang text ng mensahe sa isang AI service.",
+  "consentDecline": "Kung hindi, sa phone mo lang susuriin ng Usisa ang lahat. Hindi nito makikita kung saan talaga pupunta ang mga link, kaya baka may scam itong hindi mahuli.",
+  "consentLater": "Puwede mo itong baguhin mamaya sa Settings.",
+  "consentAllow": "Oo, suriin online",
+  "consentDeny": "Hindi, sa phone lang",
   "historySavedOnPhone": "Sa phone na ito lang naka-save",
   "historySaveSwitch": "I-save ang mga check ko",
   "historySaveNote": "Kapag pinatay ito, mabubura rin ang History mo.",
@@ -46,6 +54,5 @@
   "cancel": "Kanselahin",
   "fromYourTexts": "Mula sa iyong mga text",
   "checkedOnDate": "Sinuri noong {date}",
-  "checkAgain": "Suriin muli",
-  "reallyGoesTo": "Talagang pupunta sa {destination}"
+  "checkAgain": "Suriin muli"
 }

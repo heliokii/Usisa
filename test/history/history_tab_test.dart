@@ -18,7 +18,7 @@ Future<CheckResult> fakeCheck(CheckInput input) async {
     verdict: checks == 1 ? Verdict.beCareful : Verdict.dangerous,
     reasons: const ['urgency', 'unresolved_link'],
     checkedOnPhone: false,
-    links: const [LinkCheck('bit.ly/promo', LinkStatus.clean, destination: 'shop.example.ph/sale')],
+    destinations: const ['shop.example.ph/sale'],
   );
 }
 

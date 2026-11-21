@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import 'app/theme.dart';
 import 'features/check/check.dart';
+import 'features/check/consent_screen.dart';
+import 'features/check/gateway_link_checker.dart';
 import 'features/check/home_screen.dart';
 import 'features/check/paste_screen.dart';
 import 'features/check/screenshot_screen.dart';
@@ -13,12 +16,15 @@ import 'features/settings/settings_store.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
-  const UsisaApp({super.key, this.storage, this.runCheck, this.readScreenshot});
+  const UsisaApp({super.key, this.storage, this.runCheck, this.readScreenshot, this.gatewayClient});
 
   final PrivateStorage? storage;
 
-  /// Runs a Check; widget tests pass a fake. Phone-only until consent and the online clients are wired (#30, #33).
+  /// Runs a Check; widget tests pass a fake. Without one, the real pipeline runs behind the online consent.
   final RunCheck? runCheck;
+
+  /// HTTP client for the gateway; widget tests pass a fake.
+  final http.Client? gatewayClient;
 
   /// Picks a picture and reads its text; widget tests pass a fake.
   final ScreenshotReader? readScreenshot;
@@ -30,6 +36,8 @@ class UsisaApp extends StatefulWidget {
 class _UsisaAppState extends State<UsisaApp> {
   late final SettingsStore settings = SettingsStore(widget.storage ?? MemoryStorage());
   late final HistoryStore history = HistoryStore(settings.storage);
+  late final http.Client _gateway = widget.gatewayClient ?? http.Client();
+  final _navigator = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -39,6 +47,8 @@ class _UsisaAppState extends State<UsisaApp> {
         .load()
         .catchError((_) {})
         .then((_) {
+          // Warm a sleeping gateway once per open, only for people who allowed online checks.
+          if (settings.onlineLinkChecks) warmUpGateway(_gateway, gatewayBase);
           history.enabled = settings.saveHistory;
           return history.load();
         })
@@ -52,7 +62,23 @@ class _UsisaAppState extends State<UsisaApp> {
   void dispose() {
     settings.dispose();
     history.dispose();
+    if (widget.gatewayClient == null) _gateway.close();
     super.dispose();
+  }
+
+  /// Asks for online consent the first time a Check would go online, then runs the pipeline.
+  Future<CheckResult> _runCheck(CheckInput input) async {
+    if (!settings.onlineConsentAsked && needsOnline(input)) {
+      final allow = await _navigator.currentState!.push(MaterialPageRoute<bool>(builder: (_) => const ConsentScreen()));
+      // Back leaves it unanswered: this Check stays on the phone and the question comes back next time.
+      if (allow != null) {
+        try {
+          await settings.update(onlineConsentAsked: true, onlineLinkChecks: allow);
+        } catch (_) {}
+      }
+    }
+    final online = settings.onlineLinkChecks;
+    return CheckPipeline(linkChecker: online ? gatewayLinkChecker(_gateway, gatewayBase) : null).run(input);
   }
 
   @override
@@ -61,13 +87,14 @@ class _UsisaAppState extends State<UsisaApp> {
     builder: (context, _) => MaterialApp(
       title: 'Usisa',
       debugShowCheckedModeBanner: false,
+      navigatorKey: _navigator,
       theme: buildUsisaTheme(),
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: _Shell(
         // Every Check from every screen is saved to History here.
-        runCheck: history.recording(widget.runCheck ?? const CheckPipeline().run),
+        runCheck: history.recording(widget.runCheck ?? _runCheck),
         history: history,
         settings: settings,
         readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
@@ -93,8 +120,17 @@ class _ShellState extends State<_Shell> {
   bool _smsOn = false;
 
   void _startCheck(CheckKind kind) {
-    if (kind == CheckKind.message) {
-      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PasteScreen(runCheck: widget.runCheck)));
+    if (kind == CheckKind.message || kind == CheckKind.link) {
+      final link = kind == CheckKind.link;
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PasteScreen(
+            runCheck: widget.runCheck,
+            source: link ? CheckSource.link : CheckSource.message,
+            title: link ? AppLocalizations.of(context).tileLinkTitle : null,
+          ),
+        ),
+      );
       return;
     }
     if (kind == CheckKind.screenshot) {

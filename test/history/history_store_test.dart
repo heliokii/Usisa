@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/features/check/check.dart';
 import 'package:usisa/features/history/history_store.dart';
 
-HistoryEntry entry(String id, DateTime at, {String text = 'synthetic', List<LinkCheck> links = const []}) => HistoryEntry(
+HistoryEntry entry(String id, DateTime at, {String text = 'synthetic'}) => HistoryEntry(
   id: id,
   checkedAt: at,
   source: CheckSource.message,
@@ -10,8 +10,7 @@ HistoryEntry entry(String id, DateTime at, {String text = 'synthetic', List<Link
     text: text,
     verdict: Verdict.beCareful,
     reasons: const ['urgency'],
-    checkedOnPhone: links.isEmpty,
-    links: links,
+    checkedOnPhone: true,
   ),
 );
 
@@ -44,7 +43,7 @@ void main() {
           verdict: Verdict.dangerous,
           reasons: ['flagged_link', 'urgency'],
           checkedOnPhone: false,
-          links: [LinkCheck('bit.ly/x', LinkStatus.flagged, destination: 'https://bad.example/claim')],
+          destinations: ['https://bad.example/claim'],
         ),
       ),
       expectedGeneration: 0,
@@ -59,9 +58,7 @@ void main() {
     expect(saved.result.verdict, Verdict.dangerous);
     expect(saved.result.reasons, ['flagged_link', 'urgency']);
     expect(saved.result.checkedOnPhone, isFalse);
-    expect(saved.result.links.single.link, 'bit.ly/x');
-    expect(saved.result.links.single.status, LinkStatus.flagged);
-    expect(saved.result.links.single.destination, 'https://bad.example/claim');
+    expect(saved.result.destinations, ['https://bad.example/claim']);
   });
   test('recording wraps a Check so each finished result is saved', () async {
     final now = DateTime.utc(2026, 11, 10);

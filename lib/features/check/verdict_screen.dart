@@ -141,6 +141,10 @@ class VerdictScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      for (final destination in result.destinations) ...[
+                        const SizedBox(height: 16),
+                        Text(l.reallyGoesTo(destination), style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
+                      ],
                       const SizedBox(height: 24),
                       EnterMotion(
                         index: 3,
@@ -150,12 +154,6 @@ class VerdictScreen extends StatelessWidget {
                             Text(l.youChecked, style: tt.titleMedium?.copyWith(color: UsisaColors.inkMuted)),
                             const SizedBox(height: 4),
                             Text(result.text, style: tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted)),
-                            for (final link in result.links)
-                              if (link.destination != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(l.reallyGoesTo(link.destination!), style: tt.bodyLarge),
-                                ),
                           ],
                         ),
                       ),

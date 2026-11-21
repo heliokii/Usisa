@@ -166,6 +166,34 @@ class AppLocalizationsFil extends AppLocalizations {
   }
 
   @override
+  String get linkHint => 'I-paste dito ang link';
+
+  @override
+  String reallyGoesTo(String destination) {
+    return 'Talagang pupunta sa $destination';
+  }
+
+  @override
+  String get consentTitle => 'Suriin online ang mga link?';
+
+  @override
+  String get consentBody =>
+      'Para makita kung saan talaga pupunta ang link at kung tinatawag itong delikado ng Google, ipapadala ng Usisa ang link sa serbisyo nitong pansuri. Kung gagamit ka ng AI scan, ipapadala rin ang text ng mensahe sa isang AI service.';
+
+  @override
+  String get consentDecline =>
+      'Kung hindi, sa phone mo lang susuriin ng Usisa ang lahat. Hindi nito makikita kung saan talaga pupunta ang mga link, kaya baka may scam itong hindi mahuli.';
+
+  @override
+  String get consentLater => 'Puwede mo itong baguhin mamaya sa Settings.';
+
+  @override
+  String get consentAllow => 'Oo, suriin online';
+
+  @override
+  String get consentDeny => 'Hindi, sa phone lang';
+
+  @override
   String get historySavedOnPhone => 'Sa phone na ito lang naka-save';
 
   @override
@@ -207,9 +235,4 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get checkAgain => 'Suriin muli';
-
-  @override
-  String reallyGoesTo(String destination) {
-    return 'Talagang pupunta sa $destination';
-  }
 }
