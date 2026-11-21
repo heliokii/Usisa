@@ -110,6 +110,18 @@ void main() {
       );
     },
   );
+  test('a harmless family text completes as low risk so it is only counted', () async {
+    Map<String, dynamic>? completion;
+    messenger.setMockMethodCallHandler(worker, (call) async {
+      if (call.method == 'takeEvent') {
+        return {'id': 'family', 'body': 'Hi Ma, pa-send ng pera pang-load mamaya. Salamat!', 'generation': 1};
+      }
+      completion = Map<String, dynamic>.from(call.arguments as Map);
+      return true;
+    });
+    await runSmsBackground(channel: worker);
+    expect(completion?['risk'], 'low');
+  });
   test(
     'unsupported SMS content completes as an error, never low risk',
     () async {

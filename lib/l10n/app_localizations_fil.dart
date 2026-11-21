@@ -67,6 +67,17 @@ class AppLocalizationsFil extends AppLocalizations {
   String get smsCardOn => 'Susuriin ang mga bagong text';
 
   @override
+  String smsCardChecked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count text ang nasuri ngayong araw',
+      one: '1 text ang nasuri ngayong araw',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get smsCardOff => 'Hindi sinusuri ang mga text';
 
   @override

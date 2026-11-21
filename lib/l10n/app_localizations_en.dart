@@ -67,6 +67,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get smsCardOn => 'New texts will be checked';
 
   @override
+  String smsCardChecked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count texts checked today',
+      one: '1 text checked today',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get smsCardOff => 'Texts are not being checked';
 
   @override

@@ -11,7 +11,7 @@ Usisa is a Flutter Android app that helps people in the Philippines review suspi
 - Optional saved history and drafts, stored locally using encrypted storage.
 - New app shell (rebuild in progress): Check home with four tiles and the Auto SMS protection card; History, Learn and Settings are placeholders for now.
 - English and Filipino interface localization.
-- Kotlin SMS receiver code is kept but switched off in the single build until it is wired in (ticket #40).
+- Incoming SMS check: the single build declares `RECEIVE_SMS`; with the Auto SMS protection switch on, each text (multipart texts joined) is checked in the background by the same Dart phone check the app uses. Texts under 24 hours old are still checked after a delay. Harmless texts only add to the "N texts checked today" count on the home card and store no content.
 
 ## What is complete and checked
 
@@ -21,7 +21,7 @@ Those results predate recent external edits to the generated localization files 
 
 ## Unfinished or not verified
 
-- SMS receiving and notification flows are switched off (`SMS_ENABLED=false`, no receiver in the manifest) and unverified.
+- The SMS flow has unit tests (Kotlin `SmsPolicyTest`, Dart contract and home card tests); the end-to-end path on an emulator or phone still needs the manual check below. OEM battery managers (Xiaomi, Oppo, Vivo, Samsung) can stop it on real phones.
 - The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
 - Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file they fall back to debug signing.
 - Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
@@ -97,6 +97,15 @@ A flagged hop wins over an unfinished expansion. Anything other than `noMatch` m
 ```sh
 flutter analyze --no-pub
 flutter test --no-pub
+cd android && ./gradlew :app:testDebugUnitTest          # Kotlin unit tests (SmsPolicyTest)
+cd android && ./gradlew :app:connectedDebugAndroidTest  # instrumentation tests, needs a device/emulator
 ```
+
+### Manual SMS check (emulator)
+
+1. `flutter run` on an emulator, then turn on **Auto SMS protection** on the home card and allow SMS.
+2. Send a harmless text: `adb emu sms send 09171234567 "Hi Ma, uuwi ako mamaya"`. Within a few seconds the card changes from "0 texts checked today" to "1 text checked today". Nothing is saved for it.
+3. Send a scam text: `adb emu sms send 09171234567 "Your GCash account is locked. Verify at http://gcash-verify.example now"`. The count goes up again and, with notifications allowed, a review notification appears.
+4. If nothing changes, watch `adb logcat -s WM-WorkerWrapper:I flutter:I`.
 
 The recorded check described above did not exercise SMS flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.

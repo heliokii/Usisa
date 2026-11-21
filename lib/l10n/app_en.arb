@@ -20,6 +20,8 @@
   "tileAiSubtitle": "Ask AI to look closely",
   "smsCardTitle": "Auto SMS protection",
   "smsCardOn": "New texts will be checked",
+  "smsCardChecked": "{count, plural, =1{1 text checked today} other{{count} texts checked today}}",
+  "@smsCardChecked": {"placeholders": {"count": {"type": "int"}}},
   "smsCardOff": "Texts are not being checked",
   "comingSoon": "Coming soon",
   "aiFindingTitle": "{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}",

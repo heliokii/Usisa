@@ -212,6 +212,12 @@ abstract class AppLocalizations {
   /// **'New texts will be checked'**
   String get smsCardOn;
 
+  /// No description provided for @smsCardChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 text checked today} other{{count} texts checked today}}'**
+  String smsCardChecked(int count);
+
   /// No description provided for @smsCardOff.
   ///
   /// In en, this message translates to:
