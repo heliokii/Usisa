@@ -15,11 +15,15 @@ class ScreenshotScreen extends StatefulWidget {
     super.key,
     required this.readScreenshot,
     required this.runCheck,
+    this.readShared,
     this.aiScan = false,
     this.title,
   });
   final ScreenshotReader readScreenshot;
   final RunCheck runCheck;
+
+  /// Reads a picture shared into Usisa straight away; the Check itself still waits for a tap.
+  final ScreenshotReader? readShared;
 
   /// Runs the Check as an AI scan.
   final bool aiScan;
@@ -33,14 +37,24 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
   bool _busy = false;
   bool _failed = false;
 
-  Future<void> _choose() async {
+  @override
+  void initState() {
+    super.initState();
+    final shared = widget.readShared;
+    if (shared == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _choose(shared);
+    });
+  }
+
+  Future<void> _choose(ScreenshotReader read) async {
     setState(() {
       _busy = true;
       _failed = false;
     });
     String? text;
     try {
-      text = await widget.readScreenshot();
+      text = await read();
     } catch (_) {
       text = '';
     }
@@ -88,7 +102,7 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
             const SizedBox(height: 20),
             PressScale(
               child: FilledButton(
-                onPressed: _busy ? null : _choose,
+                onPressed: _busy ? null : () => _choose(widget.readScreenshot),
                 style: FilledButton.styleFrom(
                   backgroundColor: UsisaColors.primary,
                   minimumSize: const Size.fromHeight(56),
