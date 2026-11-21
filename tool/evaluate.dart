@@ -1,93 +1,40 @@
-import 'dart:convert';
-import 'dart:io';
-
+// Quality bar evaluation (#26). Runs under `flutter test` because the Check pipeline imports Flutter packages.
+//
+// Phone only means what the app does with online checks off: no link checker and no AI, so a message whose link the
+// phone can't judge gets Couldn't check. Couldn't check is never counted as an alarm on harmless messages nor as a
+// caught scam or gambling ad; the report lists it separately per label, as the spec's Quality bar says.
+//
+// Phone only (every change; fails when a phone-alone target is missed on the sealed split):
+//   flutter test --no-pub tool/evaluate.dart
+// Combined, with the online link check and AI (by hand before a release and after any prompt change):
+//   flutter test --no-pub tool/evaluate.dart --dart-define=USISA_EVAL_AI=true --dart-define=USISA_GATEWAY_URL=https://usisa-gateway.onrender.com
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:usisa/features/check/check.dart';
+import 'package:usisa/features/check/gateway_ai_checker.dart';
+import 'package:usisa/features/check/gateway_link_checker.dart';
 
-List<int> counts(Iterable<(bool, bool)> rows) {
-  final values = [0, 0, 0, 0]; // TP, FP, FN, TN
-  for (final row in rows) {
-    values[row.$1
-        ? row.$2
-              ? 0
-              : 2
-        : row.$2
-        ? 1
-        : 3]++;
-  }
-  return values;
-}
+import 'evaluation.dart';
 
-String percent(int numerator, int denominator) => denominator == 0
-    ? 'n/a'
-    : '${(100 * numerator / denominator).toStringAsFixed(1)}%';
+const combined = bool.fromEnvironment('USISA_EVAL_AI');
 
 void main() {
-  if (counts([(true, true), (false, true), (true, false), (false, false)])
-          .join(',') !=
-      '1,1,1,1') {
-    throw StateError('Metric self-check failed');
-  }
-  final fixtures = (jsonDecode(
-    File('test/fixtures/evaluation_messages.json').readAsStringSync(),
-  ) as List).cast<Map<String, dynamic>>();
-  final results = <(Map<String, dynamic>, Verdict)>[];
-  final ids = <String>{};
-  for (final row in fixtures) {
-    if (!ids.add(row['id'] as String) ||
-        (row['scam'] != null && row['scam'] is! bool)) {
-      throw FormatException('Invalid evaluation fixture');
-    }
-    results.add((row, phoneCheck(row['text'] as String).verdict));
-  }
-  final output = StringBuffer('''# Local rules evaluation
+  test(combined ? 'combined evaluation (phone + link check + AI)' : 'phone-only evaluation', () async {
+    final client = http.Client();
+    final pipeline = combined
+        ? CheckPipeline(linkChecker: gatewayLinkChecker(client, gatewayBase), aiChecker: gatewayAiChecker(client, gatewayBase, language: () => 'en'))
+        : const CheckPipeline();
+    final development = await evaluate(loadSplit(sealed: false), pipeline.run, aiScan: combined);
+    final sealed = await evaluate(loadSplit(sealed: true), pipeline.run, aiScan: combined);
+    client.close();
 
-The rewritten phone check (#25). These 36 synthetic, manually labeled examples were written after the development tests and were not used to tune rules. This is a small diagnostic set authored by the implementer, not an independently annotated corpus or a real-world accuracy estimate. A Be careful or Dangerous verdict counts as an alert. Four ambiguous examples are excluded from binary metrics.
-
-| Slice | N | TP | FP | FN | TN | Precision | Recall | False positive rate |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-''');
-  for (final slice in [
-    'All labeled',
-    ...results
-        .map((r) => r.$1['language'] as String)
-        .where((l) => l != 'Ambiguous')
-        .toSet(),
-  ]) {
-    final rows = results
-        .where(
-          (r) =>
-              r.$1['scam'] != null &&
-              (slice == 'All labeled' || r.$1['language'] == slice),
-        )
-        .toList();
-    final c = counts(
-      rows.map((r) => (r.$1['scam'] as bool, r.$2 != Verdict.looksSafe)),
-    );
-    output.writeln(
-      '| $slice | ${rows.length} | ${c.join(' | ')} | ${percent(c[0], c[0] + c[1])} | ${percent(c[0], c[0] + c[2])} | ${percent(c[1], c[1] + c[3])} |',
-    );
-  }
-  output.writeln(
-    '\n## Individual outcomes\n\n| ID | Expected | Observed | Category |\n|---|---|---|---|',
-  );
-  for (final row in results) {
-    output.writeln(
-      '| ${row.$1['id']} | ${row.$1['scam'] == null
-          ? 'Ambiguous'
-          : row.$1['scam'] == true
-          ? 'Scam'
-          : 'Benign'} | ${row.$2.name} | ${row.$1['category']} |',
-    );
-  }
-  output.writeln('''
-## Interpretation and release gates
-
-Paraphrased requests and obfuscated characters can evade rules. Ordinary payment requests or urgent notices may raise caution despite being legitimate. Looks safe means no configured warning was found, never a verified sender or safe destination. This report does not evaluate live URL reputation or AI.
-
-Do not advertise a detection percentage or enable unrestricted monitoring from this set. Before public release, obtain an independently labeled PH corpus, agree deployment thresholds, review Filipino copy with a speaker, and measure on physical Android devices. OCR transcription and URL recovery need separate image fixtures; the app requires text review before scanning. The optional AI plan should evaluate contextual misses against the same frozen examples without replacing local checks.
-
-Reproduce: `dart run tool/evaluate.dart`. No fixture URL is fetched.
-''');
-  File('docs/evaluation.md').writeAsStringSync(output.toString());
-  stdout.write(output.toString());
+    final mode = combined ? 'combined' : 'phone only';
+    // ignore: avoid_print
+    print([
+      '# Usisa Quality bar evaluation, $mode',
+      development.format('Development split (70%, tune here)', combined: combined),
+      sealed.format('Sealed split (30%, release targets)', combined: combined),
+    ].join('\n\n'));
+    expect(sealed.misses(combined: combined), isEmpty, reason: 'A missed target on the sealed split blocks the release.');
+  }, timeout: const Timeout(Duration(minutes: 60)));
 }
