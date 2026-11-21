@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/features/check/check.dart';
 
 const harmless = 'Hi Ma, nakauwi na ako. Ingat po kayo!';
-const harmlessWithLink = 'Sale ngayon sa shopee.ph/sale, tingnan mo';
+const harmlessWithLink = 'Sale ngayon sa tindahan.ph/sale, tingnan mo';
 const otpWithLink = 'Your account is on hold. Send your OTP at bit.ly/verify-now';
 const lookalike = 'Update your details at gcash-verify-ph.xyz';
 
@@ -407,6 +407,88 @@ void main() {
       final r = await check('Urgent po! Your BDO statement is ready, tawagan mo ako agad');
       expect(r.verdict, Verdict.looksSafe);
       expect(r.reasons, containsAll(['urgency', 'brand_mention']));
+    });
+
+    test('an account threat with a link is Dangerous', () async {
+      for (final text in [
+        'Your e-wallet will be deactivated today. Verify your account here: wallet-check.top/v',
+        'Ang iyong account ay suspendido. I-update agad sa acct-help.icu',
+        'Your parcel cannot be delivered. Please confirm your address at parcel-ph.vip/x',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, Verdict.dangerous, reason: text);
+        expect(r.reasons, contains('account_threat'), reason: text);
+      }
+    });
+
+    test('look-alikes of couriers, telcos, utilities and agencies, and bank names in link paths, are Dangerous', () async {
+      for (final text in [
+        'Your points expire tonight, convert at meralco-points.click',
+        'Pay your fine at lto-gov.top',
+        'Track it here: jnt-delivery.shop',
+        'Your account needs review: tinyurl.com/OnlineGCashVerify',
+      ]) {
+        expect((await check(text)).verdict, Verdict.dangerous, reason: text);
+      }
+    });
+
+    test('an impersonated relative or a wrong-send refund asking for money is Dangerous', () async {
+      for (final text in [
+        'Ma, ako to, bagong number ko. Pa-send ng 2,000 sa GCash na ito, emergency.',
+        'Nagkamali ako ng send ng P1,000 sa account mo. Pakibalik naman po.',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, Verdict.dangerous, reason: text);
+        expect(r.reasons, contains('impersonation'), reason: text);
+      }
+      expect((await check('Ma, bagong number ko ito. Tawag ako mamaya.')).verdict, Verdict.looksSafe);
+    });
+
+    test('easy money and contact-a-stranger hooks are Be careful, Dangerous with a link or a fee', () async {
+      final job = await check('Part-time job, daily salary 2000-5000, kahit nasa bahay lang!');
+      expect(job.verdict, Verdict.beCareful);
+      expect(job.reasons, contains('easy_money'));
+      expect((await check('Earn 800 per day watching videos: gain.bid/x')).verdict, Verdict.dangerous);
+      expect((await check('Online seller job! Pay a P500 registration fee to start')).verdict, Verdict.dangerous);
+      final stranger = await check('I have an urgent matter for you, contact me by email: someone@gmail.com');
+      expect(stranger.verdict, Verdict.dangerous);
+      expect(stranger.reasons, contains('private_contact'));
+    });
+
+    test('a fee for a free gift or a payment outside the shop app is Dangerous', () async {
+      expect((await check('Napili ka para sa libreng tablet! Magbayad lang ng P199 shipping fee.')).verdict, Verdict.dangerous);
+      expect((await check('Lazada seller ako. Bayad ka na lang sa personal account ko.')).verdict, Verdict.dangerous);
+      expect((await check('Checkout in the app only. No payment outside the app.')).verdict, Verdict.looksSafe);
+    });
+
+    test('more gambling ads are Be careful; lotto results and app raffles are not', () async {
+      for (final text in [
+        '100% bonus sa unang deposito! lucky88.xyz',
+        'Spin the lucky wheel and win up to 50,000 daily!',
+        'Gawing 30k ang 20 pesos mo! Maglaro na sa winbig.site',
+      ]) {
+        expect((await check(text)).verdict, Verdict.beCareful, reason: text);
+      }
+      for (final text in [
+        'You could win P5,000! Log in to the app to earn a raffle entry.',
+        'Walang nanalo ng jackpot sa Grand Lotto ngayong gabi.',
+      ]) {
+        expect((await check(text)).verdict, Verdict.looksSafe, reason: text);
+      }
+    });
+
+    test('a winner hook asking for your details or fee is Dangerous, a pickup at the office is not', () async {
+      expect((await check('Your number won P500,000! Send your name and address to claim.')).verdict, Verdict.dangerous);
+      expect((await check('Nanalo ka sa raffle! Kunin mo yung premyo sa admin office bukas.')).verdict, Verdict.looksSafe);
+    });
+
+    test('a scam warning that mentions an OTP is not an alarm', () async {
+      final r = await check('Babala: may nagpapanggap na bangko na humihingi ng OTP. Ito ay scam, huwag sumunod.');
+      expect(r.verdict, Verdict.looksSafe);
+    });
+
+    test('a relative asking to pay a bill first stays Looks safe', () async {
+      expect((await check('Kuya, paki-bayad muna ng tubig gamit GCash, babayaran kita bukas.')).verdict, Verdict.looksSafe);
     });
 
     test('links are found with schemes, www and known endings, and file names are skipped', () async {
