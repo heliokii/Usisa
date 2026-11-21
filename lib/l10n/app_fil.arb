@@ -41,5 +41,18 @@
   "consentDecline": "Kung hindi, sa phone mo lang susuriin ng Usisa ang lahat. Hindi nito makikita kung saan talaga pupunta ang mga link, kaya baka may scam itong hindi mahuli.",
   "consentLater": "Puwede mo itong baguhin mamaya sa Settings.",
   "consentAllow": "Oo, suriin online",
-  "consentDeny": "Hindi, sa phone lang"
+  "consentDeny": "Hindi, sa phone lang",
+  "historySavedOnPhone": "Sa phone na ito lang naka-save",
+  "historySaveSwitch": "I-save ang mga check ko",
+  "historySaveNote": "Kapag pinatay ito, mabubura rin ang History mo.",
+  "historyEmpty": "Wala pang naka-save na check.",
+  "historyOff": "Naka-off ang pag-save.",
+  "historyClearAll": "Burahin lahat",
+  "historyClearTitle": "Burahin ang buong History?",
+  "historyClearBody": "Mabubura ang lahat ng naka-save na check sa phone na ito. Hindi na ito maibabalik.",
+  "historyDelete": "Burahin",
+  "cancel": "Kanselahin",
+  "fromYourTexts": "Mula sa iyong mga text",
+  "checkedOnDate": "Sinuri noong {date}",
+  "checkAgain": "Suriin muli"
 }

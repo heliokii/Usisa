@@ -47,5 +47,19 @@
   "consentDecline": "If you say no, Usisa checks everything on your phone only. It can't see where links really go, so it may miss some scams.",
   "consentLater": "You can change this later in Settings.",
   "consentAllow": "Yes, check online",
-  "consentDeny": "No, phone only"
+  "consentDeny": "No, phone only",
+  "historySavedOnPhone": "Saved only on this phone",
+  "historySaveSwitch": "Save my checks",
+  "historySaveNote": "Turning this off also clears your History.",
+  "historyEmpty": "No saved checks yet.",
+  "historyOff": "Saving is off.",
+  "historyClearAll": "Clear all",
+  "historyClearTitle": "Clear all History?",
+  "historyClearBody": "This removes every saved check from this phone. It can't be undone.",
+  "historyDelete": "Delete",
+  "cancel": "Cancel",
+  "fromYourTexts": "From your texts",
+  "checkedOnDate": "Checked on {date}",
+  "@checkedOnDate": {"description": "Label on a reopened History entry; date is the date and time of the Check.", "placeholders": {"date": {"type": "String"}}},
+  "checkAgain": "Check again"
 }

@@ -6,11 +6,11 @@ import 'package:usisa/features/settings/settings_store.dart';
 
 void main() {
   test(
-    'language and AI preference persist; privacy preferences default off',
+    'language and AI preference persist; History on by default, other privacy preferences off',
     () async {
       final storage = MemoryStorage();
       final settings = SettingsStore(storage);
-      expect(settings.saveHistory, isFalse);
+      expect(settings.saveHistory, isTrue);
       expect(settings.restoreDraft, isFalse);
       expect(settings.onlineLinkChecks, isFalse);
       expect(settings.aiScanning, isTrue);
@@ -21,6 +21,27 @@ void main() {
       expect(loaded.aiScanning, isFalse);
     },
   );
+
+  for (final corrupt in ['not json', '[1, 2]', '{"language": 3, "saveHistory": "yes"}']) {
+    test('corrupt settings ($corrupt) fall back to defaults', () async {
+      final storage = MemoryStorage();
+      await storage.write('settings', corrupt);
+      final settings = SettingsStore(storage);
+      await settings.load();
+      expect(settings.language, 'en');
+      expect(settings.saveHistory, isTrue);
+      expect(settings.onlineLinkChecks, isFalse);
+      expect(settings.aiScanning, isTrue);
+    });
+  }
+
+  test('History can be turned off and stays off', () async {
+    final storage = MemoryStorage();
+    await SettingsStore(storage).update(saveHistory: false);
+    final loaded = SettingsStore(storage);
+    await loaded.load();
+    expect(loaded.saveHistory, isFalse);
+  });
 
   test('failed preference persistence keeps the previous setting', () async {
     final settings = SettingsStore(FailingStorage());
