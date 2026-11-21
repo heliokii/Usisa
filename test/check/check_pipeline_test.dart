@@ -260,6 +260,166 @@ void main() {
       final r = await check('Your OTP is 123456. Do not share it with anyone.');
       expect(r.verdict, Verdict.looksSafe);
     });
+
+    test('a genuine bank OTP notice with its official link looks safe', () async {
+      final r = await check(
+        'BDO: Your One-Time PIN is 482913. Never share your OTP with anyone. Report fraud at www.bdo.com.ph',
+      );
+      expect(r.verdict, Verdict.looksSafe);
+      expect(r.reasons, isNot(contains('otp_with_link')));
+    });
+
+    test('a family money request stays Looks safe, with the request as a reason', () async {
+      for (final text in [
+        'Hi Ma, pa-send naman ng pera pang tuition ko. Salamat po!',
+        'Kuya pa load naman 50 sa globe, wala na ako load',
+        'Nay padala po ng 500 sa gcash ko, pamasahe lang',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, Verdict.looksSafe, reason: text);
+        expect(r.reasons, contains('family_money'), reason: text);
+      }
+    });
+
+    test('harmless promos look safe', () async {
+      for (final text in [
+        'Shopee 11.11 Big Sale! Up to 90% off + free shipping vouchers. Shop now at shopee.ph',
+        'GoSURF50: 2GB data: valid for 3 days. Text GO50 to 8080. Promo ends tonight!',
+        'Smart Giga Promo: Register to GIGA99 for 16GB. Limited time only.',
+      ]) {
+        // Links checked clean online, so only the phone check decides.
+        final r = await check(text, linkChecker: links(LinkStatus.clean));
+        expect(r.verdict, Verdict.looksSafe, reason: text);
+        expect(r.reasons, ['harmless_promo'], reason: text);
+      }
+    });
+
+    test('"data:" in a promo is not a link', () async {
+      var called = false;
+      await check('GoSURF50: 2GB data: valid for 3 days.', linkChecker: (found) async {
+        called = true;
+        return [];
+      });
+      expect(called, isFalse);
+    });
+
+    test('a gambling ad is Be careful, with a reason', () async {
+      for (final text in [
+        'Claim the BARAHA B0NUS 888 now! Register at pinas77.life, deposit via gcash',
+        'JILI GAMES LIBRENG 1088P! Sabong at slots, 100% deposit bonus sa unang taya',
+        'FREE 200 credits sa online casino, no deposit needed. Play now!',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, Verdict.beCareful, reason: text);
+        expect(r.reasons, contains('gambling_ad'), reason: text);
+      }
+    });
+
+    test('a locally detected gambling ad is at least Be careful even when the AI says low', () async {
+      final r = await check(
+        'Online casino: 100% deposit bonus, slots and baccarat',
+        aiScan: true,
+        aiChecker: ai(AiLevel.low),
+      );
+      expect(r.verdict, Verdict.beCareful);
+      expect(r.reasons, contains('gambling_ad'));
+    });
+
+    test('a gambling ad asking for an OTP is Dangerous', () async {
+      final noLink = await check('Casino bonus 500! Para ma-claim, i-send ang OTP na natanggap mo');
+      expect(noLink.verdict, Verdict.dangerous);
+      final withLink = await check('Casino bonus 500! Login at win777.xyz and enter your OTP to claim');
+      expect(withLink.verdict, Verdict.dangerous);
+    });
+
+    test('a prize-claim hook is Dangerous', () async {
+      for (final text in [
+        'Congratulations! You have won P25,000 from GCash raffle. Claim at gcash-promo.top',
+        'Nanalo ka ng P10,000! I-claim ang premyo mo, magbayad lang ng processing fee',
+        'You have won the prize 999P to enter ccb8.xyz',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, Verdict.dangerous, reason: text);
+        expect(r.reasons, contains('prize_claim'), reason: text);
+      }
+    });
+
+    test('a plain lotto result looks safe', () async {
+      final r = await check(
+        'PCSO Lotto 6/42 result 11/20/2026: 05-12-19-23-31-40. Jackpot prize P5,940,000.00. No winner.',
+      );
+      expect(r.verdict, Verdict.looksSafe);
+    });
+
+    test('a look-alike brand domain is Dangerous; official subdomains are not', () async {
+      for (final text in [
+        'Your account is on hold, verify at onlinebdo-banking.online',
+        'Visit bdo.com.ph.secure-login.info to keep your account',
+        'Update now: gcash.com-verify.ph',
+      ]) {
+        final r = await check(text);
+        expect(r.verdict, Verdict.dangerous, reason: text);
+        expect(r.reasons, contains('lookalike_domain'), reason: text);
+      }
+      for (final text in [
+        'Log in at online.bdo.com.ph',
+        'See m.gcash.com/help',
+        'Check your contributions at member.sss.gov.ph',
+        'Read the news at classic.com and bpimonitor.org',
+      ]) {
+        final r = await check(text, linkChecker: links(LinkStatus.clean));
+        expect(r.verdict, Verdict.looksSafe, reason: text);
+      }
+    });
+
+    test('a brand name hidden before "@" in a link is a look-alike', () async {
+      final r = await check('BDO: visit https://bdo.com.ph@verification.example to restore access.');
+      expect(r.verdict, Verdict.dangerous);
+      expect(r.reasons, contains('lookalike_domain'));
+    });
+
+    test('a fee to release money is Be careful; with a brand it is Dangerous', () async {
+      final r = await check('Your package is on hold. Pay the release fee to receive it.');
+      expect(r.verdict, Verdict.beCareful);
+      expect(r.reasons, contains('payment_request'));
+      expect((await check('BIR refund ready na! Pay the processing fee para ma-release.')).verdict, Verdict.dangerous);
+    });
+
+    test('an OTP request split across lines is caught', () async {
+      final r = await check('GCash Advisory:\nPlease send\nyour\nOTP\nimmediately to avoid suspension');
+      expect(r.verdict, Verdict.dangerous);
+      expect(r.reasons, contains('credential_request'));
+    });
+
+    test('an OTP request alone is Be careful; with a brand or urgency it is Dangerous', () async {
+      expect((await check('Pakisend po yung OTP na dumating sa phone mo')).verdict, Verdict.beCareful);
+      expect((await check('GCash: Send your OTP now.')).verdict, Verdict.dangerous);
+    });
+
+    test('Unicode tricks do not hide an OTP request with a link', () async {
+      // Zero-width spaces, full-width letters and a Cyrillic "о" in OTP.
+      for (final text in ['Send your O​T​P at bit.ly/x1', 'Send your ＯＴＰ at bit.ly/x1', 'Send your ОTP at bit.ly/x1']) {
+        expect((await check(text)).verdict, Verdict.dangerous, reason: text);
+      }
+    });
+
+    test('weak signs alone never change a plain verdict', () async {
+      final r = await check('Urgent po! Your BDO statement is ready, tawagan mo ako agad');
+      expect(r.verdict, Verdict.looksSafe);
+      expect(r.reasons, containsAll(['urgency', 'brand_mention']));
+    });
+
+    test('links are found with schemes, www and known endings, and file names are skipped', () async {
+      List<String>? seen;
+      await check(
+        'See https://example.org/a, www.foo.net, pay.gcash-help.xyz/login and photo.jpg or notes.txt or ok.po',
+        linkChecker: (found) async {
+          seen = found;
+          return [for (final l in found) LinkCheck(l, LinkStatus.clean)];
+        },
+      );
+      expect(seen, ['https://example.org/a', 'www.foo.net', 'pay.gcash-help.xyz/login']);
+    });
   });
 
   group('labels', () {
