@@ -301,6 +301,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand\'s website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn\'t see where the link goes} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}'**
   String reason(String code);
+
+  /// No description provided for @historySavedOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved only on this phone'**
+  String get historySavedOnPhone;
+
+  /// No description provided for @historySaveSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my checks'**
+  String get historySaveSwitch;
+
+  /// No description provided for @historySaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning this off also clears your History.'**
+  String get historySaveNote;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved checks yet.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving is off.'**
+  String get historyOff;
+
+  /// No description provided for @historyClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get historyClearAll;
+
+  /// No description provided for @historyClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all History?'**
+  String get historyClearTitle;
+
+  /// No description provided for @historyClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every saved check from this phone. It can\'t be undone.'**
+  String get historyClearBody;
+
+  /// No description provided for @historyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get historyDelete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @fromYourTexts.
+  ///
+  /// In en, this message translates to:
+  /// **'From your texts'**
+  String get fromYourTexts;
+
+  /// Label on a reopened History entry; date is the date and time of the Check.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked on {date}'**
+  String checkedOnDate(String date);
+
+  /// No description provided for @checkAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get checkAgain;
+
+  /// The Real destination of a link after redirects.
+  ///
+  /// In en, this message translates to:
+  /// **'Really goes to {destination}'**
+  String reallyGoesTo(String destination);
 }
 
 class _AppLocalizationsDelegate

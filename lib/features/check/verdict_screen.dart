@@ -7,7 +7,7 @@ import '../../l10n/app_localizations.dart';
 import 'check.dart';
 
 /// Colour, tint and icon for each Verdict. Colour is never the only carrier: each also has an icon and a word.
-const _looks = {
+const verdictLooks = {
   Verdict.looksSafe: (UsisaColors.safe, UsisaColors.safeTint, Icons.check_circle_rounded),
   Verdict.beCareful: (UsisaColors.careful, UsisaColors.carefulTint, Icons.error_rounded),
   Verdict.dangerous: (UsisaColors.danger, UsisaColors.dangerTint, Icons.dangerous_rounded),
@@ -16,14 +16,20 @@ const _looks = {
 
 /// Displays a Check result: verdict-coloured header, then a white sheet with the action line and reasons.
 class VerdictScreen extends StatelessWidget {
-  const VerdictScreen({super.key, required this.result});
+  const VerdictScreen({super.key, required this.result, this.checkedAt, this.onCheckAgain});
   final CheckResult result;
+
+  /// Set when reopening a saved History entry: shows "Checked on" with the date and time.
+  final DateTime? checkedAt;
+
+  /// Shown as Check again on a reopened History entry.
+  final VoidCallback? onCheckAgain;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final tt = Theme.of(context).textTheme;
-    final (color, tint, icon) = _looks[result.verdict]!;
+    final (color, tint, icon) = verdictLooks[result.verdict]!;
     final verdict = result.verdict.name;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
@@ -144,9 +150,37 @@ class VerdictScreen extends StatelessWidget {
                             Text(l.youChecked, style: tt.titleMedium?.copyWith(color: UsisaColors.inkMuted)),
                             const SizedBox(height: 4),
                             Text(result.text, style: tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted)),
+                            for (final link in result.links)
+                              if (link.destination != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(l.reallyGoesTo(link.destination!), style: tt.bodyLarge),
+                                ),
                           ],
                         ),
                       ),
+                      if (checkedAt != null) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          l.checkedOnDate(formatCheckedAt(context, checkedAt!)),
+                          style: tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted),
+                        ),
+                      ],
+                      if (onCheckAgain != null) ...[
+                        const SizedBox(height: 12),
+                        PressScale(
+                          child: FilledButton(
+                            onPressed: onCheckAgain,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: UsisaColors.primary,
+                              minimumSize: const Size.fromHeight(56),
+                              shape: const StadiumBorder(),
+                              textStyle: tt.titleMedium,
+                            ),
+                            child: Text(l.checkAgain),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -157,6 +191,12 @@ class VerdictScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Date and time in the app's language, e.g. "Nov 21, 2026, 3:05 PM".
+String formatCheckedAt(BuildContext context, DateTime at) {
+  final m = MaterialLocalizations.of(context);
+  return '${m.formatMediumDate(at)}, ${m.formatTimeOfDay(TimeOfDay.fromDateTime(at))}';
 }
 
 Widget _circle(double size, Color color, {double? top, double? right}) => Positioned(

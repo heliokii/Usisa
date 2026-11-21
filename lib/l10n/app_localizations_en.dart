@@ -161,4 +161,51 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get historySavedOnPhone => 'Saved only on this phone';
+
+  @override
+  String get historySaveSwitch => 'Save my checks';
+
+  @override
+  String get historySaveNote => 'Turning this off also clears your History.';
+
+  @override
+  String get historyEmpty => 'No saved checks yet.';
+
+  @override
+  String get historyOff => 'Saving is off.';
+
+  @override
+  String get historyClearAll => 'Clear all';
+
+  @override
+  String get historyClearTitle => 'Clear all History?';
+
+  @override
+  String get historyClearBody =>
+      'This removes every saved check from this phone. It can\'t be undone.';
+
+  @override
+  String get historyDelete => 'Delete';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get fromYourTexts => 'From your texts';
+
+  @override
+  String checkedOnDate(String date) {
+    return 'Checked on $date';
+  }
+
+  @override
+  String get checkAgain => 'Check again';
+
+  @override
+  String reallyGoesTo(String destination) {
+    return 'Really goes to $destination';
+  }
 }

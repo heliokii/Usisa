@@ -6,6 +6,7 @@ import 'features/check/check.dart';
 import 'features/check/home_screen.dart';
 import 'features/check/paste_screen.dart';
 import 'features/check/screenshot_screen.dart';
+import 'features/history/history_screen.dart';
 import 'features/history/history_store.dart';
 import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_store.dart';
@@ -28,19 +29,29 @@ class UsisaApp extends StatefulWidget {
 
 class _UsisaAppState extends State<UsisaApp> {
   late final SettingsStore settings = SettingsStore(widget.storage ?? MemoryStorage());
+  late final HistoryStore history = HistoryStore(settings.storage);
 
   @override
   void initState() {
     super.initState();
     // Corrupt or unreadable settings keep the defaults rather than blocking the app.
-    settings.load().catchError((_) {}).whenComplete(() {
-      if (mounted) setState(() {});
-    });
+    settings
+        .load()
+        .catchError((_) {})
+        .then((_) {
+          history.enabled = settings.saveHistory;
+          return history.load();
+        })
+        .catchError((_) {})
+        .whenComplete(() {
+          if (mounted) setState(() {});
+        });
   }
 
   @override
   void dispose() {
     settings.dispose();
+    history.dispose();
     super.dispose();
   }
 
@@ -55,7 +66,10 @@ class _UsisaAppState extends State<UsisaApp> {
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: _Shell(
-        runCheck: widget.runCheck ?? const CheckPipeline().run,
+        // Every Check from every screen is saved to History here.
+        runCheck: history.recording(widget.runCheck ?? const CheckPipeline().run),
+        history: history,
+        settings: settings,
         readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
       ),
     ),
@@ -63,8 +77,10 @@ class _UsisaAppState extends State<UsisaApp> {
 }
 
 class _Shell extends StatefulWidget {
-  const _Shell({required this.runCheck, required this.readScreenshot});
+  const _Shell({required this.runCheck, required this.readScreenshot, required this.history, required this.settings});
   final RunCheck runCheck;
+  final HistoryStore history;
+  final SettingsStore settings;
   final ScreenshotReader readScreenshot;
 
   @override
@@ -112,7 +128,7 @@ class _ShellState extends State<_Shell> {
           index: _tab,
           children: [
             HomeScreen(onCheck: _startCheck, smsOn: _smsOn, onSmsChanged: (on) => setState(() => _smsOn = on)),
-            _Placeholder(title: l.navHistory),
+            HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
             _Placeholder(title: l.navLearn),
             _Placeholder(title: l.navSettings),
           ],

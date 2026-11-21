@@ -47,7 +47,7 @@ Future<void> backToHome(WidgetTester tester) async {
 }
 
 Future<void> openHistory(WidgetTester tester) async {
-  await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('History')));
+  await tester.tap(find.byType(NavigationDestination).at(1));
   await settle(tester);
 }
 
@@ -186,6 +186,9 @@ void main() {
     await startApp(tester, storage: storage);
     tester.view.physicalSize = const Size(320, 640);
     await openHistory(tester);
+    expect(tester.takeException(), isNull);
+    expect(find.text('Sa phone na ito lang naka-save'), findsOneWidget);
+    await tester.dragUntilVisible(find.text('Mula sa iyong mga text'), find.byType(ListView), const Offset(0, -200));
     expect(tester.takeException(), isNull);
   });
 }

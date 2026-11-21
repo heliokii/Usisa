@@ -164,4 +164,52 @@ class AppLocalizationsFil extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get historySavedOnPhone => 'Sa phone na ito lang naka-save';
+
+  @override
+  String get historySaveSwitch => 'I-save ang mga check ko';
+
+  @override
+  String get historySaveNote =>
+      'Kapag pinatay ito, mabubura rin ang History mo.';
+
+  @override
+  String get historyEmpty => 'Wala pang naka-save na check.';
+
+  @override
+  String get historyOff => 'Naka-off ang pag-save.';
+
+  @override
+  String get historyClearAll => 'Burahin lahat';
+
+  @override
+  String get historyClearTitle => 'Burahin ang buong History?';
+
+  @override
+  String get historyClearBody =>
+      'Mabubura ang lahat ng naka-save na check sa phone na ito. Hindi na ito maibabalik.';
+
+  @override
+  String get historyDelete => 'Burahin';
+
+  @override
+  String get cancel => 'Kanselahin';
+
+  @override
+  String get fromYourTexts => 'Mula sa iyong mga text';
+
+  @override
+  String checkedOnDate(String date) {
+    return 'Sinuri noong $date';
+  }
+
+  @override
+  String get checkAgain => 'Suriin muli';
+
+  @override
+  String reallyGoesTo(String destination) {
+    return 'Talagang pupunta sa $destination';
+  }
 }
