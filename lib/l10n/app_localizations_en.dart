@@ -161,4 +161,32 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get linkHint => 'Paste the link here';
+
+  @override
+  String reallyGoesTo(String destination) {
+    return 'Really goes to $destination';
+  }
+
+  @override
+  String get consentTitle => 'Check links online?';
+
+  @override
+  String get consentBody =>
+      'To see where a link really goes and whether Google lists it as unsafe, Usisa sends the link to its checking service. If you use AI scan, the message text is sent to an AI service too.';
+
+  @override
+  String get consentDecline =>
+      'If you say no, Usisa checks everything on your phone only. It can\'t see where links really go, so it may miss some scams.';
+
+  @override
+  String get consentLater => 'You can change this later in Settings.';
+
+  @override
+  String get consentAllow => 'Yes, check online';
+
+  @override
+  String get consentDeny => 'No, phone only';
 }

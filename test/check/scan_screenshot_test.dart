@@ -43,6 +43,10 @@ void main() {
     expect(find.text('Your account is on hold. Send your OTP at bit.ly/verify-now'), findsOneWidget);
 
     await tapCheck(tester);
+    // First Check with a link asks for online consent; stay on the phone.
+    await tester.tap(find.text('No, phone only'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
     expect(find.text('Dangerous'), findsOneWidget);
   });
 

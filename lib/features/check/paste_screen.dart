@@ -55,6 +55,7 @@ class _PasteScreenState extends State<PasteScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final tt = Theme.of(context).textTheme;
+    final link = widget.source == CheckSource.link;
     final field = OutlineInputBorder(
       borderRadius: BorderRadius.circular(UsisaRadius.card),
       borderSide: const BorderSide(color: UsisaColors.hairline, width: 1.5),
@@ -72,11 +73,12 @@ class _PasteScreenState extends State<PasteScreen> {
             if (widget.note != null) ...[Text(widget.note!, style: tt.bodyLarge), const SizedBox(height: 12)],
             TextField(
               controller: _text,
-              minLines: 6,
+              minLines: link ? 2 : 6,
               maxLines: 12,
+              keyboardType: link ? TextInputType.url : null,
               style: tt.bodyLarge,
               decoration: InputDecoration(
-                hintText: l.pasteHint,
+                hintText: link ? l.linkHint : l.pasteHint,
                 filled: true,
                 fillColor: UsisaColors.surface,
                 contentPadding: const EdgeInsets.all(20),

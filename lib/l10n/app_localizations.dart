@@ -301,6 +301,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand\'s website} prize_claim{It says you won a prize you have to claim} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn\'t see where the link goes} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}'**
   String reason(String code);
+
+  /// No description provided for @linkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the link here'**
+  String get linkHint;
+
+  /// The Real destination of a checked link after all redirects.
+  ///
+  /// In en, this message translates to:
+  /// **'Really goes to {destination}'**
+  String reallyGoesTo(String destination);
+
+  /// No description provided for @consentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check links online?'**
+  String get consentTitle;
+
+  /// No description provided for @consentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To see where a link really goes and whether Google lists it as unsafe, Usisa sends the link to its checking service. If you use AI scan, the message text is sent to an AI service too.'**
+  String get consentBody;
+
+  /// No description provided for @consentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'If you say no, Usisa checks everything on your phone only. It can\'t see where links really go, so it may miss some scams.'**
+  String get consentDecline;
+
+  /// No description provided for @consentLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later in Settings.'**
+  String get consentLater;
+
+  /// No description provided for @consentAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, check online'**
+  String get consentAllow;
+
+  /// No description provided for @consentDeny.
+  ///
+  /// In en, this message translates to:
+  /// **'No, phone only'**
+  String get consentDeny;
 }
 
 class _AppLocalizationsDelegate
