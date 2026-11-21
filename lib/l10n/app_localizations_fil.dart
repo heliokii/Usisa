@@ -67,6 +67,17 @@ class AppLocalizationsFil extends AppLocalizations {
   String get smsCardOn => 'Susuriin ang mga bagong text';
 
   @override
+  String smsCardChecked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count text ang nasuri ngayong araw',
+      one: '1 text ang nasuri ngayong araw',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get smsCardOff => 'Hindi sinusuri ang mga text';
 
   @override
@@ -245,6 +256,9 @@ class AppLocalizationsFil extends AppLocalizations {
   String get checkAgain => 'Suriin muli';
 
   @override
+  String get askAiLookCloser => 'Ipasuri nang mas mabuti sa AI';
+
+  @override
   String get aiScanIntro => 'Ano ang gusto mong tingnan ng AI?';
 
   @override
@@ -334,4 +348,100 @@ class AppLocalizationsFil extends AppLocalizations {
   @override
   String get aboutData =>
       'Sa phone na ito lang naka-save ang mga sinuri mo at ang History. Walang ipinapadala kahit saan maliban kung naka-on ang pagsuri online.';
+
+  @override
+  String get learnIntro => 'Kilalanin ang mga daya ng scammer sa Pilipinas.';
+
+  @override
+  String get learnSourcesNote =>
+      'Batay sa pampublikong payo ng BSP, NTC, PNP-ACG, CICC at DICT.';
+
+  @override
+  String get learnGoldenTitle => 'Mga gintong tuntunin';
+
+  @override
+  String get learnGoldenRules =>
+      'Huwag ibigay kaninuman ang OTP, PIN o password mo, kahit sa nagsasabing taga-bangko o taga-gobyerno sila.\nHuwag pindutin ang link sa text na hindi mo inaasahan. Ikaw mismo ang magbukas ng opisyal na app o website.\nTumigil at suriin muna bago magpadala ng pera. Tawagan ang tao o kompanya sa numerong alam mo na.';
+
+  @override
+  String get learnSampleLabel => 'Halimbawang pekeng text';
+
+  @override
+  String get learnRedFlags => 'Mga babala';
+
+  @override
+  String learnMore(String topic) {
+    return 'Alamin pa: $topic';
+  }
+
+  @override
+  String get learnReportTitle => 'Mag-report ng scam';
+
+  @override
+  String get learnReportIntro =>
+      'Kung tinarget ka o nawalan ka ng pera, i-report ito. I-save ang screenshot ng mga mensahe at ang numero ng nagpadala.';
+
+  @override
+  String get learnReportChannels =>
+      'CICC hotline 1326|Libre, 24 oras araw-araw. Ang anti-scam hotline ng gobyerno (CICC at DICT).\neGov PH app|Report > Scam > Text Scam, saka i-upload ang mga screenshot.\nAng bangko o e-wallet mo|Tawagan agad ang opisyal na hotline nito kung may pera o account na nadamay. Kung hindi sila kumilos, magreklamo sa BSP Online Buddy (BOB) sa bsp.gov.ph.\nPNP Anti-Cybercrime Group|I-report ang online fraud sa kahit anong police station o sa acg.pnp.gov.ph.\nNTC|Para sa scam text at problema sa SIM, magreklamo sa NTC sa ntc.gov.ph.';
+
+  @override
+  String learnTopicTitle(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Pekeng text mula sa bangko at e-wallet',
+      'prize': 'Pekeng premyo at raffle',
+      'family': 'Pekeng emergency ng pamilya',
+      'aid': 'Pekeng ayuda ng gobyerno',
+      'parcel': 'Pekeng bayad sa delivery at parcel',
+      'job': 'Pekeng trabaho at online task',
+      'investment': 'Scam sa investment at crypto',
+      'other': 'Patalastas ng online na sugal',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String learnTopicAbout(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Mukhang galing sa bangko mo, GCash o Maya ang text: naka-lock daw ang account mo o kailangang i-verify, at may link. Mukhang totoo ang site pero ninanakaw nito ang password at OTP mo. Hindi kailanman humihingi ang bangko o e-wallet ng OTP, PIN o password sa text, tawag o link. Ikaw mismo ang magbukas ng opisyal na app.',
+      'prize': '\"Nanalo\" ka raw sa raffle na hindi mo sinalihan, kadalasan may pangalan ng mall, TV show o ahensya ng gobyerno. Para makuha ito, kailangan mo munang magbayad ng \"processing fee\" o ibigay ang detalye mo. Hindi pinagbabayad ng totoong promo ang nanalo, at may permit number mula sa DTI ang totoong raffle na puwede mong suriin.',
+      'family': 'May nagpapanggap na anak, apo o kamag-anak mo gamit ang bagong numero, o nagsasabing nurse o pulis sila na tumatawag tungkol sa kanila. May emergency daw, kailangan mong magpadala agad ng pera, at huwag sabihin sa iba. Tawagan muna ang kamag-anak mo sa numerong alam mo na bago magpadala.',
+      'aid': 'Sinasabi ng text na kwalipikado ka sa cash aid mula sa DSWD, SSS o PhilHealth, o sa refund, at kailangan mong mag-register sa link o magbayad. Inaanunsyo ang ayuda sa opisyal na website at page, at hindi nagpapadala ang ahensya ng payout link sa text. Magtanong sa opisyal na page o opisina ng ahensya.',
+      'parcel': 'Sinasabi ng text o tawag na naka-hold ang parcel mo at kailangan mong magbayad ng maliit na fee o i-update ang address mo sa link. May iba na nagsasabing na-hold sa customs ang package na may pangalan mo. Tingnan ang order sa app mismo ng shop, at huwag magbayad sa link na galing sa text.',
+      'job': 'Alok na madaling kita sa bahay sa pag-like ng video, pag-rate ng produkto o paggawa ng \"task\". Maliit at totoo ang unang bayad. Pagkatapos, pinapa-\"deposit\" ka para sa mas malalaking task, at hindi mo na ito mawi-withdraw. Hindi ka pinagbabayad ng totoong employer para magtrabaho.',
+      'investment': 'Pangako ng mabilis at siguradong kita, gaya ng pagdoble ng pera mo sa ilang araw, kadalasan sa crypto, forex o \"paluwagan\". Binabayaran ang mga naunang miyembro gamit ang pera ng mga bago hanggang bumagsak ito. Suriin sa SEC kung puwedeng tumanggap ng investment ang kompanya. Babala ang siguradong malaking kita.',
+      'other': 'Hindi hinihinging text na nag-aalok ng libreng credit o bonus sa online casino, slots o e-sabong. Marami sa mga site na ito ay ilegal at walang lisensya, at kinukuha ang deposito at personal mong impormasyon. Huwag pindutin ang link o mag-register.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String learnTopicSample(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'GCash ALERT: Masususpinde ang account mo ngayong araw. Mag-verify sa gcash-verify-ph.xyz at ilagay ang MPIN at OTP mo para hindi mawala ang balance mo.',
+      'prize': 'CONGRATULATIONS! Nanalo ka ng P50,000 sa Anniversary Raffle! Para makuha ang premyo, magbayad ng P1,500 processing fee sa numerong ito sa loob ng 24 oras.',
+      'family': 'Ma, bagong number ko ito, nawala phone ko. Nasa ospital ako, pa-send ng 5,000 sa GCash na ito ngayon na. Huwag mo munang sabihin kay Papa.',
+      'aid': 'DSWD: Kwalipikado ka sa P8,000 ayuda. Mag-register sa dswd-ayuda-claim.online at magbayad ng P200 para ma-release ang payout mo.',
+      'parcel': 'Naka-hold ang parcel mo dahil kulang ang address. Magbayad ng P35 re-delivery fee sa ph-parcel-track.top o ibabalik ito ngayong araw.',
+      'job': 'Hi! Naghahanap kami ng part-time. Kumita ng P500-P3,000 araw-araw sa pag-like lang ng video. Walang experience na kailangan. Mag-message sa Telegram para magsimula.',
+      'investment': 'Siguradong 30% na kita kada linggo! Mag-invest ng P5,000 ngayon at makakuha ng P20,000 sa isang buwan. Limitado ang slot, mag-imbita ng kaibigan para sa bonus.',
+      'other': 'LIBRENG P888 bonus para sa bagong player! Maglaro ng slots at e-sabong, withdraw kahit kailan. Mag-register na sa lucky888bet.vip',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String learnTopicFlags(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Masususpinde ang account mo ngayong araw|Tinatakot ka para hindi ka makapag-isip\ngcash-verify-ph.xyz|Hindi ito ang totoong website ng GCash (gcash.com)\nilagay ang MPIN at OTP mo|Walang totoong bangko o e-wallet na humihingi nito',
+      'prize': 'Nanalo ka ng P50,000|Hindi ka mananalo sa raffle na hindi mo sinalihan\nmagbayad ng P1,500 processing fee|Hindi pinagbabayad muna ang totoong premyo\nsa loob ng 24 oras|Deadline para madaliin ka',
+      'family': 'bagong number ko ito|Hindi kilalang numero na nagsasabing kapamilya\npa-send ng 5,000 sa GCash na ito ngayon na|Pinipilit kang magpadala agad\nHuwag mo munang sabihin kay Papa|Pinapalihim para hindi mo ito masuri',
+      'aid': 'dswd-ayuda-claim.online|Nagtatapos sa .gov.ph ang website ng gobyerno\nmagbayad ng P200 para ma-release|Libre ang ayuda. Walang dapat maningil para matanggap mo ito',
+      'parcel': 'Magbayad ng P35 re-delivery fee|Maliit na bayad para makuha ang detalye ng card mo\nph-parcel-track.top|Hindi ito totoong website ng courier o shop\nibabalik ito ngayong araw|Deadline para madaliin ka',
+      'job': 'Kumita ng P500-P3,000 araw-araw sa pag-like lang ng video|Sobrang laking bayad sa halos walang trabaho\nMag-message sa Telegram|Inililipat ka sa pribadong chat na mahirap matunton',
+      'investment': 'Siguradong 30% na kita kada linggo|Walang totoong investment na sigurado ang malaking kita\nLimitado ang slot|Minamadali kang sumali bago ka makapag-isip\nmag-imbita ng kaibigan para sa bonus|Senyales ng pyramid scheme ang pagbabayad sa pag-recruit',
+      'other': 'LIBRENG P888 bonus|Libreng credit para akitin kang mag-deposit\nlucky888bet.vip|Hindi kilalang sugalan na maaaring walang lisensya',
+    });
+    return '$_temp0';
+  }
 }

@@ -46,10 +46,34 @@ class _PasteScreenState extends State<PasteScreen> {
   Future<void> _check() async {
     setState(() => _busy = true);
     try {
-      final result = await widget.runCheck(CheckInput(_text.text, source: widget.source, aiScan: widget.aiScan));
+      final text = _text.text;
+      final result = await widget.runCheck(CheckInput(text, source: widget.source, aiScan: widget.aiScan));
       if (!mounted) return;
+      // A second opinion only for an unsure plain-tile verdict (spec story 25).
+      final unsure = result.verdict == Verdict.beCareful || result.verdict == Verdict.couldntCheck;
+      var asking = false;
       // Pushed on top so Back returns to the pasted text.
-      await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => VerdictScreen(result: result)));
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (screen) => VerdictScreen(
+            result: result,
+            onAskAi: widget.aiScan || !unsure
+                ? null
+                : () async {
+                    if (asking) return;
+                    asking = true;
+                    try {
+                      final ai = await widget.runCheck(CheckInput(text, source: widget.source, aiScan: true));
+                      if (!screen.mounted) return;
+                      await Navigator.of(screen)
+                          .pushReplacement(MaterialPageRoute<void>(builder: (_) => VerdictScreen(result: ai)));
+                    } finally {
+                      asking = false;
+                    }
+                  },
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }

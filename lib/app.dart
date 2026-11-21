@@ -18,9 +18,11 @@ import 'features/check/screenshot_screen.dart';
 import 'features/check/share_source.dart';
 import 'features/history/history_screen.dart';
 import 'features/history/history_store.dart';
+import 'features/learn/learn_screen.dart';
 import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/settings/settings_store.dart';
+import 'features/sms/sms_service.dart';
 import 'l10n/app_localizations.dart';
 
 class UsisaApp extends StatefulWidget {
@@ -32,6 +34,7 @@ class UsisaApp extends StatefulWidget {
     this.gatewayClient,
     this.shares,
     this.readSharedImage,
+    this.sms,
   });
 
   final PrivateStorage? storage;
@@ -51,6 +54,9 @@ class UsisaApp extends StatefulWidget {
   /// Reads the text in a shared picture (a cache path); widget tests pass a fake.
   final Future<String> Function(String path)? readSharedImage;
 
+  /// The native SMS bridge; widget tests pass one over a fake channel.
+  final SmsService? sms;
+
   @override
   State<UsisaApp> createState() => _UsisaAppState();
 }
@@ -59,12 +65,14 @@ class _UsisaAppState extends State<UsisaApp> {
   late final SettingsStore settings = SettingsStore(widget.storage ?? MemoryStorage());
   late final HistoryStore history = HistoryStore(settings.storage);
   late final http.Client _gateway = widget.gatewayClient ?? http.Client();
+  late final SmsService sms = widget.sms ?? SmsService();
   final _navigator = GlobalKey<NavigatorState>();
   late final Stream<SharedItem> _shares = widget.shares ?? (kIsWeb ? const Stream.empty() : channelShares());
 
   @override
   void initState() {
     super.initState();
+    sms.refresh();
     // Corrupt or unreadable settings keep the defaults rather than blocking the app.
     settings
         .load()
@@ -86,6 +94,7 @@ class _UsisaAppState extends State<UsisaApp> {
     settings.dispose();
     history.dispose();
     if (widget.gatewayClient == null) _gateway.close();
+    if (widget.sms == null) sms.dispose();
     super.dispose();
   }
 
@@ -132,6 +141,7 @@ class _UsisaAppState extends State<UsisaApp> {
         runCheck: history.recording(widget.runCheck ?? _runCheck),
         history: history,
         settings: settings,
+        sms: sms,
         readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
         shares: _shares,
         readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
@@ -146,10 +156,12 @@ class _Shell extends StatefulWidget {
     required this.readScreenshot,
     required this.history,
     required this.settings,
+    required this.sms,
     required this.shares,
     required this.readSharedImage,
   });
   final RunCheck runCheck;
+  final SmsService sms;
   final HistoryStore history;
   final SettingsStore settings;
   final ScreenshotReader readScreenshot;
@@ -162,8 +174,21 @@ class _Shell extends StatefulWidget {
 
 class _ShellState extends State<_Shell> {
   int _tab = 0;
-  // shortcut: visual-only switch shared by the home card and Settings until SMS protection is wired (#42).
-  bool _smsOn = false;
+  // One switch for the home card and Settings, backed by the native SMS bridge.
+  // shortcut: without a bridge (web preview, widget tests) the switch is visual only.
+  bool _previewSmsOn = false;
+  bool get _smsOn => widget.sms.bridgeAvailable ? widget.sms.enabled : _previewSmsOn;
+
+  Future<void> _setSms(bool on) async {
+    if (!widget.sms.bridgeAvailable) return setState(() => _previewSmsOn = on);
+    try {
+      await widget.sms.setEnabled(on, language: widget.settings.language);
+    } catch (_) {
+      // A failed request leaves the switch showing what the phone really has.
+      await widget.sms.refresh();
+    }
+  }
+
   late final StreamSubscription<SharedItem> _shares;
 
   @override
@@ -246,19 +271,22 @@ class _ShellState extends State<_Shell> {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        body: IndexedStack(
-          index: _tab,
-          children: [
-            HomeScreen(onCheck: _startCheck, smsOn: _smsOn, onSmsChanged: (on) => setState(() => _smsOn = on)),
-            HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
-            _Placeholder(title: l.navLearn),
-            SettingsScreen(
-              settings: widget.settings,
-              history: widget.history,
-              smsOn: _smsOn,
-              onSmsChanged: (on) => setState(() => _smsOn = on),
-            ),
-          ],
+        body: ListenableBuilder(
+          listenable: widget.sms,
+          builder: (context, _) => IndexedStack(
+            index: _tab,
+            children: [
+              HomeScreen(
+                onCheck: _startCheck,
+                smsOn: _smsOn,
+                onSmsChanged: _setSms,
+                checkedToday: widget.sms.checkedToday,
+              ),
+              HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
+              const LearnScreen(),
+              SettingsScreen(settings: widget.settings, history: widget.history, smsOn: _smsOn, onSmsChanged: _setSms),
+            ],
+          ),
         ),
         // Flat white nav with a hairline top border; square corners so no page colour shows through.
         bottomNavigationBar: DecoratedBox(
@@ -313,28 +341,4 @@ class _TimesTextScaler extends TextScaler {
 
   @override
   int get hashCode => Object.hash(phone, factor);
-}
-
-/// Stand-in for tabs that later tickets build.
-class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: tt.headlineSmall),
-            const SizedBox(height: 8),
-            Text(AppLocalizations.of(context).comingSoon, style: tt.bodyLarge),
-          ],
-        ),
-      ),
-    );
-  }
 }

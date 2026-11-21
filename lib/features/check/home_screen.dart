@@ -14,12 +14,16 @@ class HomeScreen extends StatelessWidget {
     required this.onCheck,
     required this.smsOn,
     required this.onSmsChanged,
+    this.checkedToday = 0,
     this.clock = DateTime.now,
   });
 
   final ValueChanged<CheckKind> onCheck;
   final bool smsOn;
   final ValueChanged<bool> onSmsChanged;
+
+  /// Texts the Incoming SMS check finished today, shown while protection is on.
+  final int checkedToday;
   final DateTime Function() clock;
 
   @override
@@ -90,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                       index: 6,
                       child: _SmsCard(
                         title: l.smsCardTitle,
-                        status: smsOn ? l.smsCardOn : l.smsCardOff,
+                        status: smsOn ? l.smsCardChecked(checkedToday) : l.smsCardOff,
                         value: smsOn,
                         onChanged: onSmsChanged,
                       ),

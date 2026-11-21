@@ -155,10 +155,11 @@ class AiAssessment {
         invalid();
       }
       final quote = sign['evidence'] as String;
+      // A mismatched quote drops only that sign, as the gateway does (spec "Reasons").
       if (quote.trim().isEmpty ||
           quote.runes.length > 160 ||
           !text.contains(quote)) {
-        invalid();
+        continue;
       }
       final start = text.indexOf(quote);
       signs.add(
