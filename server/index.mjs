@@ -3,6 +3,7 @@ import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import {createReputationLookup} from './reputation.mjs';
 import {createAiScanner, isAiConfigured} from './ai_scan.mjs';
+import {createLinkChecker} from './link_check.mjs';
 
 function readBody(req, limit = 8192) {
   return new Promise((resolve,reject) => {
@@ -25,7 +26,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
   configured = Boolean(process.env.SAFE_BROWSING_API_KEY), allowedOrigin = process.env.ALLOWED_ORIGIN ?? '',
   scanAi = createAiScanner({apiKey:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL}),
   aiConfigured = isAiConfigured(process.env.GROQ_API_KEY,process.env.GROQ_MODEL),
-  aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 50)} = {}) {
+  aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 50), resolve, request, now} = {}) {
+  const checkLink = createLinkChecker({lookup, resolve, request, now});
   const rates = new Map();
   const pending = new Map();
   let active = 0;
@@ -111,8 +113,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
       if (!configured || active >= 8) { send(503,{error:'unavailable'}); return; }
       active++;
       try {
-        const result = await lookup(url.href);
-        send(result.status === 'unavailable' ? 503 : 200,result);
+        // Unfinished checks still answer 200 with status 'unavailable' so the app can show hops so far.
+        send(200,await checkLink(url.href));
       } finally { active--; }
     } catch (error) { send(error?.status === 413 ? 413 : 400,{error:error?.status === 413 ? 'request_too_large' : 'invalid_request'}); }
   });

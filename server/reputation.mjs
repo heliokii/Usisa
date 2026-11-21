@@ -2,8 +2,10 @@ const allowedThreats = new Set(['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTW
 const provider = 'Google Safe Browsing';
 
 export function createReputationLookup({apiKey, fetchImpl = fetch} = {}) {
-  return async function lookup(input) {
-    const unavailable = () => ({status:'unavailable', threatTypes:[], checkedAt:null,
+  // Checks a batch of URLs in one call; matches must name a URL that was sent.
+  return async function lookup(urls) {
+    const sent = new Set(urls);
+    const unavailable = () => ({status:'unavailable', threatTypes:[], matches:{}, checkedAt:null,
       expiresAt:null, provider});
     if (!apiKey) return unavailable();
     try {
@@ -13,7 +15,7 @@ export function createReputationLookup({apiKey, fetchImpl = fetch} = {}) {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({client:{clientId:'usisa',clientVersion:'1.0.0'},threatInfo:{
           threatTypes:[...allowedThreats],platformTypes:['ANY_PLATFORM'],
-          threatEntryTypes:['URL'],threatEntries:[{url:input}],
+          threatEntryTypes:['URL'],threatEntries:[...sent].map(url => ({url})),
         }}), signal:AbortSignal.timeout(5000), redirect:'error',
       });
       if (!response.ok) return unavailable();
@@ -22,20 +24,23 @@ export function createReputationLookup({apiKey, fetchImpl = fetch} = {}) {
       const checkedAt = new Date().toISOString();
       if (Object.keys(body).length === 0 ||
           (Object.keys(body).length === 1 && Array.isArray(body.matches) && !body.matches.length)) {
-        return {status:'noMatch',threatTypes:[],checkedAt,expiresAt:null,provider};
+        return {status:'noMatch',threatTypes:[],matches:{},checkedAt,expiresAt:null,provider};
       }
       if (!Array.isArray(body.matches) || !body.matches.length) return unavailable();
       const threats = new Set();
+      const matches = {};
       let lifetimeMs = 300000;
       for (const match of body.matches) {
         const duration = typeof match?.cacheDuration === 'string' && /^(\d+(?:\.\d{1,9})?)s$/.exec(match.cacheDuration);
         const ms = duration ? Number(duration[1]) * 1000 : NaN;
         if (!allowedThreats.has(match?.threatType) || match.threatEntryType !== 'URL' ||
-            match.threat?.url !== input || !Number.isFinite(ms) || ms < 1) return unavailable();
+            !sent.has(match.threat?.url) || !Number.isFinite(ms) || ms < 1) return unavailable();
         threats.add(match.threatType);
+        const list = matches[match.threat.url] ??= [];
+        if (!list.includes(match.threatType)) list.push(match.threatType);
         lifetimeMs = Math.min(lifetimeMs, ms);
       }
-      return {status:'matched',threatTypes:[...threats],checkedAt,
+      return {status:'matched',threatTypes:[...threats],matches,checkedAt,
         expiresAt:new Date(Date.parse(checkedAt) + lifetimeMs).toISOString(),provider};
     } catch (_) { return unavailable(); }
   };
