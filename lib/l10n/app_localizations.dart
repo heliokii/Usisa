@@ -428,6 +428,12 @@ abstract class AppLocalizations {
   /// **'Check again'**
   String get checkAgain;
 
+  /// No description provided for @askAiLookCloser.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask AI to look closer'**
+  String get askAiLookCloser;
+
   /// No description provided for @aiScanIntro.
   ///
   /// In en, this message translates to:

@@ -241,6 +241,9 @@ class AppLocalizationsFil extends AppLocalizations {
   String get checkAgain => 'Suriin muli';
 
   @override
+  String get askAiLookCloser => 'Ipasuri nang mas mabuti sa AI';
+
+  @override
   String get aiScanIntro => 'Ano ang gusto mong tingnan ng AI?';
 
   @override
