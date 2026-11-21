@@ -52,7 +52,8 @@ Future<LinkCheck> _check(http.Client client, Uri base, String link, DateTime Fun
       'unavailable' when value['reason'] == 'non_web_destination' => LinkStatus.opensApp,
       _ => LinkStatus.unresolved,
     };
-    return LinkCheck(link, status, destination: destination);
+    final hops = value['hops'] is List ? [for (final h in value['hops'] as List) if (h is String) h] : const <String>[];
+    return LinkCheck(link, status, destination: destination, hops: hops);
   } catch (_) {
     return unresolved;
   }

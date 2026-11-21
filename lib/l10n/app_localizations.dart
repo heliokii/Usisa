@@ -434,6 +434,36 @@ abstract class AppLocalizations {
   /// **'Check again'**
   String get checkAgain;
 
+  /// No description provided for @aiScanIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want the AI to look at?'**
+  String get aiScanIntro;
+
+  /// No description provided for @aiScanMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A message'**
+  String get aiScanMessage;
+
+  /// No description provided for @aiScanLink.
+  ///
+  /// In en, this message translates to:
+  /// **'A link'**
+  String get aiScanLink;
+
+  /// No description provided for @aiScanScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'A screenshot'**
+  String get aiScanScreenshot;
+
+  /// Label on an AI scan verdict when the AI gave no answer; the verdict comes from the phone and link checks.
+  ///
+  /// In en, this message translates to:
+  /// **'AI couldn\'t look at this right now'**
+  String get aiUnavailable;
+
   /// No description provided for @sendToFamily.
   ///
   /// In en, this message translates to:

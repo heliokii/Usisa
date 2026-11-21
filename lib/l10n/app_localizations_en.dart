@@ -248,6 +248,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkAgain => 'Check again';
 
   @override
+  String get aiScanIntro => 'What do you want the AI to look at?';
+
+  @override
+  String get aiScanMessage => 'A message';
+
+  @override
+  String get aiScanLink => 'A link';
+
+  @override
+  String get aiScanScreenshot => 'A screenshot';
+
+  @override
+  String get aiUnavailable => 'AI couldn\'t look at this right now';
+
+  @override
   String get sendToFamily => 'Send to family';
 
   @override

@@ -37,12 +37,16 @@ class ReviewedAiInput {
     required this.responseLanguage,
     required this.inputRevision,
     required this.privacyGeneration,
+    this.links = const [],
   });
   final String text;
   final ScanSource source;
   final String responseLanguage;
   final int inputRevision;
   final int privacyGeneration;
+
+  /// What the gateway's link check saw, as `{url, destination, hops}` (contract: server/index.mjs validLinks).
+  final List<Map<String, Object?>> links;
 }
 
 class AiAssessment {
