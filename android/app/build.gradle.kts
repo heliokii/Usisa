@@ -35,8 +35,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // shortcut: incoming SMS stays off (no receiver or SMS permission in the manifest) until ticket #40 wires it into the single build.
-        buildConfigField("boolean", "SMS_ENABLED", "false")
+        buildConfigField("boolean", "SMS_ENABLED", "true")
     }
 
     buildFeatures { buildConfig = true }
