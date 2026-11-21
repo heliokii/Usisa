@@ -11,9 +11,6 @@ Future<void> usisaSmsBackground() => runSmsBackground();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    UsisaApp(
-      storage: kIsWeb ? MemoryStorage() : const SecureStorage(),
-      isPreview: kIsWeb,
-    ),
+    UsisaApp(storage: kIsWeb ? MemoryStorage() : const SecureStorage()),
   );
 }

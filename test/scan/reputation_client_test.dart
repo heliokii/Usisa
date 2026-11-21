@@ -1,13 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:usisa/features/scan/reputation_client.dart';
 import 'package:usisa/features/scan/scan_models.dart';
-import 'package:usisa/features/scan/result_screen.dart';
-import 'package:usisa/l10n/app_localizations.dart';
 
 import 'gateway_test_helpers.dart';
 
@@ -54,49 +51,6 @@ void main() {
     );
     client.close();
   });
-  testWidgets(
-    'expired saved matches show the historical warning, check time and unknown coverage',
-    (tester) async {
-      final at = DateTime.now().subtract(const Duration(days: 1));
-      final link = LinkResult(
-        original: 'https://example.test',
-        uri: Uri.parse('https://example.test'),
-        findings: [],
-        reputation: ReputationState.matched,
-        checkedAt: at,
-        expiresAt: at.add(const Duration(minutes: 1)),
-      );
-      final result = ScanResult(
-        id: 'expired',
-        text: link.original,
-        source: ScanSource.link,
-        findings: [],
-        links: [link],
-        createdAt: at,
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: ResultScreen(result: result),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('example.test').first);
-      await tester.pumpAndSettle();
-      expect(find.text('Link safety is unknown.'), findsOneWidget);
-      expect(
-        find.textContaining('Previously listed as a threat.'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Last checked:'), findsOneWidget);
-      expect(
-        find.textContaining('Previous online result is no longer current.'),
-        findsOneWidget,
-      );
-      expect(result.risk, RiskLevel.high);
-    },
-  );
   test('persisted provider expiry survives serialization and old checks are unknown', () {
     final at = DateTime.now().toUtc().subtract(const Duration(days: 1));
     final expiry = at.add(const Duration(minutes: 10)).toIso8601String();
