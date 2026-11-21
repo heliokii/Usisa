@@ -54,5 +54,22 @@
   "cancel": "Kanselahin",
   "fromYourTexts": "Mula sa iyong mga text",
   "checkedOnDate": "Sinuri noong {date}",
-  "checkAgain": "Suriin muli"
+  "checkAgain": "Suriin muli",
+  "settingsDisplay": "Itsura",
+  "settingsTextSize": "Laki ng text",
+  "textSizeNormal": "Karaniwan",
+  "textSizeLarge": "Malaki",
+  "textSizeExtraLarge": "Napakalaki",
+  "settingsTextSizeNote": "Dagdag ito sa sariling laki ng text ng phone mo.",
+  "settingsLanguage": "Wika",
+  "languageEnglish": "English",
+  "languageFilipino": "Filipino",
+  "settingsProtection": "Proteksyon",
+  "settingsOnline": "Pagsuri online",
+  "settingsOnlineSwitch": "Suriin online ang mga link at gamitin ang AI",
+  "settingsOnlineOn": "Ipinapadala ang mga link sa serbisyong pansuri ng Usisa. Ipinapadala ng AI scan ang text ng mensahe sa isang AI service.",
+  "settingsOnlineOff": "Sa phone mo lang sinusuri ang lahat, kaya baka may scam na hindi mahuli ng Usisa.",
+  "settingsAbout": "Tungkol sa Usisa",
+  "aboutGuide": "Gabay ang Usisa, hindi garantiya. Naghahanap ito ng mga karaniwang senyales ng scam, pero puwede itong magkamali. Kung may kakaiba, huwag mag-click, huwag magbayad at huwag ibigay ang mga code. Magtanong sa taong pinagkakatiwalaan mo.",
+  "aboutData": "Sa phone na ito lang naka-save ang mga sinuri mo at ang History. Walang ipinapadala kahit saan maliban kung naka-on ang pagsuri online."
 }

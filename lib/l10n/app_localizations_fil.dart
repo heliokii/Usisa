@@ -235,4 +235,61 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get checkAgain => 'Suriin muli';
+
+  @override
+  String get settingsDisplay => 'Itsura';
+
+  @override
+  String get settingsTextSize => 'Laki ng text';
+
+  @override
+  String get textSizeNormal => 'Karaniwan';
+
+  @override
+  String get textSizeLarge => 'Malaki';
+
+  @override
+  String get textSizeExtraLarge => 'Napakalaki';
+
+  @override
+  String get settingsTextSizeNote =>
+      'Dagdag ito sa sariling laki ng text ng phone mo.';
+
+  @override
+  String get settingsLanguage => 'Wika';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageFilipino => 'Filipino';
+
+  @override
+  String get settingsProtection => 'Proteksyon';
+
+  @override
+  String get settingsOnline => 'Pagsuri online';
+
+  @override
+  String get settingsOnlineSwitch =>
+      'Suriin online ang mga link at gamitin ang AI';
+
+  @override
+  String get settingsOnlineOn =>
+      'Ipinapadala ang mga link sa serbisyong pansuri ng Usisa. Ipinapadala ng AI scan ang text ng mensahe sa isang AI service.';
+
+  @override
+  String get settingsOnlineOff =>
+      'Sa phone mo lang sinusuri ang lahat, kaya baka may scam na hindi mahuli ng Usisa.';
+
+  @override
+  String get settingsAbout => 'Tungkol sa Usisa';
+
+  @override
+  String get aboutGuide =>
+      'Gabay ang Usisa, hindi garantiya. Naghahanap ito ng mga karaniwang senyales ng scam, pero puwede itong magkamali. Kung may kakaiba, huwag mag-click, huwag magbayad at huwag ibigay ang mga code. Magtanong sa taong pinagkakatiwalaan mo.';
+
+  @override
+  String get aboutData =>
+      'Sa phone na ito lang naka-save ang mga sinuri mo at ang History. Walang ipinapadala kahit saan maliban kung naka-on ang pagsuri online.';
 }
