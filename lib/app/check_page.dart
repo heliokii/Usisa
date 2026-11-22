@@ -50,25 +50,50 @@ class Eyebrow extends StatelessWidget {
 
 /// The full-width pill button at the bottom of a check page; lilac while disabled.
 class PrimaryPillButton extends StatelessWidget {
-  const PrimaryPillButton({super.key, required this.label, required this.onPressed});
+  const PrimaryPillButton({super.key, required this.label, required this.onPressed, this.busy = false});
   final String label;
   final VoidCallback? onPressed;
 
+  /// Shows bouncing dots and "Checking…" while the Check runs.
+  final bool busy;
+
   @override
-  Widget build(BuildContext context) => PressScale(
-    child: FilledButton(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: UsisaColors.primary,
-        disabledBackgroundColor: const Color(0xFFAFAED6),
-        disabledForegroundColor: Colors.white,
-        minimumSize: const Size.fromHeight(58),
-        shape: const StadiumBorder(),
-        textStyle: Theme.of(context).textTheme.titleMedium,
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return PressScale(
+      child: FilledButton(
+        onPressed: busy || onPressed == null
+            ? null
+            : () {
+                HapticFeedback.selectionClick();
+                onPressed!();
+              },
+        style: FilledButton.styleFrom(
+          backgroundColor: UsisaColors.primary,
+          // Busy keeps the strong colour so it reads as "working", not "unavailable".
+          disabledBackgroundColor: busy ? UsisaColors.primary : const Color(0xFFAFAED6),
+          disabledForegroundColor: Colors.white,
+          minimumSize: const Size.fromHeight(58),
+          shape: const StadiumBorder(),
+          textStyle: Theme.of(context).textTheme.titleMedium,
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: busy
+              ? Semantics(
+                  liveRegion: true,
+                  label: l.checkingLabel,
+                  child: Row(
+                    key: const ValueKey('busy'),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Text(l.checkingLabel), const SizedBox(width: 10), const BusyDots()],
+                  ),
+                )
+              : Text(label, key: const ValueKey('idle')),
+        ),
       ),
-      child: Text(label),
-    ),
-  );
+    );
+  }
 }
 
 /// The layout every check page shares: wordmark bar, "Back to check", eyebrow, big title and intro,

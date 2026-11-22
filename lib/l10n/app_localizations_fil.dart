@@ -605,4 +605,7 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get aiScanScreenshotSubtitle => 'Basahin ang mensahe mula sa larawan.';
+
+  @override
+  String get checkingLabel => 'Sinusuri…';
 }

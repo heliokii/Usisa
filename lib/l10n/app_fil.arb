@@ -144,5 +144,6 @@
   "aiScanPageIntro": "Dito nagsisimula ang mas malapit na pagsusuri. Ano ang gusto mong suriin?",
   "aiScanMessageSubtitle": "Suriing mabuti ang isang text.",
   "aiScanLinkSubtitle": "Alamin kung saan ito papunta at bakit.",
-  "aiScanScreenshotSubtitle": "Basahin ang mensahe mula sa larawan."
+  "aiScanScreenshotSubtitle": "Basahin ang mensahe mula sa larawan.",
+  "checkingLabel": "Sinusuri…"
 }

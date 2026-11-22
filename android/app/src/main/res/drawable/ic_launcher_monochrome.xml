@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ themed icon: the mark in one colour. The overlap stays as a cut-out so the two shapes still read. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:scaleX="0.246" android:scaleY="0.246" android:translateX="22.94" android:translateY="21.1">
+        <path android:fillColor="#FFFFFF" android:fillType="evenOdd"
+            android:pathData="M72,213.3 A80,80 0 1,0 34.7,164.7 C31,186 27,206 26,220 A9,9 0 0,0 39,229 C51,225 62,220 72,213.3 Z M111.24,64.01 A80,80 0 0,1 191,156.59 A70,70 0 0,1 111.24,64.01 Z"/>
+        <path android:fillColor="#FFFFFF" android:fillType="evenOdd"
+            android:pathData="M247,88 A70,70 0 1,1 107,88 A70,70 0 1,1 247,88 Z M111.24,64.01 A80,80 0 0,1 191,156.59 A70,70 0 0,1 111.24,64.01 Z"/>
+    </group>
+</vector>

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/motion.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../check/check.dart';
@@ -56,7 +57,9 @@ class HistoryScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(l.historySavedOnPhone, style: tt.bodyLarge?.copyWith(color: UsisaColors.inkMuted)),
               const SizedBox(height: 16),
-              _Card(child: HistorySavingSwitch(history: history, settings: settings)),
+              _Card(
+                child: HistorySavingSwitch(history: history, settings: settings),
+              ),
               const SizedBox(height: 16),
               if (entries.isEmpty)
                 Padding(
@@ -70,15 +73,23 @@ class HistoryScreen extends StatelessWidget {
               else ...[
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton(onPressed: () => confirmClearHistory(context, history), child: Text(l.historyClearAll)),
+                  child: TextButton(
+                    onPressed: () => confirmClearHistory(context, history),
+                    child: Text(l.historyClearAll),
+                  ),
                 ),
-                for (final entry in entries)
+                for (final (i, entry) in entries.indexed)
                   Padding(
+                    key: ValueKey(entry.id),
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: _EntryCard(
-                      entry: entry,
-                      onOpen: () => _open(context, entry),
-                      onDelete: () => history.delete({entry.id}),
+                    // The first screenful rises in one after another; later ones just appear.
+                    child: EnterMotion(
+                      index: i < 8 ? i : 0,
+                      child: _EntryCard(
+                        entry: entry,
+                        onOpen: () => _open(context, entry),
+                        onDelete: () => history.delete({entry.id}),
+                      ),
                     ),
                   ),
               ],
@@ -166,47 +177,49 @@ class _EntryCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final muted = tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted);
     final (color, _, icon) = verdictLooks[entry.result.verdict]!;
-    return _Card(
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, color: color, size: 24),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l.verdictWord(entry.result.verdict.name),
-                      style: tt.titleMedium?.copyWith(color: color),
+    return PressScale(
+      child: _Card(
+        child: InkWell(
+          onTap: onOpen,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(icon, color: color, size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l.verdictWord(entry.result.verdict.name),
+                        style: tt.titleMedium?.copyWith(color: color),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsetsDirectional.only(end: 12),
-                child: Text(entry.result.text, maxLines: 2, overflow: TextOverflow.ellipsis, style: tt.bodyLarge),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(formatCheckedAt(context, entry.checkedAt), style: muted),
-                        if (entry.source == CheckSource.sms) Text(l.fromYourTexts, style: muted),
-                      ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 12),
+                  child: Text(entry.result.text, maxLines: 2, overflow: TextOverflow.ellipsis, style: tt.bodyLarge),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(formatCheckedAt(context, entry.checkedAt), style: muted),
+                          if (entry.source == CheckSource.sms) Text(l.fromYourTexts, style: muted),
+                        ],
+                      ),
                     ),
-                  ),
-                  TextButton(onPressed: onDelete, child: Text(l.historyDelete)),
-                ],
-              ),
-            ],
+                    TextButton(onPressed: onDelete, child: Text(l.historyDelete)),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
