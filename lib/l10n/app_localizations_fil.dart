@@ -608,4 +608,7 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get checkingLabel => 'Sinusuri…';
+
+  @override
+  String get stopReading => 'Itigil ang pagbasa';
 }

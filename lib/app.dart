@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'app/launch_splash.dart';
 import 'app/motion.dart';
+import 'app/read_aloud.dart';
 import 'app/theme.dart';
 import 'features/check/check.dart';
 import 'features/check/ai_scan_screen.dart';
@@ -178,6 +179,7 @@ class _UsisaAppState extends State<UsisaApp> {
       title: 'Usisa',
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigator,
+      navigatorObservers: [StopReadingOnNavigate()],
       theme: buildUsisaTheme(),
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -248,6 +250,7 @@ class _ShellState extends State<_Shell> {
 
   // The Check tab keeps its own page stack, so the bottom nav stays visible on its pages.
   final _checkNav = GlobalKey<NavigatorState>();
+  final _checkNavStopsReading = StopReadingOnNavigate();
 
   /// Shows the Check tab and returns its navigator, emptied back to home.
   NavigatorState _checkTab({bool reset = false}) {
@@ -421,6 +424,7 @@ class _ShellState extends State<_Shell> {
                 onPopWithResult: (_) => _checkNav.currentState?.maybePop(),
                 child: Navigator(
                   key: _checkNav,
+                  observers: [_checkNavStopsReading],
                   onGenerateRoute: (_) => MaterialPageRoute<void>(
                     builder: (_) => ListenableBuilder(
                       listenable: Listenable.merge([widget.sms, _previewSmsOn]),
@@ -452,6 +456,8 @@ class _ShellState extends State<_Shell> {
             backgroundColor: Colors.white,
             selectedIndex: _tab,
             onDestinationSelected: (i) {
+              // Leaving a tab ends anything it was reading aloud.
+              ReadAloud.stopAll();
               // Tapping Check again returns to the Check home.
               if (i == 0 && _tab == 0) _checkNav.currentState?.popUntil((route) => route.isFirst);
               setState(() => _tab = i);

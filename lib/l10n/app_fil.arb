@@ -145,5 +145,6 @@
   "aiScanMessageSubtitle": "Suriing mabuti ang isang text.",
   "aiScanLinkSubtitle": "Alamin kung saan ito papunta at bakit.",
   "aiScanScreenshotSubtitle": "Basahin ang mensahe mula sa larawan.",
-  "checkingLabel": "Sinusuri…"
+  "checkingLabel": "Sinusuri…",
+  "stopReading": "Itigil ang pagbasa"
 }

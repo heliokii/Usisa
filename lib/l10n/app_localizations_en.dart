@@ -603,4 +603,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkingLabel => 'Checking…';
+
+  @override
+  String get stopReading => 'Stop reading';
 }
