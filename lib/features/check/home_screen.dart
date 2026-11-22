@@ -184,12 +184,15 @@ class _Header extends StatelessWidget {
     // The closing "?" of the headline is drawn in yellow.
     final mark = headline.endsWith('?') ? '?' : '';
     final words = headline.substring(0, headline.length - mark.length);
+    // Shapes may run past the header's bottom edge: the sheet covers them, except at its rounded corners,
+    // where they show through as in the design instead of leaving an indigo notch.
     return Stack(
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.none,
       children: [
         Positioned.fill(
           child: ExcludeSemantics(
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 Positioned(
                   right: -70,
@@ -213,13 +216,13 @@ class _Header extends StatelessWidget {
                 ),
                 Positioned(
                   right: -20,
-                  bottom: -10,
+                  bottom: -46,
                   child: Container(
-                    width: 120,
-                    height: 120,
+                    width: 156,
+                    height: 156,
                     decoration: const BoxDecoration(
                       color: UsisaColors.orange,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(120)),
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(156)),
                     ),
                   ),
                 ),
