@@ -43,7 +43,8 @@ class _VerdictActionsState extends State<VerdictActions> {
     super.dispose();
   }
 
-  Future<void> _speak() => readAloudWithNote(context, _readAloud, (l) => verdictSpeech(l, widget.result));
+  Future<void> _speak() =>
+      readAloudWithNote(context, _readAloud, (l) => verdictSpeech(l, widget.result), key: widget.result);
 
   @override
   Widget build(BuildContext context) {
@@ -66,17 +67,7 @@ class _VerdictActionsState extends State<VerdictActions> {
         ),
         const SizedBox(height: 12),
         PressScale(
-          child: OutlinedButton(
-            onPressed: _speak,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: UsisaColors.primary,
-              side: const BorderSide(color: UsisaColors.primary, width: 1.5),
-              minimumSize: const Size.fromHeight(56),
-              shape: const StadiumBorder(),
-              textStyle: tt.titleMedium,
-            ),
-            child: Text(l.readAloud, textAlign: TextAlign.center),
-          ),
+          child: ReadAloudButton(readAloud: _readAloud, speechKey: widget.result, onRead: _speak),
         ),
       ],
     );

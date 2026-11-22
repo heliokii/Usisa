@@ -241,16 +241,10 @@ class LearnCard extends StatelessWidget {
                   ...children,
                   const SizedBox(height: 16),
                   PressScale(
-                    child: OutlinedButton(
-                      onPressed: () => readAloudWithNote(context, readAloud, speech),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: UsisaColors.primary,
-                        side: const BorderSide(color: UsisaColors.primary, width: 1.5),
-                        minimumSize: const Size.fromHeight(56),
-                        shape: const StadiumBorder(),
-                        textStyle: tt.titleMedium,
-                      ),
-                      child: Text(AppLocalizations.of(context).readAloud, textAlign: TextAlign.center),
+                    child: ReadAloudButton(
+                      readAloud: readAloud,
+                      speechKey: title,
+                      onRead: () => readAloudWithNote(context, readAloud, speech, key: title),
                     ),
                   ),
                 ],

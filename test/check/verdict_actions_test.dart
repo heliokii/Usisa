@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/app/read_aloud.dart';
@@ -51,6 +53,7 @@ Future<void> tapButton(WidgetTester tester, String label) async {
 }
 
 void main() {
+  stopTests();
   testWidgets('Read aloud speaks the verdict and its advice in English', (tester) async {
     final tts = FakeTts({'en-US'});
     await showVerdict(tester, tts: tts);
@@ -104,5 +107,57 @@ void main() {
       final button = find.ancestor(of: find.text(label), matching: find.byWidgetPredicate((w) => w is ButtonStyleButton));
       expect(find.descendant(of: button, matching: find.byType(Icon)), findsNothing);
     }
+  });
+}
+
+/// A speech engine that keeps talking until it is stopped, like a long read on a real phone.
+class LongTts implements TtsEngine {
+  var stops = 0;
+  Completer<void>? _talking;
+  @override
+  Future<bool> isLanguageAvailable(String tag) async => tag == 'en-US';
+  @override
+  Future<void> setLanguage(String tag) async {}
+  @override
+  Future<void> speak(String text) => (_talking = Completer<void>()).future;
+  @override
+  Future<void> stop() async {
+    stops++;
+    if (!(_talking?.isCompleted ?? true)) _talking!.complete();
+  }
+}
+
+void stopTests() {
+  testWidgets('Read aloud turns into Stop reading while it speaks, and Stop silences it', (tester) async {
+    final tts = LongTts();
+    await showVerdict(tester, tts: tts);
+    await tapButton(tester, 'Read aloud');
+    expect(find.text('Stop reading'), findsOneWidget);
+
+    final stopsBefore = tts.stops;
+    await tapButton(tester, 'Stop reading');
+    expect(tts.stops, greaterThan(stopsBefore));
+    expect(find.text('Read aloud'), findsOneWidget);
+  });
+
+  testWidgets('opening another page stops the reading', (tester) async {
+    final tts = LongTts();
+    final navigator = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigator,
+        navigatorObservers: [StopReadingOnNavigate()],
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: VerdictScreen(result: dangerous, readAloud: ReadAloud(tts)),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    await tapButton(tester, 'Read aloud');
+    final stopsBefore = tts.stops;
+
+    navigator.currentState!.push(MaterialPageRoute<void>(builder: (_) => const Scaffold()));
+    await tester.pump();
+    expect(tts.stops, greaterThan(stopsBefore));
   });
 }

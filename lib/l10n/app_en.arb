@@ -165,5 +165,6 @@
   "aiScanMessageSubtitle": "Take a closer look at a text.",
   "aiScanLinkSubtitle": "See where it leads and why.",
   "aiScanScreenshotSubtitle": "Read a message from a picture.",
-  "checkingLabel": "Checking…"
+  "checkingLabel": "Checking…",
+  "stopReading": "Stop reading"
 }
