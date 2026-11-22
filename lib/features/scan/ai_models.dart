@@ -27,7 +27,7 @@ const aiRecommendationCodes = {
 };
 const aiModels = {'openai/gpt-oss-120b', 'openai/gpt-oss-20b'};
 // v1 stays valid so retained history from before the gateway upgrade still loads.
-const aiPromptVersions = {'ph-scam-v1', 'ph-scam-v2'};
+const aiPromptVersions = {'ph-scam-v1', 'ph-scam-v2', 'ph-scam-v3'};
 const aiSummaryCode = 'assessment_complete';
 
 class ReviewedAiInput {
