@@ -9,7 +9,7 @@ const redirect = (location, status = 302) => ({status, headers:{location}, body:
 const html = (body, headers = {}) => ({status:200, headers:{'content-type':'text/html; charset=utf-8', ...headers}, body});
 
 // Starts the real gateway with fake DNS, fake per-hop HTTP and a fake Safe Browsing endpoint.
-async function startGateway({routes = {}, dns = {}, flagged = {}, sbDown = false, clock} = {}) {
+async function startGateway({routes = {}, dns = {}, flagged = {}, sbDown = false, sbHang = false, clock, timeouts} = {}) {
   const requests = [], resolved = [], sbCalls = [];
   const resolve = async host => {
     resolved.push(host);
@@ -27,11 +27,12 @@ async function startGateway({routes = {}, dns = {}, flagged = {}, sbDown = false
     const entries = JSON.parse(options.body).threatInfo.threatEntries.map(e => e.url);
     sbCalls.push(entries);
     if (sbDown) return new Response('', {status:503});
+    if (sbHang) await new Promise((_, reject) => options.signal.addEventListener('abort', () => reject(options.signal.reason)));
     const matches = entries.filter(u => flagged[u]).map(u => ({threatType:flagged[u], threatEntryType:'URL',
       threat:{url:u}, cacheDuration:'300s'}));
     return Response.json(matches.length ? {matches} : {});
   }});
-  const server = createGateway({lookup, configured:true, resolve, request,
+  const server = createGateway({lookup, configured:true, resolve, request, timeouts,
     now:clock ? () => clock.now : Date.now});
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -302,6 +303,19 @@ test('cache windows: chain 10 min, clean result 5 min, failure 30 s', async () =
     await failing.check('https://bit.ly/b');
     assert.equal(failing.requests.length, 2);
   } finally { await failing.close(); }
+});
+
+test('a slow Safe Browsing gets only the time left, so a followed chain still answers before the deadline', async () => {
+  const gw = await startGateway({sbHang:true, timeouts:{aiMs:16000, linkCheckMs:1500}, routes:{
+    'https://bit.ly/abc': redirect('https://shop.example.com/'),
+    'https://shop.example.com/': html('<p>hi</p>'),
+  }});
+  try {
+    const r = await gw.check('https://bit.ly/abc');
+    assert.equal(r.code, 200);
+    assert.equal(r.status, 'unavailable');
+    assert.equal(r.destination, 'https://shop.example.com/');
+  } finally { await gw.close(); }
 });
 
 test('the default follower refuses loopback hosts without connecting', async () => {

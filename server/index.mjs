@@ -23,8 +23,10 @@ function readBody(req, limit = 8192) {
 }
 
 // Server-side answer deadlines. Keep each at least 1 s below the app's request timeout
-// (lib/features/scan/ai_scan_client.dart 18 s, reputation_client.dart 5 s); gateway_ops.test.mjs checks this.
+// (lib/features/scan/ai_scan_client.dart 18 s, lib/features/check/gateway_link_checker.dart 10 s); gateway_ops.test.mjs checks this.
+// Safe Browsing gets whatever is left of the link-check deadline, less this margin, so the answer still goes out in time.
 export const TIMEOUTS = Object.freeze({aiMs:16000, linkCheckMs:8000});
+const SEND_MARGIN_MS = 500;
 
 // AI context from /v1/link-check results: {url, destination, hops} per link, same bounds as the follower (8 hops, 2048-char URLs).
 const linkString = value => typeof value === 'string' && value.length > 0 && value.length <= 2048 && value.isWellFormed();
@@ -74,7 +76,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
     const isAi = req.url === '/v1/ai-scan';
     if (!isAi && req.url !== '/v1/link-check') { send(404,{error:'not_found'}); return; }
     if (req.method !== 'POST') { res.setHeader('Allow','POST'); send(405,{error:'method_not_allowed'}); return; }
-    const deadline = setTimeout(()=>send(503,{error:'unavailable'}),isAi ? timeouts.aiMs : timeouts.linkCheckMs);
+    let onDeadline = null;
+    const deadline = setTimeout(()=>{ onDeadline?.(); send(503,{error:'unavailable'}); },isAi ? timeouts.aiMs : timeouts.linkCheckMs);
     res.once('close',()=>clearTimeout(deadline));
     const now = Date.now();
     for (const [key,value] of rates) if (value.reset <= now) rates.delete(key);
@@ -115,6 +118,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
           if (--current.clients === 0 && !res.writableEnded) current.controller.abort();
         };
         res.once('close',disconnect);
+        // Past the deadline this client is gone too: the last one leaving aborts the Groq call and frees its slot.
+        onDeadline = disconnect;
         const result = await current.promise;
         res.removeListener('close',disconnect);
         if (attached) { attached = false; current.clients--; }
@@ -134,7 +139,7 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
       active++;
       try {
         // Unfinished checks still answer 200 with status 'unavailable' so the app can show hops so far.
-        send(200,await checkLink(url.href));
+        send(200,await checkLink(url.href,AbortSignal.timeout(Math.max(0,now + timeouts.linkCheckMs - SEND_MARGIN_MS - Date.now()))));
       } finally { active--; }
     } catch (error) { send(error?.status === 413 ? 413 : 400,{error:error?.status === 413 ? 'request_too_large' : 'invalid_request'}); }
   });

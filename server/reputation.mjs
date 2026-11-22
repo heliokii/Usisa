@@ -3,7 +3,8 @@ const provider = 'Google Safe Browsing';
 
 export function createReputationLookup({apiKey, fetchImpl = fetch} = {}) {
   // Checks a batch of URLs in one call; matches must name a URL that was sent.
-  return async function lookup(urls) {
+  // `signal` cuts the call short when the caller's answer deadline is near.
+  return async function lookup(urls, signal) {
     const sent = new Set(urls);
     const unavailable = () => ({status:'unavailable', threatTypes:[], matches:{}, checkedAt:null,
       expiresAt:null, provider});
@@ -16,7 +17,7 @@ export function createReputationLookup({apiKey, fetchImpl = fetch} = {}) {
         body:JSON.stringify({client:{clientId:'usisa',clientVersion:'1.0.0'},threatInfo:{
           threatTypes:[...allowedThreats],platformTypes:['ANY_PLATFORM'],
           threatEntryTypes:['URL'],threatEntries:[...sent].map(url => ({url})),
-        }}), signal:AbortSignal.timeout(5000), redirect:'error',
+        }}), signal:AbortSignal.any([AbortSignal.timeout(5000), ...(signal ? [signal] : [])]), redirect:'error',
       });
       if (!response.ok) return unavailable();
       const body = await response.json();

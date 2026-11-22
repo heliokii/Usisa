@@ -631,5 +631,12 @@ void main() {
       final r = await check(harmlessWithLink, linkChecker: links(LinkStatus.clean));
       expect(r.checkedOnPhone, isFalse);
     });
+
+    test('still "Checked on your phone" when no link got a real online answer', () async {
+      expect((await check(harmlessWithLink, linkChecker: links(LinkStatus.unresolved))).checkedOnPhone, isTrue);
+      expect((await check(harmlessWithLink, linkChecker: links(LinkStatus.opensApp))).checkedOnPhone, isTrue);
+      expect((await check(harmlessWithLink, linkChecker: (_) => throw Exception('offline'))).checkedOnPhone, isTrue);
+      expect((await check(harmlessWithLink, linkChecker: links(LinkStatus.flagged))).checkedOnPhone, isFalse);
+    });
   });
 }

@@ -9,6 +9,8 @@ const _risk = {
   Verdict.looksSafe: RiskLevel.low,
   Verdict.beCareful: RiskLevel.caution,
   Verdict.dangerous: RiskLevel.high,
+  // No link checker runs here, so an unchecked link alone must not notify.
+  Verdict.couldntCheck: RiskLevel.low,
 };
 
 Future<void> runSmsBackground({MethodChannel channel = const MethodChannel('usisa/sms_worker')}) async {
@@ -24,7 +26,8 @@ Future<void> runSmsBackground({MethodChannel channel = const MethodChannel('usis
     if (body.runes.length > 10000) throw const ScanException('textTooLong');
     // The same phone check the app runs; nothing leaves the phone here.
     final phone = phoneCheck(body);
-    final risk = _risk[phone.verdict]!;
+    final verdict = (await const CheckPipeline().run(CheckInput(body, source: CheckSource.sms))).verdict;
+    final risk = _risk[verdict] ?? RiskLevel.low;
     final result = ScanResult(
       id: id,
       text: body,
@@ -49,7 +52,7 @@ Future<void> runSmsBackground({MethodChannel channel = const MethodChannel('usis
     await channel.invokeMethod<void>('complete', {
       'result': result.toJson(),
       'risk': risk.name,
-      if (risk != RiskLevel.low) ...{'title': l.smsAlertTitle(phone.verdict.name), 'from': l.smsAlertFrom(sender)},
+      if (risk != RiskLevel.low) ...{'title': l.smsAlertTitle(verdict.name), 'from': l.smsAlertFrom(sender)},
     });
   } on ScanException catch (error) {
     await channel.invokeMethod<void>('complete', {'error': error.code});

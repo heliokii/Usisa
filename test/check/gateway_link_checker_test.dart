@@ -28,7 +28,7 @@ http.Response json(Object body, {int status = 200}) =>
     http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json; charset=utf-8'});
 
 Future<LinkCheck> checkWith(http.Client client, [String link = 'bit.ly/abc']) async =>
-    (await gatewayLinkChecker(client, base, now: () => now, timeout: const Duration(milliseconds: 50))([link])).single;
+    (await gatewayLinkChecker(client, base, timeout: const Duration(milliseconds: 50))([link])).single;
 
 Future<LinkCheck> checkAnswer(Map<String, Object?> body) => checkWith(MockClient((_) async => json(body)));
 
@@ -69,6 +69,11 @@ void main() {
     expect(r.status, LinkStatus.opensApp);
   });
 
+  test("an answer is used whatever the phone's clock says", () async {
+    final skewed = DateTime.now().toUtc().subtract(const Duration(hours: 3));
+    expect((await checkAnswer(answer('noMatch', destination: 'https://a.ph', at: skewed))).status, LinkStatus.clean);
+  });
+
   test('an unfollowed link is unresolved', () async {
     expect((await checkAnswer(answer('unavailable', expansion: 'unresolved', reason: 'timeout_total'))).status, LinkStatus.unresolved);
   });
@@ -79,7 +84,6 @@ void main() {
       'non-200': MockClient((_) async => json({'error': 'unavailable'}, status: 503)),
       'HTML page': MockClient((_) async => http.Response('<html>waking up</html>', 200, headers: {'content-type': 'text/html'})),
       'oversized': MockClient((_) async => json({...answer('noMatch', destination: 'https://a.ph'), 'pad': 'x' * 70000})),
-      'stale': MockClient((_) async => json(answer('noMatch', destination: 'https://a.ph', at: now.subtract(const Duration(minutes: 6))))),
       'not JSON': MockClient((_) async => http.Response('nope', 200, headers: {'content-type': 'application/json'})),
       'cancelled': MockClient((_) async => throw http.ClientException('Connection closed')),
       'unknown status': MockClient((_) async => json(answer('maybe', destination: 'https://a.ph'))),

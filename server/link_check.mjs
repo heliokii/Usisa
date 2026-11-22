@@ -168,7 +168,7 @@ function boundedCache() {
 export function createLinkChecker({lookup, resolve = defaultResolve, request = defaultRequest, now = Date.now}) {
   const follow = createFollower({resolve, request});
   const chains = boundedCache(), verdicts = boundedCache();
-  return async function check(input) {
+  return async function check(input, signal) {
     let chain = chains.get(input, now())?.chain;
     if (!chain) {
       chain = await follow(input);
@@ -179,7 +179,7 @@ export function createLinkChecker({lookup, resolve = defaultResolve, request = d
     const missing = urls.filter(u => !verdicts.get(u, at));
     let provider = 'Google Safe Browsing', sbFailed = false;
     if (missing.length) {
-      const sb = await lookup(missing);
+      const sb = await lookup(missing, signal);
       provider = sb.provider ?? provider;
       if (sb.status === 'unavailable') sbFailed = true;
       else {

@@ -43,16 +43,25 @@ test('a slow upstream ends in unavailable at the server deadline, before the app
   });
 });
 
+test('when the AI deadline passes, the in-flight AI call is aborted so its slot frees', async () => {
+  let aborted;
+  const scanAi = (_body,signal)=>new Promise(resolve=>{ aborted = signal; signal.addEventListener('abort',()=>resolve({state:'unavailable'})); });
+  await gateway({timeouts:{aiMs:50,linkCheckMs:50},scanAi},async({post})=>{
+    assert.equal((await post()).status,503);
+    assert.equal(aborted.aborted,true);
+  });
+});
+
 async function appSeconds(file, pattern) {
-  const source = await readFile(new URL(`../lib/features/scan/${file}`,import.meta.url),'utf8');
+  const source = await readFile(new URL(`../lib/features/${file}`,import.meta.url),'utf8');
   const match = source.match(pattern);
   assert.ok(match,`app timeout not found in ${file}`);
   return Number(match[1])*1000;
 }
 
 test('server deadlines stay at least 1 s below the app request timeouts', async () => {
-  const appAi = await appSeconds('ai_scan_client.dart',/timeout = const Duration\(seconds: (\d+)\)/);
-  const appLink = await appSeconds('reputation_client.dart',/\.timeout\(const Duration\(seconds: (\d+)\)\)/);
+  const appAi = await appSeconds('scan/ai_scan_client.dart',/timeout = const Duration\(seconds: (\d+)\)/);
+  const appLink = await appSeconds('check/gateway_link_checker.dart',/timeout = const Duration\(seconds: (\d+)\)/);
   assert.ok(TIMEOUTS.aiMs <= appAi-1000,`AI ${TIMEOUTS.aiMs} ms vs app ${appAi} ms`);
   assert.ok(TIMEOUTS.linkCheckMs <= appLink-1000,`link check ${TIMEOUTS.linkCheckMs} ms vs app ${appLink} ms`);
 });

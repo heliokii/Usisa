@@ -13,12 +13,6 @@ Usisa is a Flutter Android app that helps people in the Philippines review suspi
 - English and Filipino interface localization.
 - Incoming SMS check: the single build declares `RECEIVE_SMS`; with the Auto SMS protection switch on, each text (multipart texts joined) is checked in the background by the same Dart phone check the app uses. Texts under 24 hours old are still checked after a delay. Harmless texts only add to the "N texts checked today" count on the home card and store no content.
 
-## What is complete and checked
-
-The last recorded check covered the Android `manual` flavor: 98 Flutter unit/widget checks and four emulator integration checks passed, and `flutter analyze --no-pub` was clean. The checks covered the manual scan and storage flow, screenshot OCR, consented AI review, and consented Safe Browsing lookup.
-
-Those results predate recent external edits to the generated localization files in `lib/l10n/`. Re-run analysis and checks before relying on them for a release.
-
 ## Unfinished or not verified
 
 - The SMS flow has unit tests (Kotlin `SmsPolicyTest`, Dart contract and home card tests); the end-to-end path on an emulator or phone still needs the manual check below. OEM battery managers (Xiaomi, Oppo, Vivo, Samsung) can stop it on real phones.

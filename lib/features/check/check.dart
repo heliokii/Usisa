@@ -118,8 +118,7 @@ class CheckPipeline {
     final found = phone.links.isEmpty && input.source == CheckSource.link && pasted.isNotEmpty ? [pasted] : phone.links;
     final web = [for (final l in found) if (!opensApp(l)) l];
     var links = [for (final l in found) if (opensApp(l)) LinkCheck(l, LinkStatus.opensApp)];
-    final online = linkChecker != null && web.isNotEmpty;
-    if (online) {
+    if (linkChecker != null && web.isNotEmpty) {
       try {
         links = [...links, ...await linkChecker!(web)];
       } catch (_) {
@@ -142,7 +141,6 @@ class CheckPipeline {
       links: links,
       aiScan: input.aiScan,
       ai: ai,
-      checkedOnline: online,
     );
   }
 }
@@ -168,9 +166,6 @@ CheckResult decideVerdict({
   required List<LinkCheck> links,
   required bool aiScan,
   AiAnswer? ai,
-
-  /// Whether the online link check ran; defaults to "some link has a result".
-  bool? checkedOnline,
 }) {
   bool has(LinkStatus s) => links.any((l) => l.status == s);
   final strong = [
@@ -220,7 +215,8 @@ CheckResult decideVerdict({
     text: text,
     verdict: verdict,
     reasons: reasons,
-    checkedOnPhone: !(checkedOnline ?? links.isNotEmpty) && ai == null,
+    // Unresolved and app-opening links got no real online answer.
+    checkedOnPhone: ai == null && !links.any((l) => const {LinkStatus.clean, LinkStatus.flagged, LinkStatus.shortenerBlocked}.contains(l.status)),
     destinations: {for (final l in links) ?l.destination}.toList(),
     evidence: useAi ? {for (final s in kept) ?s.quote}.toList() : const [],
     aiUnavailable: aiScan && ai == null,

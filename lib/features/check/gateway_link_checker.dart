@@ -15,16 +15,16 @@ void warmUpGateway(http.Client client, Uri base) =>
     client.get(base.resolve('/healthz')).timeout(const Duration(seconds: 10)).ignore();
 
 /// The online link check over the gateway's `POST /v1/link-check` (contract: server/link_check.mjs).
-/// One POST per link, never retried; any timeout, non-200, HTML, oversized, stale or cancelled answer is unresolved.
+/// One POST per link, never retried; any timeout, non-200, HTML, oversized or cancelled answer is unresolved.
+/// No `checkedAt` freshness check: the request timeout already bounds the answer's age, and the phone clock may be off.
 LinkChecker gatewayLinkChecker(
   http.Client client,
   Uri base, {
-  DateTime Function() now = DateTime.now,
   Duration timeout = const Duration(seconds: 10),
 }) =>
-    (links) => Future.wait([for (final link in links) _check(client, base, link, now, timeout)]);
+    (links) => Future.wait([for (final link in links) _check(client, base, link, timeout)]);
 
-Future<LinkCheck> _check(http.Client client, Uri base, String link, DateTime Function() now, Duration timeout) async {
+Future<LinkCheck> _check(http.Client client, Uri base, String link, Duration timeout) async {
   final unresolved = LinkCheck(link, LinkStatus.unresolved);
   try {
     final response = await client
@@ -41,8 +41,6 @@ Future<LinkCheck> _check(http.Client client, Uri base, String link, DateTime Fun
     }
     final value = jsonDecode(response.body);
     if (value is! Map<String, dynamic>) return unresolved;
-    final at = DateTime.tryParse('${value['checkedAt']}');
-    if (at == null || now().difference(at).abs() > const Duration(minutes: 5)) return unresolved;
     final destination = value['destination'] is String ? value['destination'] as String : null;
     final status = switch (value['status']) {
       'matched' => LinkStatus.flagged,
