@@ -109,7 +109,9 @@ final _win = RegExp(
   r'(?:kayo|ikaw) ay napili|congratulations?\W+(?:you|your|winner|ikaw)|(?:number|sim\W*|account) (?:has |had )?won|'
   r'been awarded|(?:one of )?(?:the |our )?lucky winners? of|masuwerteng nanal|eligible for (?:a )?free|'
   r'been selected (?:as|to receive)|beneficiary|free money|incoming (?:transfer|fund)|cash deposit of|tax refund|'
-  r'free \d{2,}\b(?! ?(?:gb|mb|minutes|mins|texts|sms|calls))|\d+ ?(?:p|php|₱) (?:for )?free|withdraw \d+ ?p for free)',
+  r'free \d{2,}\b(?! ?(?:gb|mb|minutes|mins|texts|sms|calls))|\d+ ?(?:p|php|₱) (?:for )?free|withdraw \d+ ?p for free|'
+  r'(?:withdraw|i-?withdraw|claim) (?:your |ang )?(?:winnings|panalo)|'
+  r'you have (?:p|php|₱) ?[\d,]+(?:\.\d+)? in your account)',
 );
 final _claim = RegExp(
   r'\b(?:claim|i-?claim|redeem|to receive|matanggap|entitlement|processing fee|release fee|magbayad)\b',

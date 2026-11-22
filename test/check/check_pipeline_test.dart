@@ -359,8 +359,21 @@ void main() {
       }
     });
 
-    test('real wallet promos and plain lotto results stay Looks safe', () async {
+    test('reported winnings, deposit and reward-points scams are Dangerous on the phone alone', () async {
       for (final text in [
+        'You have PHP4,641 in your account. Today only. Withdraw your winnings immediately. Click: https://cutt.ly/Abc12345?4532',
+        'PANALO KA!!!\n\n09170000000\n08:05-22:55.\nMay PHP 2,120.00 nang pumasok sa account mo. https://bit.ly/4abcDEF',
+        'BDO reminds you that your reward points(8,200) will expire today. Please visit to redeem your favorite gift: https://bdo-cph.com',
+      ]) {
+        final r = await CheckPipeline(linkChecker: (links) async => [for (final l in links) LinkCheck(l, LinkStatus.unresolved)])
+            .run(CheckInput(text, source: CheckSource.message));
+        expect(r.verdict, Verdict.dangerous, reason: text);
+      }
+    });
+
+    test('real wallet promos, balance notices and plain lotto results stay Looks safe', () async {
+      for (final text in [
+        'BPI: You have PHP 4,641.20 in your account as of 10:00 AM today.',
         'GCash: Get P50 cashback when you pay bills this weekend. Details at gcash.com/promos',
         'PCSO Lotto results: Grand Lotto 6/55 jackpot P45M, winning numbers 04-11-23-30-41-52.',
       ]) {
