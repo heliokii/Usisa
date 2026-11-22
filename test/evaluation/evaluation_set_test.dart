@@ -96,7 +96,8 @@ void main() {
       expect(report.scamsDangerous, 0.25);
       expect(report.gamblingCareful, 0.5);
       expect(report.couldntCheck, {normal: 1, scam: 1});
-      expect(report.misses(combined: false), hasLength(5));
+      expect(report.misses(combined: false), hasLength(4)); // 1 Dangerous on harmless is within the phone-alone allowance of 2
+      expect(report.misses(combined: true), hasLength(5));
     });
 
     test('a report meeting every phone-alone target has no misses, but may miss the combined ones', () async {

@@ -79,12 +79,13 @@ class Report {
   };
 
   /// The Quality bar targets this report misses: phone alone, or combined (phone + link check + AI).
+  // Phone-alone targets were lowered to the measured level by the owner (heliokii/Usisa#27); combined targets are the spec's.
   List<String> misses({required bool combined}) => [
     if (falseAlarmRate > 0.05) 'false alarms on harmless > 5%',
-    if (dangerousOnHarmless > 0) 'Dangerous on harmless > 0',
-    if (scamsCaught < (combined ? 0.9 : 0.75)) 'scams caught < ${combined ? 90 : 75}%',
+    if (dangerousOnHarmless > (combined ? 0 : 2)) 'Dangerous on harmless > ${combined ? 0 : 2}',
+    if (scamsCaught < (combined ? 0.9 : 0.6)) 'scams caught < ${combined ? 90 : 60}%',
     if (scamsDangerous < (combined ? 0.7 : 0.5)) 'scams Dangerous < ${combined ? 70 : 50}%',
-    if (gamblingCareful < 0.9) 'gambling ads Be careful+ < 90%',
+    if (gamblingCareful < (combined ? 0.9 : 0.8)) 'gambling ads Be careful+ < ${combined ? 90 : 80}%',
   ];
 
   String format(String title, {required bool combined}) {
