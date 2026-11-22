@@ -50,3 +50,6 @@ cd server && npm test       # node --test *.test.mjs
 - Verdicts are heuristic; UI copy must not claim content is definitely safe or malicious.
 - Release builds are signed with the project key from the git-ignored `android/key.properties`; there is no debug-key fallback. Release steps and the demo-day checklist are in `RELEASE.md`.
 - `MOCK_TEST.md` has synthetic sample scam content for manual testing.
+
+# When answering
+- Anwser concisely 

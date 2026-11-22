@@ -55,3 +55,4 @@ app.*.map.json
 .playwright-mcp
 
 docs/*
+.claude/
