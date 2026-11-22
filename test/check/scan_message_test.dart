@@ -21,9 +21,12 @@ Future<void> pasteAndCheck(WidgetTester tester, String text) async {
   await tester.tap(find.text('Scan a message'));
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
+  // Large text can push the field below the fold.
+  await tester.ensureVisible(find.byType(TextField, skipOffstage: false));
+  await tester.pump();
   await tester.enterText(find.byType(TextField), text);
   await tester.pump();
-  await tester.tap(find.text('Check'));
+  await tester.tap(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
 }
@@ -35,6 +38,8 @@ void main() {
     // First Check with a link asks for online consent; stay on the phone.
     await tester.tap(find.text('No, phone only'));
     await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    // The verdict slides in after the consent screen closes.
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Dangerous'), findsOneWidget);

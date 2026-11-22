@@ -26,7 +26,7 @@ void main() {
 
   testWidgets('an AI scan verdict never offers $askAi', (tester) async {
     await openAiScan(tester, runCheck: (input) async => result(input, Verdict.beCareful));
-    await tester.tap(find.text('A message'));
+    await tester.tap(find.text('Scan a message'));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'Hello po');
     await tapCheck(tester);

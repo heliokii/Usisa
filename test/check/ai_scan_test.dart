@@ -43,8 +43,8 @@ Future<void> openAiScan(
 
 Future<void> tapCheck(WidgetTester tester) async {
   await tester.pump();
-  await tester.ensureVisible(find.text('Check'));
-  await tester.tap(find.text('Check'));
+  await tester.ensureVisible(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
+  await tester.tap(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
   await settle(tester);
 }
 
@@ -62,32 +62,32 @@ void main() {
       },
       readScreenshot: () async => 'Read from the picture',
     );
-    expect(find.text('A message'), findsOneWidget);
-    expect(find.text('A link'), findsOneWidget);
-    expect(find.text('A screenshot'), findsOneWidget);
+    expect(find.text('Scan a message'), findsOneWidget);
+    expect(find.text('Check a link'), findsOneWidget);
+    expect(find.text('Scan a screenshot'), findsOneWidget);
 
-    await tester.tap(find.text('A message'));
+    await tester.tap(find.text('Scan a message'));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'Pay now po');
     await tapCheck(tester);
     expect(find.text('Be careful'), findsOneWidget);
     await tester.pageBack();
     await settle(tester);
-    await tester.pageBack();
+    await tester.tap(find.text('Back to check'));
     await settle(tester);
 
-    await tester.tap(find.text('A link'));
+    await tester.tap(find.text('Check a link'));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'bit.ly/x');
     await tapCheck(tester);
     await tester.pageBack();
     await settle(tester);
-    await tester.pageBack();
+    await tester.tap(find.text('Back to check'));
     await settle(tester);
 
-    await tester.tap(find.text('A screenshot'));
+    await tester.tap(find.text('Scan a screenshot'));
     await settle(tester);
-    await tester.tap(find.text('Choose a screenshot'));
+    await tester.tap(find.text('Choose from gallery'));
     await settle(tester);
     await tapCheck(tester);
 
@@ -109,7 +109,7 @@ void main() {
         evidence: const ['Send your OTP'],
       ),
     );
-    await tester.tap(find.text('A message'));
+    await tester.tap(find.text('Scan a message'));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'Hi! Send your OTP now');
     await tapCheck(tester);
@@ -134,7 +134,7 @@ void main() {
         aiUnavailable: true,
       ),
     );
-    await tester.tap(find.text('A message'));
+    await tester.tap(find.text('Scan a message'));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'Hello po');
     await tapCheck(tester);
@@ -164,7 +164,7 @@ void main() {
 
     Future<void> scanMessage(WidgetTester tester, {required bool online}) async {
       await openAiScan(tester, storage: consented(online), gatewayClient: gateway);
-      await tester.tap(find.text('A message'));
+      await tester.tap(find.text('Scan a message'));
       await settle(tester);
       await tester.enterText(find.byType(TextField), scam);
       await tapCheck(tester);

@@ -33,6 +33,7 @@ class UsisaApp extends StatefulWidget {
     this.storage,
     this.runCheck,
     this.readScreenshot,
+    this.takePhoto,
     this.gatewayClient,
     this.shares,
     this.readSharedImage,
@@ -49,6 +50,9 @@ class UsisaApp extends StatefulWidget {
 
   /// Picks a picture and reads its text; widget tests pass a fake.
   final ScreenshotReader? readScreenshot;
+
+  /// Takes a photo with the camera and reads its text; widget tests pass a fake.
+  final ScreenshotReader? takePhoto;
 
   /// Content shared in from other apps; widget tests pass a fake.
   final Stream<SharedItem>? shares;
@@ -192,6 +196,7 @@ class _UsisaAppState extends State<UsisaApp> {
         settings: settings,
         sms: sms,
         readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
+        takePhoto: widget.takePhoto ?? () async => (await OcrService().readPhoto())?.text,
         shares: _shares,
         readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
       ),
@@ -204,6 +209,7 @@ class _Shell extends StatefulWidget {
     required this.ready,
     required this.runCheck,
     required this.readScreenshot,
+    required this.takePhoto,
     required this.history,
     required this.settings,
     required this.sms,
@@ -216,6 +222,7 @@ class _Shell extends StatefulWidget {
   final HistoryStore history;
   final SettingsStore settings;
   final ScreenshotReader readScreenshot;
+  final ScreenshotReader takePhoto;
   final Stream<SharedItem> shares;
   final Future<String> Function(String path) readSharedImage;
 
@@ -227,8 +234,19 @@ class _ShellState extends State<_Shell> {
   int _tab = 0;
   // One switch for the home card and Settings, backed by the native SMS bridge.
   // shortcut: without a bridge (web preview, widget tests) the switch is visual only.
-  bool _previewSmsOn = false;
-  bool get _smsOn => widget.sms.bridgeAvailable ? widget.sms.protectionOn : _previewSmsOn;
+  final _previewSmsOn = ValueNotifier(false);
+  bool get _smsOn => widget.sms.bridgeAvailable ? widget.sms.protectionOn : _previewSmsOn.value;
+
+  // The Check tab keeps its own page stack, so the bottom nav stays visible on its pages.
+  final _checkNav = GlobalKey<NavigatorState>();
+
+  /// Shows the Check tab and returns its navigator, emptied back to home.
+  NavigatorState _checkTab({bool reset = false}) {
+    if (_tab != 0) setState(() => _tab = 0);
+    final nav = _checkNav.currentState!;
+    if (reset) nav.popUntil((route) => route.isFirst);
+    return nav;
+  }
 
   // Once shown, setup stays up until finished, even after turning protection on changes the bridge state.
   bool _inSetup = false;
@@ -249,7 +267,10 @@ class _ShellState extends State<_Shell> {
   }
 
   Future<void> _setSms(bool on) async {
-    if (!widget.sms.bridgeAvailable) return setState(() => _previewSmsOn = on);
+    if (!widget.sms.bridgeAvailable) {
+      _previewSmsOn.value = on;
+      return setState(() {});
+    }
     try {
       await widget.sms.setEnabled(on, language: widget.settings.language);
     } catch (_) {
@@ -278,6 +299,7 @@ class _ShellState extends State<_Shell> {
   void dispose() {
     _shares.cancel();
     _textAlerts.cancel();
+    _previewSmsOn.dispose();
     super.dispose();
   }
 
@@ -285,19 +307,17 @@ class _ShellState extends State<_Shell> {
   Future<void> _openTextAlert(String id) async {
     final review = await widget.sms.review(id).catchError((_) => null);
     if (review == null || !mounted) return;
-    Navigator.of(context)
-      ..popUntil((route) => route.isFirst)
-      ..push(
-        MaterialPageRoute<void>(
-          builder: (_) => PasteScreen(
-            runCheck: widget.runCheck,
-            source: CheckSource.sms,
-            initialText: review.body,
-            historyId: id,
-            autoRun: true,
-          ),
+    _checkTab(reset: true).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PasteScreen(
+          runCheck: widget.runCheck,
+          source: CheckSource.sms,
+          initialText: review.body,
+          historyId: id,
+          autoRun: true,
         ),
-      );
+      ),
+    );
   }
 
   /// A share opens the matching tile prefilled; nothing is checked until the person taps Check.
@@ -306,30 +326,29 @@ class _ShellState extends State<_Shell> {
     final image = item.imagePath;
     final text = item.text?.trim() ?? '';
     final link = phoneCheck(text).links.singleOrNull == text;
-    Navigator.of(context)
-      ..popUntil((route) => route.isFirst)
-      ..push(
-        MaterialPageRoute<void>(
-          builder: (_) => image != null
-              ? ScreenshotScreen(
-                  readScreenshot: widget.readScreenshot,
-                  runCheck: widget.runCheck,
-                  readShared: () => widget.readSharedImage(image),
-                )
-              : PasteScreen(
-                  runCheck: widget.runCheck,
-                  source: link ? CheckSource.link : CheckSource.share,
-                  initialText: text,
-                  title: link ? l.tileLinkTitle : null,
-                ),
-        ),
-      );
+    _checkTab(reset: true).push(
+      MaterialPageRoute<void>(
+        builder: (_) => image != null
+            ? ScreenshotScreen(
+                readScreenshot: widget.readScreenshot,
+                takePhoto: widget.takePhoto,
+                runCheck: widget.runCheck,
+                readShared: () => widget.readSharedImage(image),
+              )
+            : PasteScreen(
+                runCheck: widget.runCheck,
+                source: link ? CheckSource.link : CheckSource.share,
+                initialText: text,
+                title: link ? l.tileLinkTitle : null,
+              ),
+      ),
+    );
   }
 
   void _startCheck(CheckKind kind) {
     if (kind == CheckKind.message || kind == CheckKind.link) {
       final link = kind == CheckKind.link;
-      Navigator.of(context).push(
+      _checkTab().push(
         MaterialPageRoute<void>(
           builder: (_) => PasteScreen(
             runCheck: widget.runCheck,
@@ -341,16 +360,21 @@ class _ShellState extends State<_Shell> {
       return;
     }
     if (kind == CheckKind.screenshot) {
-      Navigator.of(context).push(
+      _checkTab().push(
         MaterialPageRoute<void>(
-          builder: (_) => ScreenshotScreen(readScreenshot: widget.readScreenshot, runCheck: widget.runCheck),
+          builder: (_) => ScreenshotScreen(
+            readScreenshot: widget.readScreenshot,
+            takePhoto: widget.takePhoto,
+            runCheck: widget.runCheck,
+          ),
         ),
       );
       return;
     }
-    Navigator.of(context).push(
+    _checkTab().push(
       MaterialPageRoute<void>(
-        builder: (_) => AiScanScreen(runCheck: widget.runCheck, readScreenshot: widget.readScreenshot),
+        builder: (_) =>
+            AiScanScreen(runCheck: widget.runCheck, readScreenshot: widget.readScreenshot, takePhoto: widget.takePhoto),
       ),
     );
   }
@@ -382,13 +406,26 @@ class _ShellState extends State<_Shell> {
           builder: (context, _) => IndexedStack(
             index: _tab,
             children: [
-              HomeScreen(
-                onCheck: _startCheck,
-                smsOn: _smsOn,
-                onSmsChanged: _setSms,
-                checkedToday: widget.sms.checkedToday,
-                protectionLost: widget.sms.bridgeAvailable && widget.sms.protectionLost,
-                onFix: _fixSms,
+              // Back pops the Check tab's own pages before leaving the app.
+              NavigatorPopHandler<Object?>(
+                enabled: _tab == 0,
+                onPopWithResult: (_) => _checkNav.currentState?.maybePop(),
+                child: Navigator(
+                  key: _checkNav,
+                  onGenerateRoute: (_) => MaterialPageRoute<void>(
+                    builder: (_) => ListenableBuilder(
+                      listenable: Listenable.merge([widget.sms, _previewSmsOn]),
+                      builder: (context, _) => HomeScreen(
+                        onCheck: _startCheck,
+                        smsOn: _smsOn,
+                        onSmsChanged: _setSms,
+                        checkedToday: widget.sms.checkedToday,
+                        protectionLost: widget.sms.bridgeAvailable && widget.sms.protectionLost,
+                        onFix: _fixSms,
+                      ),
+                    ),
+                  ),
+                ),
               ),
               HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
               const LearnScreen(),
@@ -405,7 +442,11 @@ class _ShellState extends State<_Shell> {
           child: NavigationBar(
             backgroundColor: Colors.white,
             selectedIndex: _tab,
-            onDestinationSelected: (i) => setState(() => _tab = i),
+            onDestinationSelected: (i) {
+              // Tapping Check again returns to the Check home.
+              if (i == 0 && _tab == 0) _checkNav.currentState?.popUntil((route) => route.isFirst);
+              setState(() => _tab = i);
+            },
             destinations: [
               NavigationDestination(
                 icon: const Icon(Icons.home_outlined),

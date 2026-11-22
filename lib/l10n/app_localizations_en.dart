@@ -493,4 +493,111 @@ class AppLocalizationsEn extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get appTagline => 'A little check, a lot safer.';
+
+  @override
+  String get homeSubtitle => 'When in doubt, check it first.';
+
+  @override
+  String get smsCardEyebrow => 'Your everyday backup';
+
+  @override
+  String get pageTagline => 'Your digital kakampi';
+
+  @override
+  String get backToCheck => 'Back to check';
+
+  @override
+  String get pageEyebrow => 'A little check goes a long way';
+
+  @override
+  String get messageIntro => 'Paste the message you want to check.';
+
+  @override
+  String get messageLabel => 'Your message';
+
+  @override
+  String get pasteButton => 'Paste';
+
+  @override
+  String get clearButton => 'Clear';
+
+  @override
+  String charCount(int count, int max) {
+    return '$count / $max characters';
+  }
+
+  @override
+  String get checkMessageButton => 'Check message';
+
+  @override
+  String get messageFootnote =>
+      'Usisa checks the message on your phone first.\nLinks are only looked up online if you allowed it.';
+
+  @override
+  String get linkIntro => 'Not sure where a link leads? Check it first.';
+
+  @override
+  String get linkLabel => 'Link to check';
+
+  @override
+  String get linkTipTitle => 'Looks familiar. Isn\'t always real.';
+
+  @override
+  String get linkTipBody =>
+      'Scam links copy banks and delivery services with a tiny spelling change. Never open the link to find out: Usisa follows it for you and shows where it really goes.';
+
+  @override
+  String get checkLinkButton => 'Check link';
+
+  @override
+  String get linkFootnote =>
+      'Your link is followed on Usisa\'s server,\nnever opened on your phone.';
+
+  @override
+  String get screenshotPageIntro =>
+      'Upload a screenshot of a suspicious message.';
+
+  @override
+  String get screenshotDropTitle => 'A screenshot is a good start.';
+
+  @override
+  String get screenshotDropTypes => 'JPG, PNG or WEBP';
+
+  @override
+  String get screenshotGallery => 'Choose from gallery';
+
+  @override
+  String get screenshotCamera => 'Take a photo';
+
+  @override
+  String get screenshotReading => 'Reading the text…';
+
+  @override
+  String get screenshotReviewTitle => 'Review the text we read';
+
+  @override
+  String get screenshotStartOver => 'Start over';
+
+  @override
+  String get checkScreenshotButton => 'Check screenshot';
+
+  @override
+  String get screenshotFootnote =>
+      'Your picture stays on this phone.\nOnly the text read from it is checked.';
+
+  @override
+  String get aiScanPageIntro =>
+      'A closer look starts here. What would you like to check?';
+
+  @override
+  String get aiScanMessageSubtitle => 'Take a closer look at a text.';
+
+  @override
+  String get aiScanLinkSubtitle => 'See where it leads and why.';
+
+  @override
+  String get aiScanScreenshotSubtitle => 'Read a message from a picture.';
 }

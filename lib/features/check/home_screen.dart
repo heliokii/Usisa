@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/check_page.dart';
 import '../../app/motion.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
@@ -8,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 enum CheckKind { message, link, screenshot, ai }
 
 /// The Check tab: indigo header, lavender sheet with four icon-free tiles and the SMS card.
+/// Fills the screen exactly; it only scrolls when very large text can't fit.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
@@ -48,77 +50,102 @@ class HomeScreen extends StatelessWidget {
       (CheckKind.screenshot, l.tileScreenshotTitle, l.tileScreenshotSubtitle),
       (CheckKind.ai, l.tileAiTitle, l.tileAiSubtitle),
     ];
-    return ColoredBox(
-      color: UsisaColors.primary,
-      child: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: _Header(greeting: greeting, headline: l.homeHeadline),
-            ),
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: UsisaColors.background,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(UsisaRadius.sheet)),
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (protectionLost) ...[
-                      _ProtectionOffBanner(
-                        title: l.smsOffBanner,
-                        body: l.smsOffBannerBody,
-                        fix: l.smsFix,
-                        onFix: onFix,
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                    EnterMotion(index: 1, child: Text(l.homePrompt, style: tt.titleLarge)),
-                    const SizedBox(height: 16),
-                    // Rows instead of a fixed-ratio grid so large text grows the tiles instead of clipping.
-                    for (var row = 0; row < 2; row++) ...[
-                      if (row > 0) const SizedBox(height: 14),
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            for (var col = 0; col < 2; col++) ...[
-                              if (col > 0) const SizedBox(width: 14),
-                              Expanded(
-                                child: EnterMotion(
-                                  index: 2 + row * 2 + col,
-                                  child: _Tile(
-                                    kind: tiles[row * 2 + col].$1,
-                                    title: tiles[row * 2 + col].$2,
-                                    subtitle: tiles[row * 2 + col].$3,
-                                    onTap: () => onCheck(tiles[row * 2 + col].$1),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    EnterMotion(
-                      index: 6,
-                      child: _SmsCard(
-                        title: l.smsCardTitle,
-                        status: smsOn ? l.smsCardChecked(checkedToday) : l.smsCardOff,
-                        value: smsOn,
-                        onChanged: onSmsChanged,
-                      ),
-                    ),
-                  ],
+    Widget row(int first, bool compact) => Expanded(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = first; i < first + 2; i++) ...[
+            if (i > first) const SizedBox(width: 14),
+            Expanded(
+              child: EnterMotion(
+                index: 2 + i,
+                child: CheckTile(
+                  kind: tiles[i].$1,
+                  title: tiles[i].$2,
+                  subtitle: tiles[i].$3,
+                  onTap: () => onCheck(tiles[i].$1),
+                  compact: compact,
                 ),
               ),
             ),
           ],
+        ],
+      ),
+    );
+    return ColoredBox(
+      color: UsisaColors.primary,
+      child: SafeArea(
+        bottom: false,
+        child: LayoutBuilder(
+          // Short screens (small phones) get a tighter header and tiles so everything still fits.
+          builder: (context, box) {
+            final compact = box.maxHeight < 760;
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: box.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _Header(
+                        greeting: greeting,
+                        headline: l.homeHeadline,
+                        subtitle: l.homeSubtitle,
+                        tagline: l.appTagline,
+                        compact: compact,
+                      ),
+                      Expanded(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: UsisaColors.background,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(UsisaRadius.sheet)),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(18, 20, 18, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (protectionLost) ...[
+                                _ProtectionOffBanner(
+                                  title: l.smsOffBanner,
+                                  body: l.smsOffBannerBody,
+                                  fix: l.smsFix,
+                                  onFix: onFix,
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              EnterMotion(
+                                index: 1,
+                                child: Text(l.homePrompt, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+                              ),
+                              const SizedBox(height: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [row(0, compact), const SizedBox(height: 14), row(2, compact)],
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              EnterMotion(
+                                index: 6,
+                                child: _SmsCard(
+                                  eyebrow: l.smsCardEyebrow,
+                                  title: l.smsCardTitle,
+                                  status: smsOn ? l.smsCardChecked(checkedToday) : l.smsCardOff,
+                                  value: smsOn,
+                                  onChanged: onSmsChanged,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -138,13 +165,25 @@ Widget _dot(double size, Color color, {double? top, double? left, double? right,
 );
 
 class _Header extends StatelessWidget {
-  const _Header({required this.greeting, required this.headline});
+  const _Header({
+    required this.greeting,
+    required this.headline,
+    required this.subtitle,
+    required this.tagline,
+    this.compact = false,
+  });
+  final bool compact;
   final String greeting;
   final String headline;
+  final String subtitle;
+  final String tagline;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    // The closing "?" of the headline is drawn in yellow.
+    final mark = headline.endsWith('?') ? '?' : '';
+    final words = headline.substring(0, headline.length - mark.length);
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
@@ -152,59 +191,110 @@ class _Header extends StatelessWidget {
           child: ExcludeSemantics(
             child: Stack(
               children: [
-                const Positioned(
-                  right: -36,
-                  top: -30,
+                Positioned(
+                  right: -70,
+                  top: 40,
                   child: Drift(
-                    child: SizedBox.square(
-                      dimension: 150,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(color: UsisaColors.yellow, shape: BoxShape.circle),
+                    child: Container(
+                      width: 190,
+                      height: 190,
+                      decoration: const BoxDecoration(color: UsisaColors.yellow, shape: BoxShape.circle),
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withValues(alpha: .7), width: 1.5),
+                        ),
                       ),
                     ),
                   ),
                 ),
                 Positioned(
-                  right: -10,
-                  bottom: 20,
+                  right: -20,
+                  bottom: -10,
                   child: Container(
-                    width: 110,
-                    height: 110,
+                    width: 120,
+                    height: 120,
                     decoration: const BoxDecoration(
                       color: UsisaColors.orange,
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(110)),
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(120)),
                     ),
                   ),
                 ),
-                Positioned(
-                  right: 118,
-                  top: 60,
-                  child: Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 6),
-                    ),
-                  ),
-                ),
-                _dot(22, UsisaColors.coralDot, right: 70, top: 140),
-                _dot(10, Colors.white, right: 190, top: 34),
-                _dot(14, UsisaColors.yellow, left: 180, bottom: 44),
+                _dot(6, Colors.white, right: 96, top: 92),
+                _dot(5, Colors.white, right: 130, bottom: 24),
               ],
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 56, 24, 48),
+          padding: EdgeInsets.fromLTRB(22, 12, 22, compact ? 18 : 26),
           child: EnterMotion(
             index: 0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(greeting, style: tt.titleMedium?.copyWith(color: Colors.white)),
-                const SizedBox(height: 4),
-                Text(headline, style: tt.headlineLarge?.copyWith(color: Colors.white)),
+                Row(
+                  children: [
+                    const Wordmark(color: Colors.white, size: 26),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(40),
+                            border: Border.all(color: Colors.white.withValues(alpha: .6)),
+                          ),
+                          child: Text(
+                            tagline.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: tt.labelMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: compact ? 10 : 18),
+                Text(greeting, style: tt.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: .9))),
+                const SizedBox(height: 8),
+                // Leaves room on the right for the yellow circle.
+                FractionallySizedBox(
+                  widthFactor: .78,
+                  alignment: Alignment.centerLeft,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: words),
+                        TextSpan(
+                          text: mark,
+                          style: const TextStyle(color: UsisaColors.yellow),
+                        ),
+                      ],
+                    ),
+                    style: tt.headlineLarge?.copyWith(
+                      color: Colors.white,
+                      fontSize: compact ? 30 : 36,
+                      fontWeight: FontWeight.w800,
+                      height: 1.05,
+                      letterSpacing: -0.8,
+                    ),
+                  ),
+                ),
+                if (!compact) ...[
+                  const SizedBox(height: 10),
+                  Text(subtitle, style: tt.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: .9))),
+                ],
               ],
             ),
           ),
@@ -214,66 +304,84 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _Tile extends StatelessWidget {
-  const _Tile({required this.kind, required this.title, required this.subtitle, required this.onTap});
+/// One bright check tile: colour, a geometric motif top-right, title and subtitle at the bottom.
+class CheckTile extends StatelessWidget {
+  const CheckTile({
+    super.key,
+    required this.kind,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.compact = false,
+  });
+
+  /// Less room above the words, for short screens.
+  final bool compact;
   final CheckKind kind;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
 
-  // Tile colour and its motif colour; ink on each tile is 9.8:1 or better.
+  static const _navy = Color(0xFF2E2A7A);
+
+  // Tile colour and text colour; text contrast is 7:1 or better on each.
   static const _colors = {
-    CheckKind.message: (UsisaColors.yellow, Color(0xFFE08A00)),
-    CheckKind.link: (UsisaColors.lilac, UsisaColors.primary),
-    CheckKind.screenshot: (UsisaColors.mint, Color(0xFF0F8A6E)),
-    CheckKind.ai: (UsisaColors.coral, Color(0xFFE5484D)),
+    CheckKind.message: (UsisaColors.yellow, UsisaColors.ink),
+    CheckKind.link: (Color(0xFFFFA586), UsisaColors.ink),
+    CheckKind.screenshot: (Color(0xFFDCDAF8), UsisaColors.ink),
+    CheckKind.ai: (UsisaColors.primary, Colors.white),
   };
 
-  Widget _motif(Color c) => switch (kind) {
-    // Two circles.
+  Widget _motif() => switch (kind) {
+    // Two overlapping circles.
     CheckKind.message => Stack(
-      children: [_dot(84, c.withValues(alpha: .35), right: -22, top: -22), _dot(26, c, right: 50, top: 34)],
+      children: [_dot(40, _navy, right: 40, top: 18), _dot(40, const Color(0xD9E08A00), right: 16, top: 18)],
     ),
-    // Quarter circle.
-    CheckKind.link => Stack(
-      children: [
-        Positioned(
-          right: -24,
-          top: -24,
-          child: Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: c.withValues(alpha: .4),
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(96)),
-            ),
-          ),
+    // A quarter shape.
+    CheckKind.link => Positioned(
+      right: 18,
+      top: 16,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(
+          color: Color(0xFFA6452E),
+          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(52)),
         ),
-      ],
+      ),
     ),
-    // Dot cluster.
+    // A scatter of dots.
     CheckKind.screenshot => Stack(
       children: [
-        _dot(32, c.withValues(alpha: .7), right: 16, top: 16),
-        _dot(32, c.withValues(alpha: .35), right: 54, top: 16),
-        _dot(32, c.withValues(alpha: .35), right: 16, top: 54),
+        for (final (r, t) in [
+          (52.0, 16.0),
+          (36.0, 12.0),
+          (20.0, 18.0),
+          (44.0, 30.0),
+          (28.0, 28.0),
+          (56.0, 44.0),
+          (38.0, 46.0),
+          (22.0, 42.0),
+        ])
+          _dot(7, const Color(0xFF7A72C9), right: r, top: t),
       ],
     ),
-    // Ring.
+    // A thin ring with a yellow dot on its edge.
     CheckKind.ai => Stack(
       children: [
         Positioned(
-          right: 12,
-          top: 12,
+          right: 22,
+          top: 16,
           child: Container(
-            width: 64,
-            height: 64,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: c, width: 10),
+              border: Border.all(color: Colors.white, width: 1.2),
             ),
           ),
         ),
+        _dot(8, UsisaColors.yellow, right: 18, top: 35),
       ],
     ),
   };
@@ -281,7 +389,7 @@ class _Tile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final (tint, accent) = _colors[kind]!;
+    final (tint, ink) = _colors[kind]!;
     return PressScale(
       child: Material(
         color: tint,
@@ -291,17 +399,27 @@ class _Tile extends StatelessWidget {
           onTap: onTap,
           child: Stack(
             children: [
-              Positioned.fill(child: ExcludeSemantics(child: _motif(accent))),
+              Positioned.fill(
+                child: ExcludeSemantics(child: Stack(children: [_motif()])),
+              ),
               Padding(
                 // Top padding leaves room for the motif above the words.
-                padding: const EdgeInsets.fromLTRB(18, 72, 18, 18),
+                padding: EdgeInsets.fromLTRB(18, compact ? 50 : 64, 16, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(title, style: tt.titleMedium?.copyWith(height: 1.15)),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: tt.bodySmall),
+                    Text(
+                      title,
+                      style: tt.titleLarge?.copyWith(
+                        color: ink,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(subtitle, style: tt.bodySmall?.copyWith(color: ink.withValues(alpha: .85))),
                   ],
                 ),
               ),
@@ -314,7 +432,14 @@ class _Tile extends StatelessWidget {
 }
 
 class _SmsCard extends StatelessWidget {
-  const _SmsCard({required this.title, required this.status, required this.value, required this.onChanged});
+  const _SmsCard({
+    required this.eyebrow,
+    required this.title,
+    required this.status,
+    required this.value,
+    required this.onChanged,
+  });
+  final String eyebrow;
   final String title;
   final String status;
   final bool value;
@@ -330,20 +455,45 @@ class _SmsCard extends StatelessWidget {
         child: Stack(
           children: [
             // Decoration stays on the left so nothing sits behind the switch.
-            _dot(70, const Color(0xFF6C66E0), left: -30, bottom: -36),
-            _dot(16, UsisaColors.yellow, left: 140, top: -6),
+            Positioned(
+              left: -40,
+              bottom: -60,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: .06)),
+              ),
+            ),
             MergeSemantics(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 14, 18),
+                padding: const EdgeInsets.fromLTRB(20, 16, 14, 16),
                 child: Row(
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: tt.titleMedium?.copyWith(color: Colors.white)),
+                          Row(
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: .7),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(child: Eyebrow(eyebrow, color: Colors.white.withValues(alpha: .75))),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            title,
+                            style: tt.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
+                          ),
                           const SizedBox(height: 2),
-                          Text(status, style: tt.bodyMedium?.copyWith(color: Colors.white)),
+                          Text(status, style: tt.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: .9))),
                         ],
                       ),
                     ),
@@ -353,8 +503,8 @@ class _SmsCard extends StatelessWidget {
                       activeThumbColor: UsisaColors.primary,
                       activeTrackColor: UsisaColors.yellow,
                       inactiveThumbColor: Colors.white,
-                      inactiveTrackColor: Colors.white.withValues(alpha: .25),
-                      trackOutlineColor: const WidgetStatePropertyAll(Colors.white),
+                      inactiveTrackColor: Colors.white.withValues(alpha: .3),
+                      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
                     ),
                   ],
                 ),
@@ -380,7 +530,7 @@ class _ProtectionOffBanner extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 16, 12, 16),
+        padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
         decoration: BoxDecoration(
           color: UsisaColors.dangerTint,
           borderRadius: BorderRadius.circular(UsisaRadius.card),

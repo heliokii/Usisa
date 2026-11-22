@@ -34,6 +34,13 @@ class OcrService {
     return image == null ? null : readImage(image);
   }
 
+  /// Takes a photo with the camera (for example of another phone's screen) and reads it.
+  Future<OcrDraft?> readPhoto() async {
+    if (!available) throw const ScanException('ocrUnavailable');
+    final image = await _picker.pickImage(source: ImageSource.camera, requestFullMetadata: false);
+    return image == null ? null : readImage(image);
+  }
+
   Future<OcrDraft?> recoverScreenshot() async {
     if (!Platform.isAndroid) {
       return null;
