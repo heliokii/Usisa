@@ -21,14 +21,14 @@ Future<void> openScreenshotTile(
   await tester.tap(find.text('Scan a screenshot'));
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
-  await tester.tap(find.text('Choose a screenshot'));
+  await tester.tap(find.text('Choose from gallery'));
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
 }
 
 Future<void> tapCheck(WidgetTester tester) async {
-  await tester.ensureVisible(find.text('Check'));
-  await tester.tap(find.text('Check'));
+  await tester.ensureVisible(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
+  await tester.tap(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
 }
@@ -87,14 +87,14 @@ void main() {
         },
       );
       expect(find.text("We couldn't read any text in this picture. Try a clearer screenshot."), findsOneWidget);
-      expect(find.text('Check'), findsNothing);
+      expect(find.text('Review the text we read'), findsNothing);
       expect(checks, 0);
     });
   }
 
   testWidgets('cancelling the picker stays on the tile', (tester) async {
     await openScreenshotTile(tester, readScreenshot: () async => null);
-    expect(find.text('Choose a screenshot'), findsOneWidget);
+    expect(find.text('Choose from gallery'), findsOneWidget);
     expect(find.byType(TextField), findsNothing);
   });
 }

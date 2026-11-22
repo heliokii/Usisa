@@ -769,6 +769,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{topic, select, phishing{suspended today|It threatens you so you don\'t stop to think\ngcash-verify-ph.xyz|This isn\'t GCash\'s real website (gcash.com)\nenter your MPIN and OTP|No real bank or e-wallet asks for these} prize{You won P50,000|You can\'t win a raffle you never joined\npay the P1,500 processing fee|Real prizes never ask you to pay first\nwithin 24 hours|A deadline to rush you} family{this is my new number|An unknown number claiming to be family\nsend 5,000 to this GCash now|Pressure to send money right away\nDon\'t tell Papa yet|Secrecy stops you from checking} aid{dswd-ayuda-claim.online|Government websites end in .gov.ph\npay P200 for the release|Government aid is free. Nobody should charge you to receive it} parcel{Pay the P35 re-delivery fee|A small fee to get your card details\nph-parcel-track.top|This isn\'t the courier\'s or shop\'s real website\nreturned today|A deadline to rush you} job{Earn P500-P3,000 daily just by liking videos|Too much pay for almost no work\nMessage us on Telegram|It moves you to a private chat that\'s hard to trace} investment{Guaranteed 30% profit every week|No real investment guarantees high returns\nLimited slots only|Pressure to join before you think\ninvite friends for a bonus|Paying you to recruit is a sign of a pyramid scheme} other{FREE P888 bonus|Free credits to lure you into depositing\nlucky888bet.vip|An unknown gambling site that may be unlicensed}}'**
   String learnTopicFlags(String topic);
+
+  /// No description provided for @appTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'A little check, a lot safer.'**
+  String get appTagline;
+
+  /// No description provided for @homeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When in doubt, check it first.'**
+  String get homeSubtitle;
+
+  /// No description provided for @smsCardEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Your everyday backup'**
+  String get smsCardEyebrow;
+
+  /// No description provided for @pageTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your digital kakampi'**
+  String get pageTagline;
+
+  /// No description provided for @backToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to check'**
+  String get backToCheck;
+
+  /// No description provided for @pageEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'A little check goes a long way'**
+  String get pageEyebrow;
+
+  /// No description provided for @messageIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the message you want to check.'**
+  String get messageIntro;
+
+  /// No description provided for @messageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message'**
+  String get messageLabel;
+
+  /// No description provided for @pasteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get pasteButton;
+
+  /// No description provided for @clearButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearButton;
+
+  /// No description provided for @charCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} / {max} characters'**
+  String charCount(int count, int max);
+
+  /// No description provided for @checkMessageButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check message'**
+  String get checkMessageButton;
+
+  /// No description provided for @messageFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa checks the message on your phone first.\nLinks are only looked up online if you allowed it.'**
+  String get messageFootnote;
+
+  /// No description provided for @linkIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure where a link leads? Check it first.'**
+  String get linkIntro;
+
+  /// No description provided for @linkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to check'**
+  String get linkLabel;
+
+  /// No description provided for @linkTipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks familiar. Isn\'t always real.'**
+  String get linkTipTitle;
+
+  /// No description provided for @linkTipBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Scam links copy banks and delivery services with a tiny spelling change. Never open the link to find out: Usisa follows it for you and shows where it really goes.'**
+  String get linkTipBody;
+
+  /// No description provided for @checkLinkButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check link'**
+  String get checkLinkButton;
+
+  /// No description provided for @linkFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your link is followed on Usisa\'s server,\nnever opened on your phone.'**
+  String get linkFootnote;
+
+  /// No description provided for @screenshotPageIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a screenshot of a suspicious message.'**
+  String get screenshotPageIntro;
+
+  /// No description provided for @screenshotDropTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A screenshot is a good start.'**
+  String get screenshotDropTitle;
+
+  /// No description provided for @screenshotDropTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'JPG, PNG or WEBP'**
+  String get screenshotDropTypes;
+
+  /// No description provided for @screenshotGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get screenshotGallery;
+
+  /// No description provided for @screenshotCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get screenshotCamera;
+
+  /// No description provided for @screenshotReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the text…'**
+  String get screenshotReading;
+
+  /// No description provided for @screenshotReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the text we read'**
+  String get screenshotReviewTitle;
+
+  /// No description provided for @screenshotStartOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Start over'**
+  String get screenshotStartOver;
+
+  /// No description provided for @checkScreenshotButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check screenshot'**
+  String get checkScreenshotButton;
+
+  /// No description provided for @screenshotFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your picture stays on this phone.\nOnly the text read from it is checked.'**
+  String get screenshotFootnote;
+
+  /// No description provided for @aiScanPageIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'A closer look starts here. What would you like to check?'**
+  String get aiScanPageIntro;
+
+  /// No description provided for @aiScanMessageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a closer look at a text.'**
+  String get aiScanMessageSubtitle;
+
+  /// No description provided for @aiScanLinkSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See where it leads and why.'**
+  String get aiScanLinkSubtitle;
+
+  /// No description provided for @aiScanScreenshotSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a message from a picture.'**
+  String get aiScanScreenshotSubtitle;
 }
 
 class _AppLocalizationsDelegate

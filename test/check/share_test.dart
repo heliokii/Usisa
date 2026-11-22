@@ -54,7 +54,7 @@ void main() {
     expect(find.text('Hi Ma, pa-send ng pera sa GCash ngayon na'), findsOneWidget);
     expect(checks, isEmpty);
 
-    await tester.tap(find.text('Check'));
+    await tester.tap(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(checks.single.text, 'Hi Ma, pa-send ng pera sa GCash ngayon na');

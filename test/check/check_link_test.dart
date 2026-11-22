@@ -56,16 +56,19 @@ Future<void> checkLink(WidgetTester tester, String link) async {
   await tester.pump();
   await tester.tap(find.text('Check a link'));
   await settle(tester);
+  // Large text can push the field below the fold.
+  await tester.ensureVisible(find.byType(TextField, skipOffstage: false));
+  await tester.pump();
   await tester.enterText(find.byType(TextField), link);
   await tester.pump();
-  await tester.tap(find.text('Check'));
+  await tester.tap(find.textContaining(RegExp(r'^Check (message|link|screenshot)$')));
   await settle(tester);
 }
 
 Future<void> goHome(WidgetTester tester) async {
   await tester.pageBack();
   await settle(tester);
-  await tester.pageBack();
+  await tester.tap(find.text('Back to check'));
   await settle(tester);
 }
 

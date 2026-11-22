@@ -42,7 +42,7 @@ Future<void> settle(WidgetTester tester) async {
 Future<void> backToHome(WidgetTester tester) async {
   await tester.pageBack();
   await settle(tester);
-  await tester.pageBack();
+  await tester.tap(find.text('Back to check'));
   await settle(tester);
 }
 

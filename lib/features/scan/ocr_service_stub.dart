@@ -7,6 +7,7 @@ class OcrService {
   bool get available => false;
   Future<OcrDraft?> readScreenshot({bool usePhotos = false}) async =>
       throw const ScanException('ocrUnavailable');
+  Future<OcrDraft?> readPhoto() async => throw const ScanException('ocrUnavailable');
   Future<OcrDraft?> recoverScreenshot() async => null;
   Future<OcrDraft> readImage(XFile image) async =>
       throw const ScanException('ocrUnavailable');

@@ -497,4 +497,112 @@ class AppLocalizationsFil extends AppLocalizations {
     });
     return '$_temp0';
   }
+
+  @override
+  String get appTagline => 'Konting suri, mas ligtas.';
+
+  @override
+  String get homeSubtitle => 'Kapag may duda, suriin muna.';
+
+  @override
+  String get smsCardEyebrow => 'Bantay mo araw-araw';
+
+  @override
+  String get pageTagline => 'Ang digital mong kakampi';
+
+  @override
+  String get backToCheck => 'Bumalik sa Suriin';
+
+  @override
+  String get pageEyebrow => 'Malaking tulong ang konting suri';
+
+  @override
+  String get messageIntro => 'I-paste ang mensaheng gusto mong suriin.';
+
+  @override
+  String get messageLabel => 'Ang mensahe mo';
+
+  @override
+  String get pasteButton => 'I-paste';
+
+  @override
+  String get clearButton => 'Burahin';
+
+  @override
+  String charCount(int count, int max) {
+    return '$count / $max na character';
+  }
+
+  @override
+  String get checkMessageButton => 'Suriin ang mensahe';
+
+  @override
+  String get messageFootnote =>
+      'Sa phone mo muna sinusuri ng Usisa ang mensahe.\nSa online lang sinusuri ang link kung pinayagan mo.';
+
+  @override
+  String get linkIntro =>
+      'Hindi sigurado kung saan papunta ang link? Suriin muna.';
+
+  @override
+  String get linkLabel => 'Link na susuriin';
+
+  @override
+  String get linkTipTitle => 'Mukhang pamilyar. Hindi laging totoo.';
+
+  @override
+  String get linkTipBody =>
+      'Ginagaya ng mga scam link ang mga bangko at delivery service, iba lang ang isang letra. Huwag buksan ang link para malaman: susundan ito ng Usisa para sa iyo at ipapakita kung saan talaga ito papunta.';
+
+  @override
+  String get checkLinkButton => 'Suriin ang link';
+
+  @override
+  String get linkFootnote =>
+      'Sa server ng Usisa sinusundan ang link,\nhindi ito binubuksan sa phone mo.';
+
+  @override
+  String get screenshotPageIntro =>
+      'Mag-upload ng screenshot ng kahina-hinalang mensahe.';
+
+  @override
+  String get screenshotDropTitle => 'Magandang simula ang screenshot.';
+
+  @override
+  String get screenshotDropTypes => 'JPG, PNG o WEBP';
+
+  @override
+  String get screenshotGallery => 'Pumili sa gallery';
+
+  @override
+  String get screenshotCamera => 'Kumuha ng litrato';
+
+  @override
+  String get screenshotReading => 'Binabasa ang text…';
+
+  @override
+  String get screenshotReviewTitle => 'Tingnan ang text na nabasa namin';
+
+  @override
+  String get screenshotStartOver => 'Ulitin';
+
+  @override
+  String get checkScreenshotButton => 'Suriin ang screenshot';
+
+  @override
+  String get screenshotFootnote =>
+      'Nananatili sa phone mo ang larawan.\nAng text lang na nabasa rito ang sinusuri.';
+
+  @override
+  String get aiScanPageIntro =>
+      'Dito nagsisimula ang mas malapit na pagsusuri. Ano ang gusto mong suriin?';
+
+  @override
+  String get aiScanMessageSubtitle => 'Suriing mabuti ang isang text.';
+
+  @override
+  String get aiScanLinkSubtitle => 'Alamin kung saan ito papunta at bakit.';
+
+  @override
+  String get aiScanScreenshotSubtitle => 'Basahin ang mensahe mula sa larawan.';
 }

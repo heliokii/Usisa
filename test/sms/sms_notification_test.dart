@@ -130,7 +130,8 @@ void main() {
     );
     await settle(tester);
     expect(checks.single.text, _scam);
-    tester.state<NavigatorState>(find.byType(Navigator).first).popUntil((route) => route.isFirst);
+    // The text opens on the Check tab; History still holds the one entry.
+    await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('History')));
     await settle(tester);
     expect(find.text(_scam), findsOneWidget);
     expect(find.text('From your texts'), findsOneWidget);

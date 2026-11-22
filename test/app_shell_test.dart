@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/app.dart';
 import 'package:usisa/features/history/history_store.dart';
@@ -19,6 +21,30 @@ Future<void> startApp(WidgetTester tester, {MemoryStorage? storage}) async {
 }
 
 void main() {
+  testWidgets('the Check home fits on one screen without scrolling on common phones', (tester) async {
+    // Measure with the real font; the test font's square glyphs wrap far more.
+    await tester.runAsync(() async {
+      final rubik = FontLoader('Rubik');
+      for (final w in ['Regular', 'Medium', 'Bold']) {
+        rubik.addFont(File('assets/fonts/Rubik-$w.ttf').readAsBytes().then(ByteData.sublistView));
+      }
+      await rubik.load();
+    });
+    // Phone screen minus a typical status bar (24) and gesture bar.
+    for (final size in const [Size(412, 891), Size(390, 820), Size(360, 740)]) {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(UsisaApp(storage: MemoryStorage()));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      final home = find.ancestor(of: find.text('Scan a message'), matching: find.byType(Scrollable)).first;
+      expect(tester.state<ScrollableState>(home).position.maxScrollExtent, 0, reason: '$size');
+      expect(find.text('Auto SMS protection'), findsOneWidget, reason: '$size');
+      expect(tester.takeException(), isNull, reason: '$size');
+    }
+  });
+
   testWidgets('app starts with in-memory storage and shows the four tiles and the SMS card', (tester) async {
     await startApp(tester);
 
