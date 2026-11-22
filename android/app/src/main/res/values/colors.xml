@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="usisa_cream">#EEE5D4</color>
+    <!-- Launch background: the app's indigo, so the native splash flows into the animated one. -->
+    <color name="usisa_indigo">#4A44C9</color>
     <color name="usisa_launcher_background">@color/usisa_cream</color>
 </resources>

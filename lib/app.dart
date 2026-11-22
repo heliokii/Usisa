@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import 'app/launch_splash.dart';
+import 'app/motion.dart';
 import 'app/theme.dart';
 import 'features/check/check.dart';
 import 'features/check/ai_scan_screen.dart';
@@ -89,6 +91,7 @@ class _UsisaAppState extends State<UsisaApp> {
 
   /// Settings and History have loaded, so first-run setup can decide whether to show.
   bool _ready = false;
+  bool _splashGone = false;
 
   // Coming back from Android settings (Fix, background running) picks up the new permission state.
   late final AppLifecycleListener _lifecycle;
@@ -188,17 +191,23 @@ class _UsisaAppState extends State<UsisaApp> {
           child: child!,
         );
       },
-      home: _Shell(
-        ready: _ready,
-        // Every Check from every screen is saved to History here.
-        runCheck: history.recording(widget.runCheck ?? _runCheck),
-        history: history,
-        settings: settings,
-        sms: sms,
-        readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
-        takePhoto: widget.takePhoto ?? () async => (await OcrService().readPhoto())?.text,
-        shares: _shares,
-        readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
+      home: Stack(
+        fit: StackFit.expand,
+        children: [
+          _Shell(
+            ready: _ready,
+            // Every Check from every screen is saved to History here.
+            runCheck: history.recording(widget.runCheck ?? _runCheck),
+            history: history,
+            settings: settings,
+            sms: sms,
+            readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
+            takePhoto: widget.takePhoto ?? () async => (await OcrService().readPhoto())?.text,
+            shares: _shares,
+            readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
+          ),
+          if (!_splashGone) LaunchSplash(ready: _ready, onDone: () => setState(() => _splashGone = true)),
+        ],
       ),
     ),
   );
@@ -403,7 +412,7 @@ class _ShellState extends State<_Shell> {
       child: Scaffold(
         body: ListenableBuilder(
           listenable: widget.sms,
-          builder: (context, _) => IndexedStack(
+          builder: (context, _) => FadeIndexedStack(
             index: _tab,
             children: [
               // Back pops the Check tab's own pages before leaving the app.

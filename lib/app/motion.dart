@@ -95,3 +95,166 @@ class _DriftState extends State<Drift> with SingleTickerProviderStateMixin {
     child: widget.child,
   );
 }
+
+/// Page change for every pushed screen: the new page fades in while rising 4% (280ms, ease-out);
+/// the page underneath dims slightly. Reduced motion: an instant swap.
+class UsisaPageTransitionsBuilder extends PageTransitionsBuilder {
+  const UsisaPageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 280);
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    final enter = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+    final under = CurvedAnimation(parent: secondaryAnimation, curve: Curves.easeOut);
+    return FadeTransition(
+      opacity: Tween<double>(begin: 1, end: .6).animate(under),
+      child: FadeTransition(
+        opacity: enter,
+        child: SlideTransition(
+          position: Tween(begin: const Offset(0, .04), end: Offset.zero).animate(enter),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// Like [IndexedStack], but the newly shown child fades and rises in (220ms) when [index] changes.
+/// Every child keeps its state; hidden ones are offstage with their tickers paused.
+class FadeIndexedStack extends StatefulWidget {
+  const FadeIndexedStack({super.key, required this.index, required this.children});
+  final int index;
+  final List<Widget> children;
+
+  @override
+  State<FadeIndexedStack> createState() => _FadeIndexedStackState();
+}
+
+class _FadeIndexedStackState extends State<FadeIndexedStack> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 220), value: 1);
+
+  @override
+  void didUpdateWidget(FadeIndexedStack old) {
+    super.didUpdateWidget(old);
+    if (old.index != widget.index && !MediaQuery.disableAnimationsOf(context)) _c.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (final (i, child) in widget.children.indexed)
+          Offstage(
+            offstage: i != widget.index,
+            child: TickerMode(
+              enabled: i == widget.index,
+              child: i == widget.index
+                  ? FadeTransition(
+                      opacity: t,
+                      child: SlideTransition(
+                        position: Tween(begin: const Offset(0, .015), end: Offset.zero).animate(t),
+                        child: child,
+                      ),
+                    )
+                  : child,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Grows [child] from 60% with a slight overshoot and fades it in (420ms, after [delay]). For a verdict's mark.
+class PopIn extends StatelessWidget {
+  const PopIn({super.key, required this.child, this.delay = Duration.zero});
+  final Widget child;
+  final Duration delay;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    final total = delay.inMilliseconds + 420;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: total),
+      curve: Interval(delay.inMilliseconds / total, 1, curve: Curves.easeOutBack),
+      builder: (_, t, child) => Opacity(
+        opacity: t.clamp(0, 1),
+        child: Transform.scale(scale: .6 + .4 * t, child: child),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Three dots that rise and fall in turn while something is working. Reduced motion: still dots.
+class BusyDots extends StatefulWidget {
+  const BusyDots({super.key, this.color = const Color(0xFFFFFFFF), this.size = 7});
+  final Color color;
+  final double size;
+
+  @override
+  State<BusyDots> createState() => _BusyDotsState();
+}
+
+class _BusyDotsState extends State<BusyDots> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: AnimatedBuilder(
+      animation: _c,
+      builder: (_, _) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: widget.size * .35),
+              child: Transform.translate(
+                // Each dot lifts during its own third of the cycle.
+                offset: Offset(0, -widget.size * .7 * math.max(0, math.sin((_c.value - i / 3) * 2 * math.pi))),
+                child: Container(
+                  width: widget.size,
+                  height: widget.size,
+                  decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}

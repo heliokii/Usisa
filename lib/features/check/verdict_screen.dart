@@ -77,7 +77,10 @@ class VerdictScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(icon, color: Colors.white, size: 44),
+                                  PopIn(
+                                    delay: const Duration(milliseconds: 120),
+                                    child: Icon(icon, color: Colors.white, size: 44),
+                                  ),
                                   const SizedBox(height: 10),
                                   Semantics(
                                     header: true,

@@ -164,5 +164,6 @@
   "aiScanPageIntro": "A closer look starts here. What would you like to check?",
   "aiScanMessageSubtitle": "Take a closer look at a text.",
   "aiScanLinkSubtitle": "See where it leads and why.",
-  "aiScanScreenshotSubtitle": "Read a message from a picture."
+  "aiScanScreenshotSubtitle": "Read a message from a picture.",
+  "checkingLabel": "Checking…"
 }

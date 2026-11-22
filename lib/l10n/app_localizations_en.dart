@@ -600,4 +600,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiScanScreenshotSubtitle => 'Read a message from a picture.';
+
+  @override
+  String get checkingLabel => 'Checking…';
 }

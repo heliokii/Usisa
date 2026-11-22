@@ -84,7 +84,11 @@ class _LearnScreenState extends State<LearnScreen> {
                 ),
             ],
           ),
-          for (final topic in learnTopics) TopicCard(topic: topic, readAloud: _readAloud),
+          for (final (i, topic) in learnTopics.indexed)
+            EnterMotion(
+              index: i < 6 ? 1 + i : 0,
+              child: TopicCard(topic: topic, readAloud: _readAloud),
+            ),
           LearnCard(
             title: l.learnReportTitle,
             color: UsisaColors.mint,

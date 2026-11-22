@@ -116,7 +116,8 @@ class _ScreenshotScreenState extends State<ScreenshotScreen> {
         listenable: _text,
         builder: (context, _) => PrimaryPillButton(
           label: l.checkScreenshotButton,
-          onPressed: !_reviewing || _busy || _text.text.trim().isEmpty ? null : _check,
+          busy: _busy,
+          onPressed: !_reviewing || _text.text.trim().isEmpty ? null : _check,
         ),
       ),
       children: [

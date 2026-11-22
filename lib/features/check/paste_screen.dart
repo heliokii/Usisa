@@ -15,6 +15,15 @@ const maxMessageLength = 5000;
 Future<void> checkAndShowVerdict(BuildContext context, RunCheck runCheck, CheckInput input) async {
   final result = await runCheck(input);
   if (!context.mounted) return;
+  // A felt cue that matches the verdict's weight.
+  switch (result.verdict) {
+    case Verdict.dangerous:
+      HapticFeedback.heavyImpact();
+    case Verdict.beCareful:
+      HapticFeedback.mediumImpact();
+    case Verdict.looksSafe || Verdict.couldntCheck:
+      HapticFeedback.lightImpact();
+  }
   final unsure = result.verdict == Verdict.beCareful || result.verdict == Verdict.couldntCheck;
   var asking = false;
   await Navigator.of(context).push(
@@ -156,7 +165,8 @@ class _PasteScreenState extends State<PasteScreen> {
         listenable: _text,
         builder: (context, _) => PrimaryPillButton(
           label: _link ? l.checkLinkButton : l.checkMessageButton,
-          onPressed: _busy || _text.text.trim().isEmpty ? null : _check,
+          busy: _busy,
+          onPressed: _text.text.trim().isEmpty ? null : _check,
         ),
       ),
       children: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../app/check_page.dart';
 import '../../app/motion.dart';
@@ -399,7 +400,10 @@ class CheckTile extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(UsisaRadius.card)),
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
           child: Stack(
             children: [
               Positioned.fill(
@@ -496,7 +500,15 @@ class _SmsCard extends StatelessWidget {
                             style: tt.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 2),
-                          Text(status, style: tt.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: .9))),
+                          // The count or on/off line cross-fades when it changes.
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 250),
+                            child: Text(
+                              status,
+                              key: ValueKey(status),
+                              style: tt.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: .9)),
+                            ),
+                          ),
                         ],
                       ),
                     ),

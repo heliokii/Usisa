@@ -967,6 +967,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read a message from a picture.'**
   String get aiScanScreenshotSubtitle;
+
+  /// No description provided for @checkingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get checkingLabel;
 }
 
 class _AppLocalizationsDelegate

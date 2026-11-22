@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'motion.dart';
+
 /// Colour tokens from DESIGN.md. Contrast ratios are listed there.
 abstract final class UsisaColors {
   static const primary = Color(0xFF4A44C9);
@@ -56,6 +58,11 @@ ThemeData buildUsisaTheme() {
     scaffoldBackgroundColor: UsisaColors.background,
     textTheme: text.apply(bodyColor: UsisaColors.ink, displayColor: UsisaColors.ink),
     materialTapTargetSize: MaterialTapTargetSize.padded,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        for (final platform in TargetPlatform.values) platform: UsisaPageTransitionsBuilder(),
+      },
+    ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
