@@ -27,7 +27,7 @@ test('fixed Groq endpoint uses strict independent PH assessment and exact eviden
   assert.equal(result.state,'completed');
   assert.equal(result.risk,'high');
   assert.equal(result.modelId,options.model);
-  assert.equal(result.promptVersion,'ph-scam-v2');
+  assert.equal(result.promptVersion,'ph-scam-v3');
   assert.equal(result.warningSigns[0].evidence,'Send your OTP');
 });
 

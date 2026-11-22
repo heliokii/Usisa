@@ -12,15 +12,17 @@ It runs `flutter analyze --no-pub`, `flutter test --no-pub` and the phone-only Q
 
 ## 2. Manual full-AI evaluation (before each release, and after any prompt or model change)
 
-This runs the whole labelled set (about 500 messages, both splits) through the online link check and AI review on the live gateway.
+This runs the sealed split (about 390 messages) through the online link check and AI review on the live gateway. Each message is one AI call, paced at one every 7 s to stay under the gateway's 10 a minute.
 
-1. Raise `AI_DAILY_LIMIT` on Render to at least `600` for the day (see [server/README.md](server/README.md)). Otherwise the run uses up the day's AI calls and its later answers are Couldn't check.
+1. Raise `AI_DAILY_LIMIT` on Render to at least `450` for the day (see [server/README.md](server/README.md)). Otherwise the run uses up the day's AI calls and its later answers are Couldn't check.
 2. Wake the gateway: `curl https://usisa-gateway.onrender.com/healthz` until it returns `{"status":"ok"}`, then check that `/v1/capabilities` shows both AI and link checks.
-3. Run it. The gateway allows 10 AI calls a minute per address, so expect about 50 minutes:
+3. Run it. Expect about 45 minutes:
 
    ```sh
    flutter test --no-pub tool/evaluate.dart --dart-define=USISA_EVAL_AI=true --dart-define=USISA_GATEWAY_URL=https://usisa-gateway.onrender.com
    ```
+
+   To tune the AI prompt, run the development split instead (about 950 calls, so raise the limit to `1000` or run it on another day) by adding `--dart-define=USISA_EVAL_SPLIT=development`. Never tune against the sealed report.
 
 4. Save the printed report with the release notes: the date, the `GROQ_MODEL`, the prompt version (`promptVersion` in `server/ai_scan.mjs`) and pass or fail. A miss on the sealed split blocks the release just as it does in step 1.
 5. Set `AI_DAILY_LIMIT` back afterwards, unless the demo is the same day.
