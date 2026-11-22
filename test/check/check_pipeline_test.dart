@@ -348,6 +348,28 @@ void main() {
       }
     });
 
+    test('a wallet-branded gaming-credits text with a short link is Dangerous on the phone alone', () async {
+      const text = 'GCash: You received P200 Gaming Credits! 09170000000 Active lang ito hanggang 12PM. '
+          'Gamitin para manalo ng Jackpot today: https://bit.ly/4abcDEF';
+      for (final status in [LinkStatus.unresolved, LinkStatus.clean]) {
+        final r = await CheckPipeline(linkChecker: (links) async => [for (final l in links) LinkCheck(l, status)])
+            .run(const CheckInput(text, source: CheckSource.message));
+        expect(r.verdict, Verdict.dangerous, reason: '$status');
+        expect(r.reasons, containsAll(['impersonation', 'gambling_ad']), reason: '$status');
+      }
+    });
+
+    test('real wallet promos and plain lotto results stay Looks safe', () async {
+      for (final text in [
+        'GCash: Get P50 cashback when you pay bills this weekend. Details at gcash.com/promos',
+        'PCSO Lotto results: Grand Lotto 6/55 jackpot P45M, winning numbers 04-11-23-30-41-52.',
+      ]) {
+        final r = await CheckPipeline(linkChecker: (links) async => [for (final l in links) LinkCheck(l, LinkStatus.clean)])
+            .run(CheckInput(text, source: CheckSource.message));
+        expect(r.verdict, Verdict.looksSafe, reason: text);
+      }
+    });
+
     test('a locally detected gambling ad is at least Be careful even when the AI says low', () async {
       final r = await check(
         'Online casino: 100% deposit bonus, slots and baccarat',
