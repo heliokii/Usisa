@@ -109,7 +109,9 @@ final _win = RegExp(
   r'(?:kayo|ikaw) ay napili|congratulations?\W+(?:you|your|winner|ikaw)|(?:number|sim\W*|account) (?:has |had )?won|'
   r'been awarded|(?:one of )?(?:the |our )?lucky winners? of|masuwerteng nanal|eligible for (?:a )?free|'
   r'been selected (?:as|to receive)|beneficiary|free money|incoming (?:transfer|fund)|cash deposit of|tax refund|'
-  r'free \d{2,}\b(?! ?(?:gb|mb|minutes|mins|texts|sms|calls))|\d+ ?(?:p|php|₱) (?:for )?free|withdraw \d+ ?p for free)',
+  r'free \d{2,}\b(?! ?(?:gb|mb|minutes|mins|texts|sms|calls))|\d+ ?(?:p|php|₱) (?:for )?free|withdraw \d+ ?p for free|'
+  r'(?:withdraw|i-?withdraw|claim) (?:your |ang )?(?:winnings|panalo)|'
+  r'you have (?:p|php|₱) ?[\d,]+(?:\.\d+)? in your account)',
 );
 final _claim = RegExp(
   r'\b(?:claim|i-?claim|redeem|to receive|matanggap|entitlement|processing fee|release fee|magbayad)\b',
@@ -174,7 +176,7 @@ final _privateContact = RegExp(
 final _urgency = RegExp(
   r'\b(?:urgent|immediately|asap|act now|right away|within \d+ ?(?:hours?|hrs?|minutes?|mins?)|today only|'
   r'ngayon na|ngayon din|agad|locked|suspended|suspension|suspendido|deactivated|blocked|mawawala|'
-  r'masususpinde|ma-?block)\b',
+  r'masususpinde|ma-?block|(?:hanggang|until) (?:\d{1,2}(?::\d\d)? ?(?:am|pm)|mamaya|today|tonight|ngayong? (?:araw|gabi)))\b',
 );
 final _brand = RegExp(
   r'\b(?:g-?cash|maya|paymaya|bdo|banco de oro|bpi|landbank|metrobank|unionbank|rcbc|pnb|sss|philhealth|pag-?ibig|'
@@ -195,7 +197,7 @@ final _moneyAsk = RegExp(
 
 final _gamblingWord = RegExp(
   r'\b(?:casino|(?<!limited |few |available |remaining )slots?|e-?sabong|sabong|cockfighting|jili|baccarat|baraha|sportsbook|betting|\w*bingo\w*|poker|roulette|taya|'
-  r'pagcor|lucky wheel|\w*bet\d+\w*|\d+bets?\w?|[a-z]\d?bet|bet(?:fil|plus)\w*|gaming platform|big win|unang deposito|first deposit|'
+  r'pagcor|lucky wheel|gaming credits?|\w*bet\d+\w*|\d+bets?\w?|[a-z]\d?bet|bet(?:fil|plus)\w*|gaming platform|big win|unang deposito|first deposit|'
   r'free bets?|best odds|(?:libreng|free) deposit|new players?|fresh faces|winning (?:rates?|probability|spree)|'
   r'lottery tickets?|casin[o0]|(?:1st|first) deposit|vip (?:rebate|perks|rewards?|reward plan|bonus\w*|url)|'
   r'(?:rebate|perks|rewards?|bonus\w*)[^.!?]{0,30}\bvip\b)\b|\b21 ?yo\+',
@@ -229,7 +231,7 @@ final _gamble = RegExp(
   r'prizes?|premyo|swerte|suwerte|lucky)\b',
 );
 // Play our games and win.
-final _play = RegExp(r'\b(?:games?|laro\w*|maglaro|manlalaro|play)\b');
+final _play = RegExp(r'\b(?:games?|gaming|laro\w*|maglaro|manlalaro|play)\b');
 final _prizeWord = RegExp(r'\b(?:win|wln|manalo|panalo|premyo|papremyo|prizes?|winning|winner|swerte|jackpot)\b'
 );
 // "Turn 20 pesos into 30k": a tiny stake for a big win.
@@ -239,6 +241,10 @@ final _stakeWin = RegExp(r'\b\d+ ?pesos?\b.{0,60}\b\d+k\b|\b\d+k\b.{0,60}\b\d+ ?
 final _officialSender = RegExp(
   r'\b(?:bdo|banco de oro|bpi|landbank|metrobank|unionbank|rcbc|pnb|sss|philhealth|pag-?ibig|bir|dswd|lto|gsis|'
   r'meralco)\b',
+);
+// A text that opens as a wallet or bank ("GCash: ...") but pushes gambling: real brands never advertise betting.
+final _brandSender = RegExp(
+  r'^\W*(?:g-?cash|maya|paymaya|bdo|banco de oro|bpi|landbank|metrobank|unionbank|rcbc|pnb|security bank|chinabank)\s*[:|-]',
 );
 final _mobileNumber = RegExp(r'(?:\+?63|\b0)9\d{9}\b');
 final _callOrPay = RegExp(r'\b(?:call|tawag\w*|text|contact|pay|bayad\w*|bayar\w*|magbayad|send|magpadala|padala)\b');
@@ -303,7 +309,8 @@ PhoneCheck phoneCheck(String text) {
       (_newNumber.hasMatch(t) && moneyAsk) ||
       (_wrongSend.hasMatch(t) && _sendBack.hasMatch(t)) ||
       (_emergency.hasMatch(t) && moneyAsk) ||
-      officialToMobile;
+      officialToMobile ||
+      (gambling && unofficial && _brandSender.hasMatch(t));
   // Real relatives change numbers and real people mis-send; secrecy or a new wallet to pay is the scam.
   final impersonationHook =
       impersonation && (officialToMobile || _secrecy.hasMatch(t) || _newDestination.hasMatch(t) || unofficial);
