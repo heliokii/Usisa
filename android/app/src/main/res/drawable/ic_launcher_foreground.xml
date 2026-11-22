@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Usisa mark (design/icon/usisa-mark.svg) for the adaptive icon. Scaled so the whole mark sits inside the
+     72dp circle every launcher mask keeps visible (tail tip and lens edge included). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:scaleX="0.246" android:scaleY="0.246" android:translateX="22.94" android:translateY="21.1">
+        <path android:fillColor="#FFFFFF"
+            android:pathData="M72,213.3 A80,80 0 1,0 34.7,164.7 C31,186 27,206 26,220 A9,9 0 0,0 39,229 C51,225 62,220 72,213.3 Z"/>
+        <path android:fillColor="#FFD66B"
+            android:pathData="M247,88 A70,70 0 1,1 107,88 A70,70 0 1,1 247,88 Z"/>
+        <path android:fillColor="#FF8A4C"
+            android:pathData="M111.24,64.01 A80,80 0 0,1 191,156.59 A70,70 0 0,1 111.24,64.01 Z"/>
+    </group>
+</vector>

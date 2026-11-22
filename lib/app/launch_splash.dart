@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
+import 'brand_mark.dart';
 import 'theme.dart';
 
 /// The launch screen drawn over the app while it loads: the home header's yellow circle and orange quarter
@@ -18,7 +19,7 @@ class LaunchSplash extends StatefulWidget {
 }
 
 class _LaunchSplashState extends State<LaunchSplash> with TickerProviderStateMixin {
-  late final _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 850));
+  late final _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100));
   late final _exit = AnimationController(vsync: this, duration: const Duration(milliseconds: 260));
 
   @override
@@ -65,10 +66,12 @@ class _LaunchSplashState extends State<LaunchSplash> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final circle = _part(0, .55, Curves.easeOutBack);
-    final quarter = _part(.15, .7);
-    final word = _part(.35, .85);
-    final dot = _part(.6, 1, Curves.easeOutBack);
+    final circle = _part(0, .5);
+    final quarter = _part(.1, .6);
+    final bubble = _part(0, .4, Curves.easeOutBack);
+    final lens = _part(.25, .65);
+    final word = _part(.45, .85);
+    final dot = _part(.7, 1, Curves.easeOutBack);
     return IgnorePointer(
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
@@ -82,20 +85,15 @@ class _LaunchSplashState extends State<LaunchSplash> with TickerProviderStateMix
                   Positioned(
                     right: -90,
                     top: box.maxHeight * .12,
+                    // A faint ring echoes the mark's lens without competing with it.
                     child: ScaleTransition(
                       scale: circle,
                       child: Container(
                         width: 260,
                         height: 260,
-                        decoration: const BoxDecoration(color: UsisaColors.yellow, shape: BoxShape.circle),
-                        alignment: Alignment.center,
-                        child: Container(
-                          width: 178,
-                          height: 178,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withValues(alpha: .7), width: 1.5),
-                          ),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withValues(alpha: .14), width: 1.5),
                         ),
                       ),
                     ),
@@ -124,6 +122,14 @@ class _LaunchSplashState extends State<LaunchSplash> with TickerProviderStateMix
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // The bubble pops in, then the lens glides onto it and the overlap lights up.
+                          ExcludeSemantics(
+                            child: AnimatedBuilder(
+                              animation: _intro,
+                              builder: (_, _) => BrandMark(size: 112, bubble: bubble.value, lens: lens.value),
+                            ),
+                          ),
+                          const SizedBox(height: 22),
                           Semantics(
                             label: 'Usisa',
                             excludeSemantics: true,
