@@ -98,407 +98,383 @@ abstract class AppLocalizations {
     Locale('fil'),
   ];
 
-  /// No description provided for @analysisMode.
+  /// No description provided for @navCheck.
   ///
   /// In en, this message translates to:
-  /// **'Analysis'**
-  String get analysisMode;
+  /// **'Check'**
+  String get navCheck;
 
-  /// No description provided for @onDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'On-device'**
-  String get onDevice;
-
-  /// No description provided for @aiAssisted.
-  ///
-  /// In en, this message translates to:
-  /// **'AI assisted'**
-  String get aiAssisted;
-
-  /// No description provided for @aiManualOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'AI sends text only after you review and confirm.'**
-  String get aiManualOnly;
-
-  /// No description provided for @aiReviewTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Review for AI check'**
-  String get aiReviewTitle;
-
-  /// No description provided for @aiDisclosure.
-  ///
-  /// In en, this message translates to:
-  /// **'This exact text goes to Usisa’s server and Groq for AI review. Remove codes or personal details you do not want to share. Names, numbers, and links are included. Screenshots and sender details stay on your device. Groq may keep requests for reliability or abuse monitoring, based on account settings. AI can be wrong; it does not verify senders or open links.'**
-  String get aiDisclosure;
-
-  /// No description provided for @aiTextLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Text to send'**
-  String get aiTextLabel;
-
-  /// No description provided for @sendAi.
-  ///
-  /// In en, this message translates to:
-  /// **'Send this text for AI check'**
-  String get sendAi;
-
-  /// No description provided for @keepOnDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep on device'**
-  String get keepOnDevice;
-
-  /// No description provided for @aiAssessment.
-  ///
-  /// In en, this message translates to:
-  /// **'AI assessment'**
-  String get aiAssessment;
-
-  /// No description provided for @onDeviceFindings.
-  ///
-  /// In en, this message translates to:
-  /// **'On-device findings'**
-  String get onDeviceFindings;
-
-  /// No description provided for @aiChecking.
-  ///
-  /// In en, this message translates to:
-  /// **'On-device checks complete. AI is checking…'**
-  String get aiChecking;
-
-  /// No description provided for @aiUnknown.
-  ///
-  /// In en, this message translates to:
-  /// **'AI could not assess this message. Use local findings and verify it yourself.'**
-  String get aiUnknown;
-
-  /// No description provided for @aiUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Local checks are done, but AI is unavailable. Your text is still here. Review it and try again.'**
-  String get aiUnavailable;
-
-  /// No description provided for @aiCancelled.
-  ///
-  /// In en, this message translates to:
-  /// **'AI check cancelled. Local findings remain. A sent request may still be processed.'**
-  String get aiCancelled;
-
-  /// No description provided for @aiNotRequested.
-  ///
-  /// In en, this message translates to:
-  /// **'No AI check yet. Review the text to add one.'**
-  String get aiNotRequested;
-
-  /// No description provided for @aiDisagreement.
-  ///
-  /// In en, this message translates to:
-  /// **'Results differ. Keep the stronger warning; neither proves the message safe.'**
-  String get aiDisagreement;
-
-  /// No description provided for @aiReviewed.
-  ///
-  /// In en, this message translates to:
-  /// **'AI used the text you reviewed.'**
-  String get aiReviewed;
-
-  /// No description provided for @aiRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Review and retry AI'**
-  String get aiRetry;
-
-  /// No description provided for @aiLimitations.
-  ///
-  /// In en, this message translates to:
-  /// **'AI can miss scams or flag safe messages. Quotes show its input, not proof.'**
-  String get aiLimitations;
-
-  /// No description provided for @aiSettingsBody.
-  ///
-  /// In en, this message translates to:
-  /// **'AI can check text, links, and screenshot text you approve. Confirm each upload to Usisa and Groq. Auto SMS stays on-device. Link-check consent does not enable AI.'**
-  String get aiSettingsBody;
-
-  /// No description provided for @aiFindingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} other{AI warning sign}}'**
-  String aiFindingTitle(String code);
-
-  /// No description provided for @aiAdvice.
-  ///
-  /// In en, this message translates to:
-  /// **'{code, select, dont_share_secrets{Do not share OTPs, passwords or PINs with anyone requesting them.} pause_payment{Pause the payment. Confirm the recipient and reason independently.} contact_provider_if_shared{If you already shared details, contact your provider through its official app or your own trusted records.} other{Verify through the official app or a trusted channel you opened yourself.}}'**
-  String aiAdvice(String code);
-
-  /// No description provided for @deletedScan.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved scan deleted'**
-  String get deletedScan;
-
-  /// No description provided for @learnOtpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'OTP and password requests'**
-  String get learnOtpTitle;
-
-  /// No description provided for @learnOtpBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Treat code requests with care, even from claimed support. Real OTP messages may warn you not to share the code. Verify through the official app.'**
-  String get learnOtpBody;
-
-  /// No description provided for @learnBankTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bank & Wallet Scams'**
-  String get learnBankTitle;
-
-  /// No description provided for @learnBankBody.
-  ///
-  /// In en, this message translates to:
-  /// **'An account suspension threat can pressure you to tap a link. Sender names can be spoofed. Open your bank or e-wallet app directly to check your account; do not use the message\'s link as proof.'**
-  String get learnBankBody;
-
-  /// No description provided for @learnBankSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Fake messages from BPI,\nGCash, Maya, etc.'**
-  String get learnBankSummary;
-
-  /// No description provided for @learnGovernmentTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Government Impersonation'**
-  String get learnGovernmentTitle;
-
-  /// No description provided for @learnGovernmentBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Scammers may pose as SSS, PhilHealth, Pag-IBIG, or another agency. Verify unexpected aid, fines, or registration through an official service you open yourself. A logo proves nothing.'**
-  String get learnGovernmentBody;
-
-  /// No description provided for @learnGovernmentSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Scams pretending to be from\nSSS, PAG-IBIG, PhilPost, and more.'**
-  String get learnGovernmentSummary;
-
-  /// No description provided for @learnDeliveryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Unexpected delivery fees'**
-  String get learnDeliveryTitle;
-
-  /// No description provided for @learnDeliveryBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Fake redelivery fees can lead to pages that steal card or account details. Check orders in your courier app. Short links hide destinations; Usisa does not expand them.'**
-  String get learnDeliveryBody;
-
-  /// No description provided for @learnSellerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Online Selling Scams'**
-  String get learnSellerTitle;
-
-  /// No description provided for @learnSellerBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Be cautious about pressure to move a conversation or payment outside a marketplace\'s normal process. Confirm the seller, item, recipient and payment purpose through trusted records before sending money.'**
-  String get learnSellerBody;
-
-  /// No description provided for @learnSellerSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Fake sellers, payment proofs,\nand delivery tricks.'**
-  String get learnSellerSummary;
-
-  /// No description provided for @learnRecoveryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'If you already shared details'**
-  String get learnRecoveryTitle;
-
-  /// No description provided for @learnRecoveryBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop payments. Contact your bank or e-wallet through its official app or a trusted contact. Change exposed passwords; keep evidence private. Never share another OTP with a recovery helper.'**
-  String get learnRecoveryBody;
-
-  /// No description provided for @selectedCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} selected'**
-  String selectedCount(int count);
-
-  /// No description provided for @resultCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} results'**
-  String resultCount(int count);
-
-  /// No description provided for @scan.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan'**
-  String get scan;
-
-  /// No description provided for @history.
+  /// No description provided for @navHistory.
   ///
   /// In en, this message translates to:
   /// **'History'**
-  String get history;
+  String get navHistory;
 
-  /// No description provided for @learn.
+  /// No description provided for @navLearn.
   ///
   /// In en, this message translates to:
   /// **'Learn'**
-  String get learn;
+  String get navLearn;
 
-  /// No description provided for @settings.
+  /// No description provided for @navSettings.
   ///
   /// In en, this message translates to:
   /// **'Settings'**
-  String get settings;
+  String get navSettings;
 
-  /// No description provided for @messageScanPrompt.
+  /// Kept in Filipino in both languages, per DESIGN.md.
   ///
   /// In en, this message translates to:
-  /// **'Paste or type a message to scan'**
-  String get messageScanPrompt;
+  /// **'Magandang umaga!'**
+  String get greetingMorning;
 
-  /// No description provided for @messageScanSupport.
+  /// No description provided for @greetingAfternoon.
   ///
   /// In en, this message translates to:
-  /// **'We\'ll check for suspicious links, scams, and harmful content.'**
-  String get messageScanSupport;
+  /// **'Magandang hapon!'**
+  String get greetingAfternoon;
 
-  /// No description provided for @scanHeading.
+  /// No description provided for @greetingEvening.
   ///
   /// In en, this message translates to:
-  /// **'Check before you tap.'**
-  String get scanHeading;
+  /// **'Magandang gabi!'**
+  String get greetingEvening;
 
-  /// No description provided for @scanIntro.
+  /// No description provided for @homeHeadline.
   ///
   /// In en, this message translates to:
-  /// **'Check a message or link before you act.'**
-  String get scanIntro;
+  /// **'Is this text\na scam?'**
+  String get homeHeadline;
 
-  /// No description provided for @localPrivate.
+  /// No description provided for @homePrompt.
   ///
   /// In en, this message translates to:
-  /// **'Checks stay on your device by default.'**
-  String get localPrivate;
+  /// **'What do you want to check?'**
+  String get homePrompt;
 
-  /// No description provided for @message.
+  /// No description provided for @tileMessageTitle.
   ///
   /// In en, this message translates to:
-  /// **'Message'**
-  String get message;
+  /// **'Scan a message'**
+  String get tileMessageTitle;
 
-  /// No description provided for @link.
+  /// No description provided for @tileMessageSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Link'**
-  String get link;
+  /// **'Paste a text you got'**
+  String get tileMessageSubtitle;
 
-  /// No description provided for @screenshot.
+  /// No description provided for @tileLinkTitle.
   ///
   /// In en, this message translates to:
-  /// **'Screenshot'**
-  String get screenshot;
+  /// **'Check a link'**
+  String get tileLinkTitle;
 
-  /// No description provided for @screenshotHeading.
+  /// No description provided for @tileLinkSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See where it really goes'**
+  String get tileLinkSubtitle;
+
+  /// No description provided for @tileScreenshotTitle.
   ///
   /// In en, this message translates to:
   /// **'Scan a screenshot'**
-  String get screenshotHeading;
+  String get tileScreenshotTitle;
 
-  /// No description provided for @screenshotSelected.
+  /// No description provided for @tileScreenshotSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Screenshot selected'**
-  String get screenshotSelected;
+  /// **'Pick a photo of the text'**
+  String get tileScreenshotSubtitle;
 
-  /// No description provided for @changeImage.
+  /// No description provided for @tileAiTitle.
   ///
   /// In en, this message translates to:
-  /// **'Change image'**
-  String get changeImage;
+  /// **'AI scan'**
+  String get tileAiTitle;
 
-  /// No description provided for @screenshotSupported.
+  /// No description provided for @tileAiSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'PNG, JPG, JPEG, or WEBP · Up to 10 MB'**
-  String get screenshotSupported;
+  /// **'Ask AI to look closely'**
+  String get tileAiSubtitle;
 
-  /// No description provided for @linkCheckPrompt.
+  /// No description provided for @smsCardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Check a link’s safety'**
-  String get linkCheckPrompt;
+  /// **'Auto SMS protection'**
+  String get smsCardTitle;
 
-  /// No description provided for @linkCheckSupport.
+  /// No description provided for @smsCardOn.
   ///
   /// In en, this message translates to:
-  /// **'See known risk signs before opening a URL.'**
-  String get linkCheckSupport;
+  /// **'New texts will be checked'**
+  String get smsCardOn;
 
-  /// No description provided for @inputHint.
+  /// No description provided for @smsCardChecked.
   ///
   /// In en, this message translates to:
-  /// **'Paste or type the message here…'**
-  String get inputHint;
+  /// **'{count, plural, =1{1 text checked today} other{{count} texts checked today}}'**
+  String smsCardChecked(int count);
 
-  /// No description provided for @pasteText.
+  /// No description provided for @smsCardOff.
   ///
   /// In en, this message translates to:
-  /// **'Paste text'**
-  String get pasteText;
+  /// **'Texts are not being checked'**
+  String get smsCardOff;
 
-  /// No description provided for @pasteLink.
+  /// No description provided for @smsSetupTitle.
   ///
   /// In en, this message translates to:
-  /// **'Paste link'**
-  String get pasteLink;
+  /// **'Protect me from scam texts'**
+  String get smsSetupTitle;
 
-  /// No description provided for @clear.
+  /// No description provided for @smsSetupBody.
   ///
   /// In en, this message translates to:
-  /// **'Clear'**
-  String get clear;
+  /// **'Usisa checks each new text on your phone and warns you only when it may be a scam. Android will ask you to allow SMS and notifications.'**
+  String get smsSetupBody;
 
-  /// No description provided for @checkMessage.
+  /// No description provided for @smsSetupTurnOn.
   ///
   /// In en, this message translates to:
-  /// **'Check message'**
-  String get checkMessage;
+  /// **'Turn on protection'**
+  String get smsSetupTurnOn;
 
-  /// No description provided for @checkLink.
+  /// No description provided for @smsSetupNotNow.
   ///
   /// In en, this message translates to:
-  /// **'Check link'**
-  String get checkLink;
+  /// **'Not now'**
+  String get smsSetupNotNow;
 
-  /// No description provided for @checking.
+  /// No description provided for @smsBackgroundTitle.
   ///
   /// In en, this message translates to:
-  /// **'Checking warning signs…'**
-  String get checking;
+  /// **'Let Usisa keep running'**
+  String get smsBackgroundTitle;
 
-  /// No description provided for @loading.
+  /// No description provided for @smsBackgroundBody.
   ///
   /// In en, this message translates to:
-  /// **'Loading'**
-  String get loading;
+  /// **'Your phone may stop apps that run in the background. On the next screen, allow Usisa to start on its own or remove its battery limit, so new texts keep getting checked.'**
+  String get smsBackgroundBody;
+
+  /// No description provided for @smsBackgroundOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get smsBackgroundOpen;
+
+  /// No description provided for @smsBackgroundDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get smsBackgroundDone;
+
+  /// No description provided for @smsOffBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Scam text protection is off'**
+  String get smsOffBanner;
+
+  /// No description provided for @smsOffBannerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Usisa needs SMS and notification permission to check your texts.'**
+  String get smsOffBannerBody;
+
+  /// No description provided for @smsFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix'**
+  String get smsFix;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// Title for an AI warning sign; codes match server/ai_schema.mjs warningCodes.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, credential_request{Asks for a security secret} payment_request{Requests a payment} urgency{Pressures you to act} impersonation{Possible impersonation} prize{Promises a prize} suspicious_link{Questionable link context} gambling_ad{Gambling ad} other{AI warning sign}}'**
+  String aiFindingTitle(String code);
+
+  /// No description provided for @pasteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the text message here'**
+  String get pasteHint;
+
+  /// No description provided for @checkButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get checkButton;
+
+  /// No description provided for @screenshotIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a screenshot of the message. We\'ll read the text for you.'**
+  String get screenshotIntro;
+
+  /// No description provided for @screenshotChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a screenshot'**
+  String get screenshotChoose;
+
+  /// No description provided for @screenshotReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the text we read and fix any mistakes.'**
+  String get screenshotReview;
+
+  /// No description provided for @screenshotNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read any text in this picture. Try a clearer screenshot.'**
+  String get screenshotNoText;
+
+  /// The Verdict word; values match Verdict in lib/features/check/check.dart.
+  ///
+  /// In en, this message translates to:
+  /// **'{verdict, select, looksSafe{Looks safe} beCareful{Be careful} dangerous{Dangerous} other{Couldn\'t check}}'**
+  String verdictWord(String verdict);
+
+  /// One plain sentence telling the person what to do next.
+  ///
+  /// In en, this message translates to:
+  /// **'{verdict, select, looksSafe{Nothing suspicious found. Still, never share your OTP or PIN with anyone.} beCareful{Don\'t tap links or send money until you\'re sure who sent this.} dangerous{Don\'t tap the link, don\'t reply, and don\'t send money.} other{We couldn\'t check this fully. Don\'t open any link or enter any details until you\'re sure who sent it.}}'**
+  String verdictAction(String verdict);
+
+  /// No description provided for @verdictWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Why'**
+  String get verdictWhy;
+
+  /// No description provided for @checkedOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked on your phone'**
+  String get checkedOnPhone;
+
+  /// No description provided for @youChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'You checked'**
+  String get youChecked;
+
+  /// One reason on the verdict screen; codes come from decideVerdict and server/ai_schema.mjs.
+  ///
+  /// In en, this message translates to:
+  /// **'{code, select, no_signs{We found no warning signs} otp_with_link{It asks for your OTP or password and has a link} lookalike_domain{The link pretends to be a known brand\'s website} prize_claim{It says you won a prize you have to claim} account_threat{It threatens your account or parcel to make you tap a link} easy_money{It promises easy money, a job, a loan or an investment that\'s too good to be true} private_contact{It asks you to deal with a stranger by email or chat app} urgency{It rushes you to act quickly} gambling_ad{This is an unsolicited gambling ad} flagged_link{Google lists this link as unsafe} shortener_blocked{The link shortener has blocked this link} opens_app{The link opens an app instead of a website} unresolved_link{We couldn\'t see where the link goes} harmless_promo{This looks like an ordinary promo} brand_mention{It mentions a bank, e-wallet or government office} family_money{It asks for money or load, which is normal between family} credential_request{It asks for a password, PIN or code} payment_request{It asks you to pay or send money} impersonation{It may be pretending to be someone else} prize{It promises a prize} suspicious_link{The link looks suspicious} other{We found another warning sign}}'**
+  String reason(String code);
+
+  /// No description provided for @linkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the link here'**
+  String get linkHint;
+
+  /// The Real destination of a checked link after all redirects.
+  ///
+  /// In en, this message translates to:
+  /// **'Really goes to {destination}'**
+  String reallyGoesTo(String destination);
+
+  /// No description provided for @consentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check links online?'**
+  String get consentTitle;
+
+  /// No description provided for @consentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To see where a link really goes and whether Google lists it as unsafe, Usisa sends the link to its checking service. If you use AI scan, the message text is sent to an AI service too.'**
+  String get consentBody;
+
+  /// No description provided for @consentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'If you say no, Usisa checks everything on your phone only. It can\'t see where links really go, so it may miss some scams.'**
+  String get consentDecline;
+
+  /// No description provided for @consentLater.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later in Settings.'**
+  String get consentLater;
+
+  /// No description provided for @consentAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, check online'**
+  String get consentAllow;
+
+  /// No description provided for @consentDeny.
+  ///
+  /// In en, this message translates to:
+  /// **'No, phone only'**
+  String get consentDeny;
+
+  /// No description provided for @historySavedOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved only on this phone'**
+  String get historySavedOnPhone;
+
+  /// No description provided for @historySaveSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my checks'**
+  String get historySaveSwitch;
+
+  /// No description provided for @historySaveNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning this off also clears your History.'**
+  String get historySaveNote;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved checks yet.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving is off.'**
+  String get historyOff;
+
+  /// No description provided for @historyClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get historyClearAll;
+
+  /// No description provided for @historyClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all History?'**
+  String get historyClearTitle;
+
+  /// No description provided for @historyClearBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every saved check from this phone. It can\'t be undone.'**
+  String get historyClearBody;
+
+  /// No description provided for @historyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get historyDelete;
 
   /// No description provided for @cancel.
   ///
@@ -506,1205 +482,293 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
-  /// No description provided for @chooseScreenshot.
+  /// Title of the notification for an incoming text; verdict is dangerous or beCareful.
   ///
   /// In en, this message translates to:
-  /// **'Choose screenshot'**
-  String get chooseScreenshot;
+  /// **'{verdict, select, dangerous{Dangerous text} other{Be careful with this text}}'**
+  String smsAlertTitle(String verdict);
 
-  /// No description provided for @photos.
+  /// Notification line naming who sent the text; shown on the lock screen, never the message itself.
   ///
   /// In en, this message translates to:
-  /// **'Photos'**
-  String get photos;
+  /// **'From {sender}'**
+  String smsAlertFrom(String sender);
 
-  /// No description provided for @browseFiles.
+  /// No description provided for @smsAlertUnknownSender.
   ///
   /// In en, this message translates to:
-  /// **'Browse files'**
-  String get browseFiles;
+  /// **'an unknown number'**
+  String get smsAlertUnknownSender;
 
-  /// No description provided for @screenshotIntro.
+  /// No description provided for @fromYourTexts.
   ///
   /// In en, this message translates to:
-  /// **'Choose a message screenshot. Review its text before scanning.'**
-  String get screenshotIntro;
+  /// **'From your texts'**
+  String get fromYourTexts;
 
-  /// No description provided for @ocrNativeOnly.
+  /// Label on a reopened History entry; date is the date and time of the Check.
   ///
   /// In en, this message translates to:
-  /// **'OCR works in the Android and iOS app. You can paste text here.'**
-  String get ocrNativeOnly;
+  /// **'Checked on {date}'**
+  String checkedOnDate(String date);
 
-  /// No description provided for @readingImage.
+  /// No description provided for @checkAgain.
   ///
   /// In en, this message translates to:
-  /// **'Reading screenshot…'**
-  String get readingImage;
+  /// **'Check again'**
+  String get checkAgain;
 
-  /// No description provided for @reviewText.
+  /// No description provided for @askAiLookCloser.
   ///
   /// In en, this message translates to:
-  /// **'Review extracted text'**
-  String get reviewText;
+  /// **'Ask AI to look closer'**
+  String get askAiLookCloser;
 
-  /// No description provided for @ocrNotice.
+  /// No description provided for @aiScanIntro.
   ///
   /// In en, this message translates to:
-  /// **'Check names, numbers, and links. OCR can misread them.'**
-  String get ocrNotice;
+  /// **'What do you want the AI to look at?'**
+  String get aiScanIntro;
 
-  /// No description provided for @previewUnavailable.
+  /// No description provided for @aiScanMessage.
   ///
   /// In en, this message translates to:
-  /// **'Preview unavailable. Review and edit the extracted text anyway.'**
-  String get previewUnavailable;
+  /// **'A message'**
+  String get aiScanMessage;
 
-  /// No description provided for @checkThisText.
+  /// No description provided for @aiScanLink.
   ///
   /// In en, this message translates to:
-  /// **'Check this text'**
-  String get checkThisText;
+  /// **'A link'**
+  String get aiScanLink;
 
-  /// No description provided for @noOcrText.
+  /// No description provided for @aiScanScreenshot.
   ///
   /// In en, this message translates to:
-  /// **'No text found. Choose another image or type the message.'**
-  String get noOcrText;
+  /// **'A screenshot'**
+  String get aiScanScreenshot;
 
-  /// No description provided for @smsOff.
+  /// Label on an AI scan verdict when the AI gave no answer; the verdict comes from the phone and link checks.
   ///
   /// In en, this message translates to:
-  /// **'Auto SMS is unavailable.'**
-  String get smsOff;
+  /// **'AI couldn\'t look at this right now'**
+  String get aiUnavailable;
 
-  /// No description provided for @smsDetail.
+  /// No description provided for @sendToFamily.
   ///
   /// In en, this message translates to:
-  /// **'Manual scans work without SMS access. Auto checks need a supported Android phone.'**
-  String get smsDetail;
+  /// **'Send to family'**
+  String get sendToFamily;
 
-  /// No description provided for @reminderTitle.
+  /// No description provided for @readAloud.
   ///
   /// In en, this message translates to:
-  /// **'Never share your OTP.'**
-  String get reminderTitle;
+  /// **'Read aloud'**
+  String get readAloud;
 
-  /// No description provided for @reminderBody.
+  /// No description provided for @readAloudNoFilipino.
   ///
   /// In en, this message translates to:
-  /// **'Verify requests through the official app or a contact you already trust.'**
-  String get reminderBody;
+  /// **'There\'s no Filipino voice on this phone, so it\'s reading in English.'**
+  String get readAloudNoFilipino;
 
-  /// No description provided for @result.
+  /// No description provided for @readAloudUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Scan result'**
-  String get result;
+  /// **'Read aloud isn\'t available on this phone.'**
+  String get readAloudUnavailable;
 
-  /// No description provided for @newScan.
+  /// First line of the Send to family message; verdict is the localized Verdict word.
   ///
   /// In en, this message translates to:
-  /// **'Check another message'**
-  String get newScan;
+  /// **'I checked a message with Usisa. It says: {verdict}'**
+  String shareIntro(String verdict);
 
-  /// No description provided for @checkAnotherLink.
+  /// No description provided for @settingsDisplay.
   ///
   /// In en, this message translates to:
-  /// **'Check another link'**
-  String get checkAnotherLink;
+  /// **'Display'**
+  String get settingsDisplay;
 
-  /// No description provided for @checkAnotherScreenshot.
+  /// No description provided for @settingsTextSize.
   ///
   /// In en, this message translates to:
-  /// **'Check another screenshot'**
-  String get checkAnotherScreenshot;
+  /// **'Text size'**
+  String get settingsTextSize;
 
-  /// No description provided for @viewFullImage.
+  /// No description provided for @textSizeNormal.
   ///
   /// In en, this message translates to:
-  /// **'View full image'**
-  String get viewFullImage;
+  /// **'Normal'**
+  String get textSizeNormal;
 
-  /// No description provided for @checkAiShort.
+  /// No description provided for @textSizeLarge.
   ///
   /// In en, this message translates to:
-  /// **'Check'**
-  String get checkAiShort;
+  /// **'Large'**
+  String get textSizeLarge;
 
-  /// No description provided for @linkDomainLabel.
+  /// No description provided for @textSizeExtraLarge.
   ///
   /// In en, this message translates to:
-  /// **'Domain'**
-  String get linkDomainLabel;
+  /// **'Extra large'**
+  String get textSizeExtraLarge;
 
-  /// No description provided for @linkSimilarityLabel.
+  /// No description provided for @settingsTextSizeNote.
   ///
   /// In en, this message translates to:
-  /// **'Similarity'**
-  String get linkSimilarityLabel;
+  /// **'This adds to your phone\'s own text size.'**
+  String get settingsTextSizeNote;
 
-  /// No description provided for @linkStatusLabel.
+  /// No description provided for @settingsLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Status'**
-  String get linkStatusLabel;
+  /// **'Language'**
+  String get settingsLanguage;
 
-  /// No description provided for @resultLinkCount.
+  /// No description provided for @languageEnglish.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 link found} other{{count} links found}}'**
-  String resultLinkCount(int count);
+  /// **'English'**
+  String get languageEnglish;
 
-  /// No description provided for @resultMoreFindings.
+  /// No description provided for @languageFilipino.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{See 1 more sign} other{See {count} more signs}}'**
-  String resultMoreFindings(int count);
+  /// **'Filipino'**
+  String get languageFilipino;
 
-  /// No description provided for @whyFlagged.
+  /// No description provided for @settingsProtection.
   ///
   /// In en, this message translates to:
-  /// **'Why this was flagged'**
-  String get whyFlagged;
+  /// **'Protection'**
+  String get settingsProtection;
 
-  /// No description provided for @linksInMessage.
+  /// No description provided for @settingsOnline.
   ///
   /// In en, this message translates to:
-  /// **'Links in this message'**
-  String get linksInMessage;
+  /// **'Online checks'**
+  String get settingsOnline;
 
-  /// No description provided for @nextSteps.
+  /// No description provided for @settingsOnlineSwitch.
   ///
   /// In en, this message translates to:
-  /// **'What you can do'**
-  String get nextSteps;
+  /// **'Check links and use AI online'**
+  String get settingsOnlineSwitch;
 
-  /// No description provided for @originalText.
+  /// No description provided for @settingsOnlineOn.
   ///
   /// In en, this message translates to:
-  /// **'Original message'**
-  String get originalText;
+  /// **'Links go to Usisa\'s checking service. AI scan sends the message text to an AI service.'**
+  String get settingsOnlineOn;
 
-  /// No description provided for @localChecked.
+  /// No description provided for @settingsOnlineOff.
   ///
   /// In en, this message translates to:
-  /// **'Message warning signs checked on this device'**
-  String get localChecked;
+  /// **'Everything is checked on your phone only, so Usisa may miss some scams.'**
+  String get settingsOnlineOff;
 
-  /// No description provided for @unknownLink.
+  /// No description provided for @settingsAbout.
   ///
   /// In en, this message translates to:
-  /// **'Link safety is unknown.'**
-  String get unknownLink;
+  /// **'About'**
+  String get settingsAbout;
 
-  /// No description provided for @lowCopy.
+  /// No description provided for @aboutGuide.
   ///
   /// In en, this message translates to:
-  /// **'No common warning signs found. The sender is not verified.'**
-  String get lowCopy;
+  /// **'Usisa is a guide, not a guarantee. It looks for common scam signs, but it can be wrong. If something feels off, don\'t click, don\'t pay and don\'t share codes. Ask someone you trust.'**
+  String get aboutGuide;
 
-  /// No description provided for @cautionCopy.
+  /// No description provided for @aboutData.
   ///
   /// In en, this message translates to:
-  /// **'Some details need a closer look. Verify before replying or paying.'**
-  String get cautionCopy;
-
-  /// No description provided for @highCopy.
-  ///
-  /// In en, this message translates to:
-  /// **'Strong warning signs found. Pause before sharing money or details.'**
-  String get highCopy;
-
-  /// No description provided for @resultRiskLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{risk, select, low{Safe} caution{Need Review} other{High Risk}}'**
-  String resultRiskLabel(String risk);
-
-  /// No description provided for @unknownStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown'**
-  String get unknownStatus;
-
-  /// No description provided for @analysisSummary.
-  ///
-  /// In en, this message translates to:
-  /// **'Analysis Summary'**
-  String get analysisSummary;
-
-  /// No description provided for @detectedSigns.
-  ///
-  /// In en, this message translates to:
-  /// **'Detected Signs'**
-  String get detectedSigns;
-
-  /// No description provided for @noWarnings.
-  ///
-  /// In en, this message translates to:
-  /// **'No common warning signs detected'**
-  String get noWarnings;
-
-  /// No description provided for @notChecked.
-  ///
-  /// In en, this message translates to:
-  /// **'Not checked online'**
-  String get notChecked;
-
-  /// No description provided for @notListed.
-  ///
-  /// In en, this message translates to:
-  /// **'Not on the threat list. That does not prove it is safe.'**
-  String get notListed;
-
-  /// No description provided for @linkUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Online check unavailable. Try again later.'**
-  String get linkUnavailable;
-
-  /// No description provided for @knownThreat.
-  ///
-  /// In en, this message translates to:
-  /// **'Listed as a potential threat'**
-  String get knownThreat;
-
-  /// No description provided for @fullLink.
-  ///
-  /// In en, this message translates to:
-  /// **'Full link'**
-  String get fullLink;
-
-  /// No description provided for @checkOnline.
-  ///
-  /// In en, this message translates to:
-  /// **'Check links online'**
-  String get checkOnline;
-
-  /// No description provided for @checkingLinks.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking links…'**
-  String get checkingLinks;
-
-  /// No description provided for @retry.
-  ///
-  /// In en, this message translates to:
-  /// **'Try again'**
-  String get retry;
-
-  /// No description provided for @verifyAdvice.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify through the official app or website you opened yourself.'**
-  String get verifyAdvice;
-
-  /// No description provided for @secretAdvice.
-  ///
-  /// In en, this message translates to:
-  /// **'Do not share an OTP, password, PIN, or recovery code.'**
-  String get secretAdvice;
-
-  /// No description provided for @paymentAdvice.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause the payment. Confirm the recipient through a trusted channel.'**
-  String get paymentAdvice;
-
-  /// No description provided for @clickedAdvice.
-  ///
-  /// In en, this message translates to:
-  /// **'Already shared details? Contact your bank or e-wallet through its official app now.'**
-  String get clickedAdvice;
-
-  /// No description provided for @historyHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Your checks, kept private.'**
-  String get historyHeading;
-
-  /// No description provided for @historyAll.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get historyAll;
-
-  /// No description provided for @today.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get today;
-
-  /// No description provided for @yesterday.
-  ///
-  /// In en, this message translates to:
-  /// **'Yesterday'**
-  String get yesterday;
-
-  /// No description provided for @historyOff.
-  ///
-  /// In en, this message translates to:
-  /// **'History is off'**
-  String get historyOff;
-
-  /// No description provided for @historyOffBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Save up to 100 encrypted scans for 30 days.'**
-  String get historyOffBody;
-
-  /// No description provided for @enableHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable private history'**
-  String get enableHistory;
-
-  /// No description provided for @noHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'No scans yet'**
-  String get noHistory;
-
-  /// No description provided for @noHistoryBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved checks appear here. Start with a message you want to verify.'**
-  String get noHistoryBody;
-
-  /// No description provided for @noMatches.
-  ///
-  /// In en, this message translates to:
-  /// **'No matching scans'**
-  String get noMatches;
-
-  /// No description provided for @clearFilters.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear filters'**
-  String get clearFilters;
-
-  /// No description provided for @searchHistory.
-  ///
-  /// In en, this message translates to:
-  /// **'Search saved messages'**
-  String get searchHistory;
-
-  /// No description provided for @filters.
-  ///
-  /// In en, this message translates to:
-  /// **'Filters'**
-  String get filters;
-
-  /// No description provided for @allRisk.
-  ///
-  /// In en, this message translates to:
-  /// **'All risks'**
-  String get allRisk;
-
-  /// No description provided for @allSources.
-  ///
-  /// In en, this message translates to:
-  /// **'All sources'**
-  String get allSources;
-
-  /// No description provided for @allDates.
-  ///
-  /// In en, this message translates to:
-  /// **'All dates'**
-  String get allDates;
-
-  /// No description provided for @last7.
-  ///
-  /// In en, this message translates to:
-  /// **'Last 7 days'**
-  String get last7;
-
-  /// No description provided for @last30.
-  ///
-  /// In en, this message translates to:
-  /// **'Last 30 days'**
-  String get last30;
-
-  /// No description provided for @select.
-  ///
-  /// In en, this message translates to:
-  /// **'Select'**
-  String get select;
-
-  /// No description provided for @selectAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Select all matching'**
-  String get selectAll;
-
-  /// No description provided for @deleteSelected.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete selected'**
-  String get deleteSelected;
-
-  /// No description provided for @delete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get delete;
-
-  /// No description provided for @undo.
-  ///
-  /// In en, this message translates to:
-  /// **'Undo'**
-  String get undo;
-
-  /// No description provided for @deleteTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete saved scans?'**
-  String get deleteTitle;
-
-  /// No description provided for @deleteBody.
-  ///
-  /// In en, this message translates to:
-  /// **'This removes the saved check from Usisa, not the SMS in your messaging app.'**
-  String get deleteBody;
-
-  /// No description provided for @clearSavedData.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear saved data'**
-  String get clearSavedData;
-
-  /// No description provided for @notSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Not saved. This result stays in your session.'**
-  String get notSaved;
-
-  /// No description provided for @saveFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save the change. Try again.'**
-  String get saveFailed;
-
-  /// No description provided for @learnHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Spot the signs. Stay a step ahead.'**
-  String get learnHeading;
+  /// **'Your checks and History are saved only on this phone. Nothing is sent anywhere unless online checks are on.'**
+  String get aboutData;
 
   /// No description provided for @learnIntro.
   ///
   /// In en, this message translates to:
-  /// **'Practical reminders for everyday messages in the Philippines.'**
+  /// **'Know the tricks scammers use in the Philippines.'**
   String get learnIntro;
 
-  /// No description provided for @privacy.
+  /// No description provided for @learnSourcesNote.
   ///
   /// In en, this message translates to:
-  /// **'Privacy and storage'**
-  String get privacy;
+  /// **'Based on public advice from BSP, NTC, PNP-ACG, CICC and DICT.'**
+  String get learnSourcesNote;
 
-  /// No description provided for @language.
+  /// No description provided for @learnGoldenTitle.
   ///
   /// In en, this message translates to:
-  /// **'Language'**
-  String get language;
+  /// **'Golden rules'**
+  String get learnGoldenTitle;
 
-  /// No description provided for @saveHistory.
+  /// One rule per line.
   ///
   /// In en, this message translates to:
-  /// **'Save private history'**
-  String get saveHistory;
+  /// **'Never share your OTP, PIN or password with anyone, even someone who says they\'re from your bank or the government.\nDon\'t tap links in unexpected texts. Open the official app or website yourself.\nStop and check before you send money. Call the person or company on a number you already know.'**
+  String get learnGoldenRules;
 
-  /// No description provided for @restoreDraft.
+  /// No description provided for @learnSampleLabel.
   ///
   /// In en, this message translates to:
-  /// **'Restore my draft'**
-  String get restoreDraft;
+  /// **'Sample fake text'**
+  String get learnSampleLabel;
 
-  /// No description provided for @draftDetail.
+  /// No description provided for @learnRedFlags.
   ///
   /// In en, this message translates to:
-  /// **'Encrypted text draft for 24 hours. Screenshots are not saved.'**
-  String get draftDetail;
+  /// **'Red flags'**
+  String get learnRedFlags;
 
-  /// No description provided for @onlineChecks.
+  /// Verdict link to a Learn topic; topic is the localized topic title.
   ///
   /// In en, this message translates to:
-  /// **'Online link checks'**
-  String get onlineChecks;
+  /// **'Learn more: {topic}'**
+  String learnMore(String topic);
 
-  /// No description provided for @onlineDisclosure.
+  /// No description provided for @learnReportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enable online link checks?'**
-  String get onlineDisclosure;
+  /// **'Report a scam'**
+  String get learnReportTitle;
 
-  /// No description provided for @onlineSettingsDescription.
+  /// No description provided for @learnReportIntro.
   ///
   /// In en, this message translates to:
-  /// **'Check full URLs with Google Safe Browsing.'**
-  String get onlineSettingsDescription;
+  /// **'If you were targeted or lost money, report it. Keep screenshots of the messages and the sender\'s number.'**
+  String get learnReportIntro;
 
-  /// No description provided for @onlineBody.
+  /// One channel per line, as "name|what to do". Keep official numbers and sites exact.
   ///
   /// In en, this message translates to:
-  /// **'While enabled, manual link checks send full URLs, including paths and queries, to the Usisa gateway and Google Safe Browsing. Messages, senders, and images stay on-device. SMS checks never upload URLs. Google may miss threats or flag safe sites. Online advisories expire. History saves local findings and last-check details, not online verdicts.'**
-  String get onlineBody;
+  /// **'CICC hotline 1326|Free, 24 hours a day. The government\'s anti-scam hotline (CICC and DICT).\neGov PH app|Report > Scam > Text Scam, then upload screenshots.\nYour bank or e-wallet|Call its official hotline right away if money or your account is involved. If they don\'t act, complain to BSP Online Buddy (BOB) at bsp.gov.ph.\nPNP Anti-Cybercrime Group|Report online fraud at any police station or at acg.pnp.gov.ph.\nNTC|For scam texts and SIM problems, complain to the NTC at ntc.gov.ph.'**
+  String get learnReportChannels;
 
-  /// No description provided for @googleAdvisory.
+  /// Learn topic title; values match learnTopics in lib/features/learn/learn_screen.dart.
   ///
   /// In en, this message translates to:
-  /// **'Advisory provided by Google'**
-  String get googleAdvisory;
+  /// **'{topic, select, phishing{Fake bank and e-wallet texts} prize{Fake prizes and raffles} family{Family emergency texts} aid{Fake government aid (ayuda)} parcel{Fake delivery and parcel fees} job{Fake jobs and online tasks} investment{Investment and crypto scams} other{Online gambling ads}}'**
+  String learnTopicTitle(String topic);
 
-  /// No description provided for @advisoryUnavailable.
+  /// What the scam is and what to do.
   ///
   /// In en, this message translates to:
-  /// **'Could not open the help page. Your scan is still available.'**
-  String get advisoryUnavailable;
+  /// **'{topic, select, phishing{A text that looks like it\'s from your bank, GCash or Maya says your account is locked or needs verifying, and sends you to a link. The site looks real but steals your password and OTP. Banks and e-wallets never ask for your OTP, PIN or password by text, call or link. Open the official app yourself instead.} prize{You \"won\" a raffle you never joined, often naming a mall, TV show or government office. To claim it you must first pay a \"processing fee\" or give your details. Real promos don\'t make winners pay, and DTI-approved raffles carry a permit number you can check.} family{Someone pretends to be your child, grandchild or relative using a new number, or says they\'re a nurse or police officer calling about them. There\'s an emergency, you must send money now, and keep it secret. Call your relative on the number you already have before sending anything.} aid{A text says you qualify for cash aid from DSWD, SSS or PhilHealth, or a refund, and you must register through a link or pay a fee. Government aid is announced on official websites and pages, and agencies don\'t send payout links by text. Ask the agency\'s official page or office.} parcel{A text or call says your parcel is on hold and you must pay a small fee or update your address through a link. Some say customs seized a package with your name. Check orders in the shop\'s own app, and don\'t pay through links in texts.} job{An offer of easy work-from-home pay for liking videos, rating products or doing \"tasks\". The first payouts are small and real. Then you\'re asked to \"deposit\" money to unlock bigger tasks, and you can never withdraw it. Real employers don\'t make you pay to work.} investment{Promises of fast, guaranteed returns, like doubling your money in days, often in crypto, forex or a \"paluwagan\". Early members are paid with new members\' money until it collapses. Check with the SEC whether the company may take investments. Guaranteed high returns are a warning sign.} other{Unsolicited texts offering free credits or bonuses for online casinos, slots or e-sabong. Many of these sites are illegal and unlicensed, and keep your deposits and personal data. Don\'t tap the link or register.}}'**
+  String learnTopicAbout(String topic);
 
-  /// No description provided for @phishingHelp.
+  /// A synthetic sample scam text. Every red-flag phrase must appear in it word for word.
   ///
   /// In en, this message translates to:
-  /// **'Learn about phishing'**
-  String get phishingHelp;
+  /// **'{topic, select, phishing{GCash ALERT: Your account will be suspended today. Verify now at gcash-verify-ph.xyz and enter your MPIN and OTP to keep your balance.} prize{CONGRATULATIONS! You won P50,000 in the Anniversary Raffle! To claim your prize, pay the P1,500 processing fee to this number within 24 hours.} family{Ma, this is my new number, I lost my phone. I\'m in the hospital, please send 5,000 to this GCash now. Don\'t tell Papa yet.} aid{DSWD: You qualify for P8,000 ayuda. Register at dswd-ayuda-claim.online and pay P200 for the release of your payout.} parcel{Your parcel is on hold due to an incomplete address. Pay the P35 re-delivery fee at ph-parcel-track.top or it will be returned today.} job{Hi! We are hiring part-time. Earn P500-P3,000 daily just by liking videos. No experience needed. Message us on Telegram to start.} investment{Guaranteed 30% profit every week! Invest P5,000 today and get P20,000 in one month. Limited slots only, invite friends for a bonus.} other{FREE P888 bonus for new players! Play slots and e-sabong, withdraw anytime. Register now at lucky888bet.vip}}'**
+  String learnTopicSample(String topic);
 
-  /// No description provided for @malwareHelp.
+  /// One red flag per line, as "phrase quoted from the sample|why it is a red flag".
   ///
   /// In en, this message translates to:
-  /// **'Learn about malware'**
-  String get malwareHelp;
-
-  /// No description provided for @unwantedHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Learn about unwanted software'**
-  String get unwantedHelp;
-
-  /// No description provided for @enableOnline.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable online checks'**
-  String get enableOnline;
-
-  /// No description provided for @localOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep local only'**
-  String get localOnly;
-
-  /// No description provided for @gatewayMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Online reputation is not configured in this build. Local warning checks still work.'**
-  String get gatewayMissing;
-
-  /// No description provided for @about.
-  ///
-  /// In en, this message translates to:
-  /// **'About Usisa'**
-  String get about;
-
-  /// No description provided for @aboutBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Made for messages in the Philippines. Usisa flags possible scam signs; it can miss scams and cannot verify every sender.'**
-  String get aboutBody;
-
-  /// No description provided for @sessionPreview.
-  ///
-  /// In en, this message translates to:
-  /// **'Browser preview stores data for this session only. OCR and incoming SMS need Android.'**
-  String get sessionPreview;
-
-  /// No description provided for @privateHistoryConsent.
-  ///
-  /// In en, this message translates to:
-  /// **'Save encrypted message text, links, and findings on this device (latest 100 scans). Reviews expire after 30 days. Usisa deletes expired files while it runs or next time you open it. A stopped app cannot delete them on schedule. Clear saved data deletes them when storage is available.'**
-  String get privateHistoryConsent;
-
-  /// No description provided for @reviewRecoveredScreenshot.
-  ///
-  /// In en, this message translates to:
-  /// **'Review previous screenshot'**
-  String get reviewRecoveredScreenshot;
-
-  /// No description provided for @discardRecoveredScreenshot.
-  ///
-  /// In en, this message translates to:
-  /// **'Discard previous screenshot'**
-  String get discardRecoveredScreenshot;
-
-  /// No description provided for @assumedHttps.
-  ///
-  /// In en, this message translates to:
-  /// **'HTTPS was assumed because the link has no scheme. No page was opened.'**
-  String get assumedHttps;
-
-  /// No description provided for @reputationExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous online result is no longer current. Check again.'**
-  String get reputationExpired;
-
-  /// No description provided for @previousThreat.
-  ///
-  /// In en, this message translates to:
-  /// **'Previously listed as a threat.'**
-  String get previousThreat;
-
-  /// No description provided for @checkedAtLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Last checked: {date}'**
-  String checkedAtLabel(String date);
-
-  /// No description provided for @retentionCleanupFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Some expired data could not be erased. Try Clear saved data in Settings.'**
-  String get retentionCleanupFailed;
-
-  /// No description provided for @welcomeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A second look before you act.'**
-  String get welcomeTitle;
-
-  /// No description provided for @welcomeBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Check suspicious messages and links for warning signs. Built for English, Filipino, and Taglish in the Philippines.'**
-  String get welcomeBody;
-
-  /// No description provided for @welcomePrivacy.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual text checks work offline. History, online link checks, and incoming SMS are optional and off by default. Usisa can miss scams. Verify important requests independently.'**
-  String get welcomePrivacy;
-
-  /// No description provided for @startChecking.
-  ///
-  /// In en, this message translates to:
-  /// **'Start checking'**
-  String get startChecking;
-
-  /// No description provided for @smsHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Incoming SMS checks'**
-  String get smsHeading;
-
-  /// No description provided for @smsDisclosure.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable incoming SMS checks?'**
-  String get smsDisclosure;
-
-  /// No description provided for @smsDisclosureBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Checks new SMS on this device only. No inbox access or message uploads. Up to 20 encrypted reviews expire in 15 minutes. Android may delay checks; force-stop stops checks. Some scams may be missed.'**
-  String get smsDisclosureBody;
-
-  /// No description provided for @enableSmsChecks.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable SMS checks'**
-  String get enableSmsChecks;
-
-  /// No description provided for @smsPermissionNeeded.
-  ///
-  /// In en, this message translates to:
-  /// **'SMS permission needed'**
-  String get smsPermissionNeeded;
-
-  /// No description provided for @smsEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Incoming SMS checks enabled'**
-  String get smsEnabled;
-
-  /// No description provided for @smsDisabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Incoming SMS checks off'**
-  String get smsDisabled;
-
-  /// No description provided for @smsLimits.
-  ///
-  /// In en, this message translates to:
-  /// **'Checks stay on-device. Android may delay them; coverage is not guaranteed. Low-risk messages stay quiet.'**
-  String get smsLimits;
-
-  /// No description provided for @smsAlertsOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Notifications are off. Recent reviews stay here. Enable alerts in Android settings.'**
-  String get smsAlertsOff;
-
-  /// No description provided for @enableSmsAlerts.
-  ///
-  /// In en, this message translates to:
-  /// **'Enable review notifications'**
-  String get enableSmsAlerts;
-
-  /// No description provided for @smsDegraded.
-  ///
-  /// In en, this message translates to:
-  /// **'Some messages were not checked. Turn SMS checks off, then on again.'**
-  String get smsDegraded;
-
-  /// No description provided for @manageSms.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage SMS checks'**
-  String get manageSms;
-
-  /// No description provided for @recentSms.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent SMS reviews'**
-  String get recentSms;
-
-  /// No description provided for @smsTemporary.
-  ///
-  /// In en, this message translates to:
-  /// **'Temporary encrypted reviews expire 15 minutes after receipt. Low-risk messages are deleted after checking.'**
-  String get smsTemporary;
-
-  /// No description provided for @smsEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No temporary reviews. They may have expired, been low-risk, or arrived while checks were off.'**
-  String get smsEmpty;
-
-  /// No description provided for @smsMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Review unavailable. It may have expired, been deleted, or SMS checks were off. Copy the message into a manual scan.'**
-  String get smsMissing;
-
-  /// No description provided for @smsPending.
-  ///
-  /// In en, this message translates to:
-  /// **'No check completed yet. Try again soon or copy the message into a manual scan.'**
-  String get smsPending;
-
-  /// No description provided for @continueAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue'**
-  String get continueAction;
-
-  /// No description provided for @back.
-  ///
-  /// In en, this message translates to:
-  /// **'Back'**
-  String get back;
-
-  /// No description provided for @riskLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{risk, select, high{High risk} caution{Caution} other{Low risk}}'**
-  String riskLabel(String risk);
-
-  /// No description provided for @sourceLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{source, select, link{Link} screenshot{Screenshot} sms{SMS} other{Text}}'**
-  String sourceLabel(String source);
-
-  /// No description provided for @errorMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'{code, select, emptyInput{Enter a message or link first.} textTooLong{Keep within 10,000 characters. Nothing was cut.} invalidUrl{Enter one complete HTTP or HTTPS link. Use Text for multiple links.} urlTooLong{A link exceeds 2,048 characters. Edit it first.} tooManyLinks{Check up to 10 distinct links at a time.} imageTooLarge{Choose an image under 20 MB and 20 megapixels.} other{The check could not finish. Your input is still here. Try again.}}'**
-  String errorMessage(String code);
-
-  /// No description provided for @findingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'{code, select, codeRequest{Asks for a security secret} paymentRequest{Requests a payment} urgency{Pressures you to act} prize{Promises a prize} advanceFee{Asks for an upfront fee} deceptiveHost{Brand name on a different domain} userInfo{Misleading link format} httpLink{Unencrypted link} ipHost{Numeric or IP address} shortLink{Shortened destination} unusualHost{Unusual domain characters} invalidLink{Link could not be assessed} other{Warning sign}}'**
-  String findingTitle(String code);
-
-  /// No description provided for @findingBody.
-  ///
-  /// In en, this message translates to:
-  /// **'{code, select, codeRequest{Verify independently before sharing a code or password.} paymentRequest{Confirm the recipient and reason before sending money.} urgency{Deadlines and account threats can discourage careful checking.} prize{Verify through an official channel you opened independently.} advanceFee{Verify the purpose and recipient of any upfront fee.} deceptiveHost{This host contains a brand but does not match its reviewed official domain.} userInfo{Text before the @ is not the destination. The real host is shown.} httpLink{This uses HTTP. HTTPS also does not guarantee legitimacy.} ipHost{The link uses an IP address rather than an ordinary domain.} shortLink{The final destination is hidden. Usisa has not expanded this link.} unusualHost{Encoded or mixed-script characters need review; they do not prove fraud.} invalidLink{The format is malformed or unsupported. No safety verdict is available.} other{Verify the request before acting.}}'**
-  String findingBody(String code);
-
-  /// No description provided for @homeHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Stay one step ahead of scams.'**
-  String get homeHeading;
-
-  /// No description provided for @homeBrand.
-  ///
-  /// In en, this message translates to:
-  /// **'Usisa'**
-  String get homeBrand;
-
-  /// No description provided for @homeBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Check messages, links, and screenshots for scam signs.'**
-  String get homeBody;
-
-  /// No description provided for @scanMessageCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan Message'**
-  String get scanMessageCard;
-
-  /// No description provided for @scanMessageDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste or type a message'**
-  String get scanMessageDescription;
-
-  /// No description provided for @checkLinkCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Check a Link'**
-  String get checkLinkCard;
-
-  /// No description provided for @checkLinkDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Check a URL before opening.'**
-  String get checkLinkDescription;
-
-  /// No description provided for @scanScreenshotCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan Screenshot'**
-  String get scanScreenshotCard;
-
-  /// No description provided for @scanScreenshotDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Read message text from a screenshot.'**
-  String get scanScreenshotDescription;
-
-  /// No description provided for @aiScan.
-  ///
-  /// In en, this message translates to:
-  /// **'AI Scan'**
-  String get aiScan;
-
-  /// No description provided for @aiBeta.
-  ///
-  /// In en, this message translates to:
-  /// **'Beta'**
-  String get aiBeta;
-
-  /// No description provided for @aiHomeDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Get AI help with scam checks.'**
-  String get aiHomeDescription;
-
-  /// No description provided for @homeAiBadge.
-  ///
-  /// In en, this message translates to:
-  /// **'New'**
-  String get homeAiBadge;
-
-  /// No description provided for @autoSmsCard.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto SMS Detection'**
-  String get autoSmsCard;
-
-  /// No description provided for @autoSmsDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Check incoming SMS for scams.'**
-  String get autoSmsDescription;
-
-  /// No description provided for @aiIntroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'AI-Powered Scam Analysis'**
-  String get aiIntroTitle;
-
-  /// No description provided for @aiIntroBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Check a message, link, or screenshot. AI explains possible risks and next steps.'**
-  String get aiIntroBody;
-
-  /// No description provided for @aiMultiInput.
-  ///
-  /// In en, this message translates to:
-  /// **'Multi-input'**
-  String get aiMultiInput;
-
-  /// No description provided for @aiMultiInputBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Text, links, or screenshots with OCR'**
-  String get aiMultiInputBody;
-
-  /// No description provided for @aiContextAware.
-  ///
-  /// In en, this message translates to:
-  /// **'Context-aware'**
-  String get aiContextAware;
-
-  /// No description provided for @aiContextAwareBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Looks for common scam patterns in PH'**
-  String get aiContextAwareBody;
-
-  /// No description provided for @aiActionable.
-  ///
-  /// In en, this message translates to:
-  /// **'Actionable results'**
-  String get aiActionable;
-
-  /// No description provided for @aiActionableBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Risk level, explanations, and next steps'**
-  String get aiActionableBody;
-
-  /// No description provided for @startAiScan.
-  ///
-  /// In en, this message translates to:
-  /// **'Start AI Scan'**
-  String get startAiScan;
-
-  /// No description provided for @aiInputQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'What do you want to check?'**
-  String get aiInputQuestion;
-
-  /// No description provided for @aiTextOption.
-  ///
-  /// In en, this message translates to:
-  /// **'Text / Message'**
-  String get aiTextOption;
-
-  /// No description provided for @aiTextOptionBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Paste or type a suspicious message'**
-  String get aiTextOptionBody;
-
-  /// No description provided for @aiLinkOption.
-  ///
-  /// In en, this message translates to:
-  /// **'URL / Link'**
-  String get aiLinkOption;
-
-  /// No description provided for @aiLinkOptionBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Check a link for scam signs.'**
-  String get aiLinkOptionBody;
-
-  /// No description provided for @aiScreenshotOption.
-  ///
-  /// In en, this message translates to:
-  /// **'Screenshot / Image'**
-  String get aiScreenshotOption;
-
-  /// No description provided for @aiScreenshotOptionBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Read and review text with OCR.'**
-  String get aiScreenshotOptionBody;
-
-  /// No description provided for @aiProgressTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Analyzing with AI…'**
-  String get aiProgressTitle;
-
-  /// No description provided for @aiStageReviewed.
-  ///
-  /// In en, this message translates to:
-  /// **'Text review confirmed'**
-  String get aiStageReviewed;
-
-  /// No description provided for @aiStageLocal.
-  ///
-  /// In en, this message translates to:
-  /// **'On-device checks complete'**
-  String get aiStageLocal;
-
-  /// No description provided for @aiStageRequest.
-  ///
-  /// In en, this message translates to:
-  /// **'Sending text for an AI check…'**
-  String get aiStageRequest;
-
-  /// No description provided for @aiStageResult.
-  ///
-  /// In en, this message translates to:
-  /// **'Preparing your result'**
-  String get aiStageResult;
-
-  /// No description provided for @smsDetectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'SMS Detection'**
-  String get smsDetectionTitle;
-
-  /// No description provided for @smsDetectionBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Checks new SMS for scam signs and alerts you to suspicious messages.'**
-  String get smsDetectionBody;
-
-  /// No description provided for @smsRecentDetections.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent SMS checks'**
-  String get smsRecentDetections;
-
-  /// No description provided for @warningSigns.
-  ///
-  /// In en, this message translates to:
-  /// **'Detected Warning Signs'**
-  String get warningSigns;
-
-  /// No description provided for @safetyRecommendations.
-  ///
-  /// In en, this message translates to:
-  /// **'Safety Recommendations'**
-  String get safetyRecommendations;
-
-  /// No description provided for @linkWhyRisky.
-  ///
-  /// In en, this message translates to:
-  /// **'Why is it risky?'**
-  String get linkWhyRisky;
-
-  /// No description provided for @learnScamTips.
-  ///
-  /// In en, this message translates to:
-  /// **'Scam Safety Tips'**
-  String get learnScamTips;
-
-  /// No description provided for @learnScamTipsBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Simple ways to avoid common\nscams in the Philippines.'**
-  String get learnScamTipsBody;
-
-  /// No description provided for @learnCommonScams.
-  ///
-  /// In en, this message translates to:
-  /// **'Common Scams in PH'**
-  String get learnCommonScams;
-
-  /// No description provided for @getStarted.
-  ///
-  /// In en, this message translates to:
-  /// **'Get Started'**
-  String get getStarted;
-
-  /// No description provided for @onboardingSecondTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'See why a message was flagged.'**
-  String get onboardingSecondTitle;
-
-  /// No description provided for @onboardingSecondBody.
-  ///
-  /// In en, this message translates to:
-  /// **'See which words, links, and requests need a closer look.'**
-  String get onboardingSecondBody;
-
-  /// No description provided for @onboardingThirdTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose what stays on your device.'**
-  String get onboardingThirdTitle;
-
-  /// No description provided for @onboardingThirdBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Manual checks stay local. AI and online link checks need your review and consent.'**
-  String get onboardingThirdBody;
-
-  /// No description provided for @linkCheckerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Link Checker'**
-  String get linkCheckerTitle;
-
-  /// No description provided for @aiScanResult.
-  ///
-  /// In en, this message translates to:
-  /// **'AI Scan Result'**
-  String get aiScanResult;
-
-  /// No description provided for @learnStaySafeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Learn & Stay Safe'**
-  String get learnStaySafeTitle;
-
-  /// No description provided for @detection.
-  ///
-  /// In en, this message translates to:
-  /// **'Detection'**
-  String get detection;
-
-  /// No description provided for @general.
-  ///
-  /// In en, this message translates to:
-  /// **'General'**
-  String get general;
-
-  /// No description provided for @notifications.
-  ///
-  /// In en, this message translates to:
-  /// **'Notifications'**
-  String get notifications;
-
-  /// No description provided for @aiScanToggleBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Review before AI checks text.'**
-  String get aiScanToggleBody;
-
-  /// No description provided for @smsNotificationsEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'SMS notifications are enabled.'**
-  String get smsNotificationsEnabled;
-
-  /// No description provided for @smsRecentTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent ({count})'**
-  String smsRecentTab(int count);
-
-  /// No description provided for @smsFlaggedTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Flagged ({count})'**
-  String smsFlaggedTab(int count);
-
-  /// No description provided for @smsFlaggedEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No flagged messages in recent SMS checks.'**
-  String get smsFlaggedEmpty;
-
-  /// No description provided for @home.
-  ///
-  /// In en, this message translates to:
-  /// **'Home'**
-  String get home;
+  /// **'{topic, select, phishing{suspended today|It threatens you so you don\'t stop to think\ngcash-verify-ph.xyz|This isn\'t GCash\'s real website (gcash.com)\nenter your MPIN and OTP|No real bank or e-wallet asks for these} prize{You won P50,000|You can\'t win a raffle you never joined\npay the P1,500 processing fee|Real prizes never ask you to pay first\nwithin 24 hours|A deadline to rush you} family{this is my new number|An unknown number claiming to be family\nsend 5,000 to this GCash now|Pressure to send money right away\nDon\'t tell Papa yet|Secrecy stops you from checking} aid{dswd-ayuda-claim.online|Government websites end in .gov.ph\npay P200 for the release|Government aid is free. Nobody should charge you to receive it} parcel{Pay the P35 re-delivery fee|A small fee to get your card details\nph-parcel-track.top|This isn\'t the courier\'s or shop\'s real website\nreturned today|A deadline to rush you} job{Earn P500-P3,000 daily just by liking videos|Too much pay for almost no work\nMessage us on Telegram|It moves you to a private chat that\'s hard to trace} investment{Guaranteed 30% profit every week|No real investment guarantees high returns\nLimited slots only|Pressure to join before you think\ninvite friends for a bonus|Paying you to recruit is a sign of a pyramid scheme} other{FREE P888 bonus|Free credits to lure you into depositing\nlucky888bet.vip|An unknown gambling site that may be unlicensed}}'**
+  String learnTopicFlags(String topic);
 }
 
 class _AppLocalizationsDelegate

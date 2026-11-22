@@ -1,297 +1,289 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 
+import '../../app/motion.dart';
+import '../../app/read_aloud.dart';
+import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
-import '../../theme/usisa_theme.dart';
-import '../../widgets/glass_surface.dart';
-import '../../widgets/page_body.dart';
-import '../../widgets/usisa_modal.dart';
 
-class LearnScreen extends StatelessWidget {
-  const LearnScreen({super.key, required this.onBack});
+/// The eight common PH scam topics, in display order. Content lives in the .arb files; sources in SOURCES.md beside this file.
+const learnTopics = ['phishing', 'prize', 'family', 'aid', 'parcel', 'job', 'investment', 'gambling'];
 
-  final VoidCallback onBack;
+// Phone-check reason codes that point to a topic. Weak signs like urgency or brand_mention fit too many topics.
+const _topicByReason = {
+  'otp_with_link': 'phishing',
+  'credential_request': 'phishing',
+  'lookalike_domain': 'phishing',
+  'prize_claim': 'prize',
+  'payment_request': 'prize',
+  'family_money': 'family',
+  'gambling_ad': 'gambling',
+};
+
+/// The Learn topic for a verdict's reasons (most decisive first), or null when none fits.
+String? learnTopicFor(List<String> reasons) =>
+    reasons.map((r) => _topicByReason[r]).firstWhere((t) => t != null, orElse: () => null);
+
+/// A topic's red flags as (phrase quoted from its sample, why it's a red flag).
+List<(String, String)> redFlags(AppLocalizations l, String topic) => [
+  for (final line in l.learnTopicFlags(topic).split('\n'))
+    if (line.split('|') case [final phrase, final why]) (phrase, why),
+];
+
+List<(String, String)> _lines(String text) => [
+  for (final line in text.split('\n'))
+    if (line.split('|') case [final name, final detail]) (name, detail),
+];
+
+/// The Learn tab: Golden rules, the eight topic cards, then Report a scam. Bundled, so it works offline.
+class LearnScreen extends StatefulWidget {
+  const LearnScreen({super.key, this.readAloud});
+  final ReadAloud? readAloud;
+
+  @override
+  State<LearnScreen> createState() => _LearnScreenState();
+}
+
+class _LearnScreenState extends State<LearnScreen> {
+  late final ReadAloud _readAloud = widget.readAloud ?? ReadAloud();
+
+  @override
+  void dispose() {
+    _readAloud.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final backTooltip = MaterialLocalizations.of(context).backButtonTooltip;
-    final textScale = MediaQuery.textScalerOf(context).scale(16) / 16;
-
-    return PageBody(
-      scrollable: textScale > 1.25,
-      horizontalGutter: 16,
-      bottomPadding: 32,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxHeight < 800;
-          final tight = constraints.maxHeight < 560;
-          final gap = tight ? 4.0 : 8.0;
-          final heroGap = tight ? 8.0 : 32.0;
-          final heroHeight = tight ? 88.0 : 136.0;
-          final artWidth = (constraints.maxWidth - 56)
-              .clamp(0.0, 300.0)
-              .toDouble();
-          final cardHeight = tight
-              ? 68.0
-              : (constraints.maxWidth * .24).clamp(76.0, 92.0).toDouble();
-          final sectionGap = tight ? 16.0 : 33.0;
-          final sectionCardGap = tight ? 6.0 : 20.0;
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    final tt = Theme.of(context).textTheme;
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+        children: [
+          Semantics(header: true, child: Text(l.navLearn, style: tt.headlineSmall)),
+          const SizedBox(height: 4),
+          Text(l.learnIntro, style: tt.bodyLarge?.copyWith(color: UsisaColors.inkMuted)),
+          const SizedBox(height: 16),
+          LearnCard(
+            title: l.learnGoldenTitle,
+            color: UsisaColors.yellow,
+            readAloud: _readAloud,
+            speech: (l) => '${l.learnGoldenTitle}. ${l.learnGoldenRules.replaceAll('\n', ' ')}',
             children: [
-              SizedBox(
-                height: 48,
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip: backTooltip,
-                      onPressed: onBack,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 48,
-                        height: 48,
-                      ),
-                      icon: const HugeIcon(
-                        icon: HugeIcons.strokeRoundedArrowLeft01,
-                        color: UsisaTheme.forest,
-                        size: 24,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        l.learnStaySafeTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
-              SizedBox(height: heroGap),
-              SizedBox(
-                height: heroHeight,
-                child: Center(
-                  child: Image.asset(
-                    'assets/image/learn-brand.png',
-                    width: artWidth,
-                    height: heroHeight,
-                    fit: BoxFit.contain,
-                    excludeFromSemantics: true,
+              for (final (i, rule) in l.learnGoldenRules.split('\n').indexed)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${i + 1}.', style: tt.titleMedium),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(rule, style: tt.bodyLarge)),
+                    ],
                   ),
                 ),
-              ),
-              SizedBox(height: tight ? 12 : 20),
-              Text(
-                l.learnScamTips,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: compact ? 22 : null,
-                ),
-              ),
-              SizedBox(height: tight ? 1 : 12),
-              Text(
-                l.learnScamTipsBody,
-                maxLines: tight ? 1 : 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontSize: compact ? 16 : null,
-                ),
-              ),
-              SizedBox(height: sectionGap),
-              Text(
-                l.learnCommonScams,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: compact ? 18 : null,
-                ),
-              ),
-              SizedBox(height: sectionCardGap),
-              ConstrainedBox(
-                constraints: BoxConstraints(minHeight: cardHeight),
-                child: _LearnTipCard(
-                  icon: HugeIcons.strokeRoundedBank,
-                  iconColor: UsisaTheme.contrastCoral,
-                  title: l.learnBankTitle,
-                  summary: l.learnBankSummary,
-                  message: l.learnBankBody,
-                  details: l.learnOtpBody,
-                  recoveryTitle: l.learnRecoveryTitle,
-                  recoveryBody: l.learnRecoveryBody,
-                  compact: compact,
-                ),
-              ),
-              SizedBox(height: gap),
-              ConstrainedBox(
-                constraints: BoxConstraints(minHeight: cardHeight),
-                child: _LearnTipCard(
-                  icon: HugeIcons.strokeRoundedBank,
-                  iconColor: UsisaTheme.contrastCoral,
-                  title: l.learnGovernmentTitle,
-                  summary: l.learnGovernmentSummary,
-                  message: l.learnGovernmentBody,
-                  recoveryTitle: l.learnRecoveryTitle,
-                  recoveryBody: l.learnRecoveryBody,
-                  compact: compact,
-                ),
-              ),
-              SizedBox(height: gap),
-              ConstrainedBox(
-                constraints: BoxConstraints(minHeight: cardHeight),
-                child: _LearnTipCard(
-                  icon: HugeIcons.strokeRoundedShoppingCart01,
-                  iconColor: UsisaTheme.contrastCoral,
-                  title: l.learnSellerTitle,
-                  summary: l.learnSellerSummary,
-                  message: l.learnSellerBody,
-                  details: l.learnDeliveryBody,
-                  recoveryTitle: l.learnRecoveryTitle,
-                  recoveryBody: l.learnRecoveryBody,
-                  compact: compact,
-                ),
-              ),
             ],
-          );
-        },
+          ),
+          for (final topic in learnTopics) TopicCard(topic: topic, readAloud: _readAloud),
+          LearnCard(
+            title: l.learnReportTitle,
+            color: UsisaColors.mint,
+            readAloud: _readAloud,
+            speech: (l) => [
+              l.learnReportTitle,
+              l.learnReportIntro,
+              for (final (name, detail) in _lines(l.learnReportChannels)) '$name. $detail',
+            ].join(' '),
+            children: [
+              Text(l.learnReportIntro, style: tt.bodyLarge),
+              for (final (name, detail) in _lines(l.learnReportChannels)) ...[
+                const SizedBox(height: 12),
+                Text(name, style: tt.titleMedium),
+                Text(detail, style: tt.bodyLarge),
+              ],
+            ],
+          ),
+          Text(l.learnSourcesNote, style: tt.bodyMedium?.copyWith(color: UsisaColors.inkMuted)),
+        ],
       ),
     );
   }
 }
 
-class _LearnTipCard extends StatelessWidget {
-  const _LearnTipCard({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.summary,
-    required this.message,
-    required this.recoveryTitle,
-    required this.recoveryBody,
-    required this.compact,
-    this.details,
-  });
-
-  final List<List<dynamic>> icon;
-  final Color iconColor;
-  final String title;
-  final String summary;
-  final String message;
-  final String? details;
-  final String recoveryTitle;
-  final String recoveryBody;
-  final bool compact;
+/// One scam topic: what it is, a sample fake text with its red flags highlighted, and why each is a red flag.
+class TopicCard extends StatelessWidget {
+  TopicCard({required this.topic, required this.readAloud}) : super(key: ValueKey('learn-$topic'));
+  final String topic;
+  final ReadAloud readAloud;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l = AppLocalizations.of(context);
-
-    return GlassSurface(
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: () {
-          UsisaModal.show(
-            context: context,
-            title: title,
-            message: message,
-            primaryLabel: l.continueAction,
-            variant: UsisaModalVariant.info,
-            details: Column(
-              children: [
-                if (details != null) ...[
-                  Text(
-                    details!,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium,
+    final tt = Theme.of(context).textTheme;
+    final flags = redFlags(l, topic);
+    return LearnCard(
+      title: l.learnTopicTitle(topic),
+      color: UsisaColors.lilac,
+      readAloud: readAloud,
+      speech: (l) => [
+        l.learnTopicTitle(topic),
+        l.learnTopicAbout(topic),
+        '${l.learnRedFlags}:',
+        for (final (_, why) in redFlags(l, topic)) '$why.',
+      ].join(' '),
+      children: [
+        Text(l.learnTopicAbout(topic), style: tt.bodyLarge),
+        const SizedBox(height: 16),
+        Text(l.learnSampleLabel, style: tt.titleMedium?.copyWith(color: UsisaColors.inkMuted)),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(color: UsisaColors.background, borderRadius: BorderRadius.circular(20)),
+          child: Text.rich(_highlight(l.learnTopicSample(topic), [for (final (p, _) in flags) p], tt.bodyLarge)),
+        ),
+        const SizedBox(height: 16),
+        Text(l.learnRedFlags, style: tt.titleMedium),
+        for (final (phrase, why) in flags)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text.rich(
+              TextSpan(
+                style: tt.bodyLarge,
+                children: [
+                  TextSpan(
+                    text: '"$phrase"',
+                    style: const TextStyle(color: UsisaColors.danger, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 14),
+                  TextSpan(text: ': $why'),
                 ],
-                Text(
-                  recoveryTitle,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  recoveryBody,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
+              ),
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            compact ? 10 : 14,
-            compact ? 5 : 8,
-            compact ? 30 : 14,
-            compact ? 5 : 8,
           ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 80,
-                child: Center(
-                  child: HugeIcon(icon: icon, color: iconColor, size: 44),
-                ),
-              ),
-              Container(
-                width: 1,
-                height: 44,
-                color: UsisaTheme.forest.withValues(alpha: .12),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: UsisaTheme.forest,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 230),
-                      child: Text(
-                        summary,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: UsisaTheme.forest.withValues(alpha: .82),
-                          fontSize: compact ? 13 : null,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 4),
-              const HugeIcon(
-                icon: HugeIcons.strokeRoundedArrowRight01,
-                color: UsisaTheme.forest,
-                size: 20,
-              ),
-            ],
+      ],
+    );
+  }
+}
+
+/// [sample] with each of [phrases] shown bold on a danger tint (not colour alone: also bold, and listed below).
+TextSpan _highlight(String sample, List<String> phrases, TextStyle? style) {
+  final spans = <TextSpan>[];
+  var at = 0;
+  while (at < sample.length) {
+    final hits = [
+      for (final p in phrases)
+        if (sample.indexOf(p, at) case final i when i >= 0) (i, p),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    if (hits.isEmpty) break;
+    final (i, p) = hits.first;
+    spans
+      ..add(TextSpan(text: sample.substring(at, i)))
+      ..add(
+        TextSpan(
+          text: p,
+          style: const TextStyle(
+            color: UsisaColors.danger,
+            backgroundColor: UsisaColors.dangerTint,
+            fontWeight: FontWeight.w700,
           ),
+        ),
+      );
+    at = i + p.length;
+  }
+  spans.add(TextSpan(text: sample.substring(at)));
+  return TextSpan(style: style, children: spans);
+}
+
+/// A white Learn card with a colour stripe, a title, its content and an outlined Read aloud button.
+class LearnCard extends StatelessWidget {
+  const LearnCard({
+    super.key,
+    required this.title,
+    required this.color,
+    required this.readAloud,
+    required this.speech,
+    required this.children,
+  });
+  final String title;
+  final Color color;
+  final ReadAloud readAloud;
+
+  /// The card's text in a given language, for Read aloud.
+  final String Function(AppLocalizations l) speech;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        color: UsisaColors.surface,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(UsisaRadius.card)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ExcludeSemantics(child: Container(height: 10, color: color)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Semantics(header: true, child: Text(title, style: tt.titleLarge)),
+                  const SizedBox(height: 10),
+                  ...children,
+                  const SizedBox(height: 16),
+                  PressScale(
+                    child: OutlinedButton(
+                      onPressed: () => readAloudWithNote(context, readAloud, speech),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: UsisaColors.primary,
+                        side: const BorderSide(color: UsisaColors.primary, width: 1.5),
+                        minimumSize: const Size.fromHeight(56),
+                        shape: const StadiumBorder(),
+                        textStyle: tt.titleMedium,
+                      ),
+                      child: Text(AppLocalizations.of(context).readAloud, textAlign: TextAlign.center),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+/// One topic on its own page, opened from a verdict's Learn link.
+class LearnTopicScreen extends StatefulWidget {
+  const LearnTopicScreen({super.key, required this.topic, this.readAloud});
+  final String topic;
+  final ReadAloud? readAloud;
+
+  @override
+  State<LearnTopicScreen> createState() => _LearnTopicScreenState();
+}
+
+class _LearnTopicScreenState extends State<LearnTopicScreen> {
+  late final ReadAloud _readAloud = widget.readAloud ?? ReadAloud();
+
+  @override
+  void dispose() {
+    _readAloud.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(backgroundColor: UsisaColors.background, title: Text(AppLocalizations.of(context).navLearn)),
+    body: ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+      children: [TopicCard(topic: widget.topic, readAloud: _readAloud)],
+    ),
+  );
 }

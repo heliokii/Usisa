@@ -10,77 +10,114 @@ class AppLocalizationsFil extends AppLocalizations {
   AppLocalizationsFil([String locale = 'fil']) : super(locale);
 
   @override
-  String get analysisMode => 'Pagsusuri';
+  String get navCheck => 'Suriin';
 
   @override
-  String get onDevice => 'Sa device';
+  String get navHistory => 'Kasaysayan';
 
   @override
-  String get aiAssisted => 'May tulong ng AI';
+  String get navLearn => 'Alamin';
 
   @override
-  String get aiManualOnly =>
-      'Magpapadala lang ng teksto sa AI matapos mong suriin at kumpirmahin.';
+  String get navSettings => 'Mga setting';
 
   @override
-  String get aiReviewTitle => 'Suriin bago ipadala sa AI';
+  String get greetingMorning => 'Magandang umaga!';
 
   @override
-  String get aiDisclosure =>
-      'Ipapadala ang mismong tekstong ito sa server ng Usisa at sa Groq para sa pagsusuri ng AI. Alisin ang mga code o personal na detalyeng ayaw mong ibahagi. Kasama ang mga pangalan, numero at link sa tekstong ito. Mananatili sa device ang screenshot at hiwalay na detalye ng nagpadala. Maaaring magtago ang Groq ng mga request para sa pagiging maaasahan o pagsubaybay sa pang-aabuso, depende sa setting ng account. Maaaring magkamali ang AI; hindi nito pinapatunayan ang nagpadala o binibisita ang mga link.';
+  String get greetingAfternoon => 'Magandang hapon!';
 
   @override
-  String get aiTextLabel => 'Tekstong ipapadala';
+  String get greetingEvening => 'Magandang gabi!';
 
   @override
-  String get sendAi => 'Ipadala ang tekstong ito para sa AI';
+  String get homeHeadline => 'Scam ba ang\ntext na ito?';
 
   @override
-  String get keepOnDevice => 'Panatilihin sa device';
+  String get homePrompt => 'Ano ang gusto mong suriin?';
 
   @override
-  String get aiAssessment => 'Pagsusuri ng AI';
+  String get tileMessageTitle => 'I-scan ang mensahe';
 
   @override
-  String get onDeviceFindings => 'Mga nakita sa device';
+  String get tileMessageSubtitle => 'I-paste ang natanggap mong text';
 
   @override
-  String get aiChecking =>
-      'Tapos na ang pagsusuri sa device. Nagsusuri ang AI…';
+  String get tileLinkTitle => 'Suriin ang link';
 
   @override
-  String get aiUnknown =>
-      'Hindi masuri ng AI ang mensaheng ito. Gamitin ang lokal na resulta at tiyakin sa ibang paraan.';
+  String get tileLinkSubtitle => 'Alamin kung saan talaga ito papunta';
 
   @override
-  String get aiUnavailable =>
-      'Tapos na ang lokal na check, pero hindi available ang AI. Nandito pa ang teksto. Suriin at subukan muli.';
+  String get tileScreenshotTitle => 'I-scan ang screenshot';
 
   @override
-  String get aiCancelled =>
-      'Kinansela ang AI check. Nananatili ang lokal na resulta. Maaaring maproseso pa rin ang naipadalang request.';
+  String get tileScreenshotSubtitle => 'Pumili ng larawan ng text';
 
   @override
-  String get aiNotRequested =>
-      'Wala pang AI check. Suriin ang teksto bago idagdag ito.';
+  String get tileAiTitle => 'AI scan';
 
   @override
-  String get aiDisagreement =>
-      'Magkaiba ang resulta. Panatilihin ang mas mataas na babala; walang resulta ang nagpapatunay na ligtas ang mensahe.';
+  String get tileAiSubtitle => 'Ipasuri nang mabuti sa AI';
 
   @override
-  String get aiReviewed => 'Ginamit ng AI ang sinuri mong teksto.';
+  String get smsCardTitle => 'Awtomatikong proteksyon sa SMS';
 
   @override
-  String get aiRetry => 'Suriin at subukang muli ang AI';
+  String get smsCardOn => 'Susuriin ang mga bagong text';
 
   @override
-  String get aiLimitations =>
-      'Maaaring makaligtaan ng AI ang scam o magbigay ng maling babala. Ipinapakita ng sipi ang ginamit na teksto, hindi patunay.';
+  String smsCardChecked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count text ang nasuri ngayong araw',
+      one: '1 text ang nasuri ngayong araw',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get aiSettingsBody =>
-      'Tumutulong ang AI sa teksto, link, at tekstong inaprubahan mo mula sa screenshot. Kumpirmahin ang bawat upload sa Usisa at Groq. Sa device lang ang auto SMS. Hindi kasama ang AI sa pahintulot sa link check.';
+  String get smsCardOff => 'Hindi sinusuri ang mga text';
+
+  @override
+  String get smsSetupTitle => 'Protektahan ako sa mga scam na text';
+
+  @override
+  String get smsSetupBody =>
+      'Sinusuri ng Usisa ang bawat bagong text sa phone mo at nagbababala lang kapag maaaring scam ito. Hihingi ang Android ng pahintulot para sa SMS at notification.';
+
+  @override
+  String get smsSetupTurnOn => 'I-on ang proteksyon';
+
+  @override
+  String get smsSetupNotNow => 'Hindi muna';
+
+  @override
+  String get smsBackgroundTitle => 'Hayaang tumakbo ang Usisa';
+
+  @override
+  String get smsBackgroundBody =>
+      'Maaaring patigilin ng phone mo ang mga app na tumatakbo sa background. Sa susunod na screen, payagang kusang magsimula ang Usisa o alisin ang limit nito sa baterya, para patuloy na masuri ang mga bagong text.';
+
+  @override
+  String get smsBackgroundOpen => 'Buksan ang settings';
+
+  @override
+  String get smsBackgroundDone => 'Tapos na';
+
+  @override
+  String get smsOffBanner => 'Naka-off ang proteksyon sa scam na text';
+
+  @override
+  String get smsOffBannerBody =>
+      'Kailangan ng Usisa ng pahintulot sa SMS at notification para masuri ang mga text mo.';
+
+  @override
+  String get smsFix => 'Ayusin';
+
+  @override
+  String get comingSoon => 'Malapit na';
 
   @override
   String aiFindingTitle(String code) {
@@ -91,918 +128,373 @@ class AppLocalizationsFil extends AppLocalizations {
       'impersonation': 'Posibleng pagpapanggap',
       'prize': 'Nangangako ng premyo',
       'suspicious_link': 'Kaduda-dudang konteksto ng link',
+      'gambling_ad': 'Patalastas ng sugal',
       'other': 'Babalang nakita ng AI',
     });
     return '$_temp0';
   }
 
   @override
-  String aiAdvice(String code) {
-    String _temp0 = intl.Intl.selectLogic(code, {
-      'dont_share_secrets':
-          'Huwag ibahagi ang OTP, password o PIN sa sinumang humihingi nito.',
-      'pause_payment': 'Ipagpaliban ang pagbabayad. Hiwalay na kumpirmahin ang tatanggap at dahilan.',
-      'contact_provider_if_shared': 'Kung nagbahagi ka na ng detalye, kontakin ang provider sa opisyal na app o sarili mong pinagkakatiwalaang tala.',
-      'other': 'Magberipika sa opisyal na app o pinagkakatiwalaang paraang ikaw mismo ang nagbukas.',
+  String get pasteHint => 'I-paste dito ang text message';
+
+  @override
+  String get checkButton => 'Suriin';
+
+  @override
+  String get screenshotIntro =>
+      'Pumili ng screenshot ng mensahe. Babasahin namin ang text para sa iyo.';
+
+  @override
+  String get screenshotChoose => 'Pumili ng screenshot';
+
+  @override
+  String get screenshotReview =>
+      'Tingnan ang text na nabasa namin at ayusin ang anumang mali.';
+
+  @override
+  String get screenshotNoText =>
+      'Wala kaming mabasang text sa larawang ito. Subukan ang mas malinaw na screenshot.';
+
+  @override
+  String verdictWord(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'looksSafe': 'Mukhang ligtas',
+      'beCareful': 'Mag-ingat',
+      'dangerous': 'Delikado',
+      'other': 'Hindi masuri',
     });
     return '$_temp0';
   }
 
   @override
-  String get deletedScan => 'Nabura ang naka-save na pagsusuri';
-
-  @override
-  String get learnOtpTitle => 'Paghingi ng OTP at password';
-
-  @override
-  String get learnOtpBody =>
-      'Mag-ingat sa paghingi ng code, kahit magpakilalang support. Maaaring paalalahanan ka ng lehitimong OTP na huwag itong ibahagi. Tiyakin sa opisyal na app.';
-
-  @override
-  String get learnBankTitle => 'Scam sa Bank at E-Wallet';
-
-  @override
-  String get learnBankBody =>
-      'Maaaring madaliin ka ng banta sa account. Puwedeng peke ang pangalan ng sender. Buksan mismo ang app ng bangko o e-wallet; huwag magtiwala sa link.';
-
-  @override
-  String get learnBankSummary =>
-      'Pekeng text mula sa BPI,\nGCash, Maya, at iba pa.';
-
-  @override
-  String get learnGovernmentTitle => 'Pagpapanggap sa Gobyerno';
-
-  @override
-  String get learnGovernmentBody =>
-      'Maaaring magpanggap na SSS, PhilHealth, Pag-IBIG, o ibang ahensiya ang scammer. Tiyakin ang di-inaasahang ayuda, multa, o registration sa opisyal na serbisyong ikaw mismo ang nagbukas. Hindi patunay ang logo.';
-
-  @override
-  String get learnGovernmentSummary =>
-      'Pekeng mensahe kuno mula sa\nSSS, PAG-IBIG, PhilPost, at iba pa.';
-
-  @override
-  String get learnDeliveryTitle => 'Di-inaasahang bayad sa delivery';
-
-  @override
-  String get learnDeliveryBody =>
-      'Maaaring nakawin ng pekeng redelivery fee ang detalye ng card o account. Tingnan ang order sa courier app. Itinatago ng short link ang destinasyon; hindi ito pinalalawak ng Usisa.';
-
-  @override
-  String get learnSellerTitle => 'Scam sa Online Selling';
-
-  @override
-  String get learnSellerBody =>
-      'Mag-ingat kung inililipat ng seller ang bayad sa labas ng marketplace. Tiyakin ang seller, produkto, tatanggap, at dahilan bago magbayad.';
-
-  @override
-  String get learnSellerSummary =>
-      'Pekeng seller at patunay ng bayad,\nat delivery.';
-
-  @override
-  String get learnRecoveryTitle => 'Kung nakapagbahagi ka na ng detalye';
-
-  @override
-  String get learnRecoveryBody =>
-      'Itigil muna ang bayad. Kontakin ang bangko o e-wallet sa opisyal na app o pinagkakatiwalaang contact. Palitan ang password na posibleng nalantad; itago ang ebidensiya. Huwag magbigay ng panibagong OTP sa nangangakong magre-recover.';
-
-  @override
-  String selectedCount(int count) {
-    return '$count ang napili';
+  String verdictAction(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'looksSafe': 'Walang nakitang kahina-hinala. Pero huwag pa ring ibigay ang OTP o PIN mo kahit kanino.',
+      'beCareful': 'Huwag pindutin ang link o magpadala ng pera hangga\'t hindi ka sigurado kung sino ang nagpadala nito.',
+      'dangerous':
+          'Huwag pindutin ang link, huwag sumagot, at huwag magpadala ng pera.',
+      'other': 'Hindi namin ito lubos na masuri. Huwag magbukas ng link o maglagay ng anumang detalye hangga\'t hindi ka sigurado kung sino ang nagpadala.',
+    });
+    return '$_temp0';
   }
 
   @override
-  String resultCount(int count) {
-    return '$count resulta';
+  String get verdictWhy => 'Bakit';
+
+  @override
+  String get checkedOnPhone => 'Sinuri sa iyong phone';
+
+  @override
+  String get youChecked => 'Ang sinuri mo';
+
+  @override
+  String reason(String code) {
+    String _temp0 = intl.Intl.selectLogic(code, {
+      'no_signs': 'Wala kaming nakitang babala',
+      'otp_with_link':
+          'Humihingi ito ng OTP o password mo at may kasamang link',
+      'lookalike_domain': 'Nagpapanggap ang link na website ng kilalang brand',
+      'prize_claim':
+          'Sinasabi nitong nanalo ka ng premyong kailangan mong i-claim',
+      'account_threat': 'Tinatakot ka nito tungkol sa account o parcel mo para i-tap mo ang link',
+      'easy_money': 'Nangangako ito ng madaling pera, trabaho, utang o investment na masyadong maganda para totoo',
+      'private_contact':
+          'Pinapakausap ka nito sa hindi kilala sa email o chat app',
+      'urgency': 'Minamadali ka nitong kumilos',
+      'gambling_ad': 'Isa itong hindi hinihinging patalastas ng sugal',
+      'flagged_link': 'Nakalista sa Google na hindi ligtas ang link na ito',
+      'shortener_blocked': 'Hinarang na ng link shortener ang link na ito',
+      'opens_app': 'Nagbubukas ng app ang link sa halip na website',
+      'unresolved_link': 'Hindi namin makita kung saan papunta ang link',
+      'harmless_promo': 'Mukhang karaniwang promo lang ito',
+      'brand_mention':
+          'Binabanggit nito ang isang bangko, e-wallet o ahensya ng gobyerno',
+      'family_money': 'Humihingi ito ng pera o load, na karaniwan sa pamilya',
+      'credential_request': 'Humihingi ito ng password, PIN o code',
+      'payment_request': 'Pinapabayad o pinapapadala ka nito ng pera',
+      'impersonation': 'Maaaring nagpapanggap ito bilang ibang tao',
+      'prize': 'Nangangako ito ng premyo',
+      'suspicious_link': 'Kahina-hinala ang link',
+      'other': 'May iba pa kaming nakitang babala',
+    });
+    return '$_temp0';
   }
 
   @override
-  String get scan => 'Suriin';
+  String get linkHint => 'I-paste dito ang link';
 
   @override
-  String get history => 'Kasaysayan';
+  String reallyGoesTo(String destination) {
+    return 'Talagang pupunta sa $destination';
+  }
 
   @override
-  String get learn => 'Alamin';
+  String get consentTitle => 'Suriin online ang mga link?';
 
   @override
-  String get settings => 'Mga setting';
+  String get consentBody =>
+      'Para makita kung saan talaga pupunta ang link at kung tinatawag itong delikado ng Google, ipapadala ng Usisa ang link sa serbisyo nitong pansuri. Kung gagamit ka ng AI scan, ipapadala rin ang text ng mensahe sa isang AI service.';
 
   @override
-  String get messageScanPrompt => 'I-paste o i-type ang mensahe para masuri';
+  String get consentDecline =>
+      'Kung hindi, sa phone mo lang susuriin ng Usisa ang lahat. Hindi nito makikita kung saan talaga pupunta ang mga link, kaya baka may scam itong hindi mahuli.';
 
   @override
-  String get messageScanSupport =>
-      'Hahanapin namin ang scam link at mapaminsalang content.';
+  String get consentLater => 'Puwede mo itong baguhin mamaya sa Settings.';
 
   @override
-  String get scanHeading => 'Suriin bago pindutin.';
+  String get consentAllow => 'Oo, suriin online';
 
   @override
-  String get scanIntro => 'Suriin ang mensahe o link bago kumilos.';
+  String get consentDeny => 'Hindi, sa phone lang';
 
   @override
-  String get localPrivate => 'Sa device mo nananatili ang mga check.';
+  String get historySavedOnPhone => 'Sa phone na ito lang naka-save';
 
   @override
-  String get message => 'Mensahe';
+  String get historySaveSwitch => 'I-save ang mga check ko';
 
   @override
-  String get link => 'Link';
+  String get historySaveNote =>
+      'Kapag pinatay ito, mabubura rin ang History mo.';
 
   @override
-  String get screenshot => 'Screenshot';
+  String get historyEmpty => 'Wala pang naka-save na check.';
 
   @override
-  String get screenshotHeading => 'Suriin ang screenshot';
+  String get historyOff => 'Naka-off ang pag-save.';
 
   @override
-  String get screenshotSelected => 'Napili ang screenshot';
+  String get historyClearAll => 'Burahin lahat';
 
   @override
-  String get changeImage => 'Palitan ang larawan';
+  String get historyClearTitle => 'Burahin ang buong History?';
 
   @override
-  String get screenshotSupported => 'PNG, JPG, JPEG, o WEBP · Hanggang 10 MB';
+  String get historyClearBody =>
+      'Mabubura ang lahat ng naka-save na check sa phone na ito. Hindi na ito maibabalik.';
 
   @override
-  String get linkCheckPrompt => 'Suriin kung ligtas ang link';
-
-  @override
-  String get linkCheckSupport => 'Tingnan ang mga babala bago buksan ang URL.';
-
-  @override
-  String get inputHint => 'I-paste o i-type ang mensahe rito…';
-
-  @override
-  String get pasteText => 'I-paste ang teksto';
-
-  @override
-  String get pasteLink => 'I-paste ang link';
-
-  @override
-  String get clear => 'Burahin';
-
-  @override
-  String get checkMessage => 'Suriin ang mensahe';
-
-  @override
-  String get checkLink => 'Suriin ang link';
-
-  @override
-  String get checking => 'Sinusuri ang mga babala…';
-
-  @override
-  String get loading => 'Naglo-load';
+  String get historyDelete => 'Burahin';
 
   @override
   String get cancel => 'Kanselahin';
 
   @override
-  String get chooseScreenshot => 'Pumili ng screenshot';
-
-  @override
-  String get photos => 'Mga larawan';
-
-  @override
-  String get browseFiles => 'Mag-browse ng mga file';
-
-  @override
-  String get screenshotIntro =>
-      'Pumili ng screenshot ng mensahe. Suriin ang teksto bago mag-scan.';
-
-  @override
-  String get ocrNativeOnly =>
-      'Gumagana ang OCR sa Android at iOS. Maaari ka ring mag-paste ng teksto.';
-
-  @override
-  String get readingImage => 'Binabasa ang screenshot…';
-
-  @override
-  String get reviewText => 'Suriin ang nakuhang teksto';
-
-  @override
-  String get ocrNotice =>
-      'Suriin ang mga pangalan, numero, at link. Maaaring magkamali ang OCR.';
-
-  @override
-  String get previewUnavailable =>
-      'Hindi maipakita ang larawan. Suriin at i-edit pa rin ang nakuha nitong teksto.';
-
-  @override
-  String get checkThisText => 'Suriin ang tekstong ito';
-
-  @override
-  String get noOcrText =>
-      'Walang nabasang teksto. Pumili ng ibang larawan o i-type ang mensahe.';
-
-  @override
-  String get smsOff => 'Hindi available ang auto SMS.';
-
-  @override
-  String get smsDetail =>
-      'Maaari kang mag-scan nang walang SMS access. Kailangan ng suportadong Android phone para sa auto check.';
-
-  @override
-  String get reminderTitle => 'Huwag ibahagi ang iyong OTP.';
-
-  @override
-  String get reminderBody =>
-      'Tiyakin ang kahilingan sa opisyal na app o sa contact na pinagkakatiwalaan mo.';
-
-  @override
-  String get result => 'Resulta ng pagsusuri';
-
-  @override
-  String get newScan => 'Suriin ang ibang mensahe';
-
-  @override
-  String get checkAnotherLink => 'Suriin ang ibang link';
-
-  @override
-  String get checkAnotherScreenshot => 'Suriin ang ibang screenshot';
-
-  @override
-  String get viewFullImage => 'Tingnan ang buong larawan';
-
-  @override
-  String get checkAiShort => 'Suriin';
-
-  @override
-  String get linkDomainLabel => 'Domain';
-
-  @override
-  String get linkSimilarityLabel => 'Pagkakatulad';
-
-  @override
-  String get linkStatusLabel => 'Status';
-
-  @override
-  String resultLinkCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count na link ang nakita',
-      one: '1 link ang nakita',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String resultMoreFindings(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Tingnan ang $count pang senyales',
-      one: 'Tingnan ang 1 pang senyales',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get whyFlagged => 'Bakit ito na-flag';
-
-  @override
-  String get linksInMessage => 'Mga link sa mensahe';
-
-  @override
-  String get nextSteps => 'Ano ang maaari mong gawin';
-
-  @override
-  String get originalText => 'Orihinal na mensahe';
-
-  @override
-  String get localChecked => 'Nasuri ang mga babala sa device na ito';
-
-  @override
-  String get unknownLink => 'Hindi pa tiyak ang kaligtasan ng link.';
-
-  @override
-  String get lowCopy =>
-      'Walang karaniwang babala. Hindi nito pinatutunayan ang nagpadala.';
-
-  @override
-  String get cautionCopy =>
-      'Suriing mabuti ang ilang detalye bago sumagot o magbayad.';
-
-  @override
-  String get highCopy =>
-      'Maraming babala. Huminto muna bago magpadala ng pera o detalye.';
-
-  @override
-  String resultRiskLabel(String risk) {
-    String _temp0 = intl.Intl.selectLogic(risk, {
-      'low': 'Ligtas',
-      'caution': 'Kailangang Suriin',
-      'other': 'Mataas na Panganib',
+  String smsAlertTitle(String verdict) {
+    String _temp0 = intl.Intl.selectLogic(verdict, {
+      'dangerous': 'Delikadong text',
+      'other': 'Mag-ingat sa text na ito',
     });
     return '$_temp0';
   }
 
   @override
-  String get unknownStatus => 'Hindi tiyak';
-
-  @override
-  String get analysisSummary => 'Buod ng Pagsusuri';
-
-  @override
-  String get detectedSigns => 'Mga Natukoy na Senyales';
-
-  @override
-  String get noWarnings => 'Walang karaniwang babalang nakita';
-
-  @override
-  String get notChecked => 'Hindi pa nasuri online';
-
-  @override
-  String get notListed =>
-      'Wala sa listahan ng banta. Hindi ibig sabihin nito ay ligtas.';
-
-  @override
-  String get linkUnavailable =>
-      'Hindi magagamit ang online na pagsusuri. Subukan muli mamaya.';
-
-  @override
-  String get knownThreat => 'Nakalista bilang posibleng banta';
-
-  @override
-  String get fullLink => 'Buong link';
-
-  @override
-  String get checkOnline => 'Suriin ang mga link online';
-
-  @override
-  String get checkingLinks => 'Sinusuri ang mga link…';
-
-  @override
-  String get retry => 'Subukan muli';
-
-  @override
-  String get verifyAdvice =>
-      'Tiyakin sa opisyal na app o website na ikaw mismo ang nagbukas.';
-
-  @override
-  String get secretAdvice =>
-      'Huwag magbahagi ng OTP, password, PIN, o recovery code.';
-
-  @override
-  String get paymentAdvice =>
-      'Ipagpaliban ang pagbabayad. Tiyakin ang tatanggap sa mapagkakatiwalaang paraan.';
-
-  @override
-  String get clickedAdvice =>
-      'Nakapagbahagi na? Kontakin agad ang bangko o e-wallet sa opisyal na app nito.';
-
-  @override
-  String get historyHeading => 'Pribado ang iyong mga pagsusuri.';
-
-  @override
-  String get historyAll => 'Lahat';
-
-  @override
-  String get today => 'Ngayon';
-
-  @override
-  String get yesterday => 'Kahapon';
-
-  @override
-  String get historyOff => 'Naka-off ang kasaysayan';
-
-  @override
-  String get historyOffBody =>
-      'Mag-save ng hanggang 100 encrypted na scan sa loob ng 30 araw.';
-
-  @override
-  String get enableHistory => 'I-enable ang pribadong kasaysayan';
-
-  @override
-  String get noHistory => 'Wala pang pagsusuri';
-
-  @override
-  String get noHistoryBody =>
-      'Dito lalabas ang mga naka-save na check. Magsimula sa mensaheng gusto mong tiyakin.';
-
-  @override
-  String get noMatches => 'Walang katugmang pagsusuri';
-
-  @override
-  String get clearFilters => 'Alisin ang mga filter';
-
-  @override
-  String get searchHistory => 'Hanapin sa naka-save na mensahe';
-
-  @override
-  String get filters => 'Mga filter';
-
-  @override
-  String get allRisk => 'Lahat ng antas';
-
-  @override
-  String get allSources => 'Lahat ng pinagmulan';
-
-  @override
-  String get allDates => 'Lahat ng petsa';
-
-  @override
-  String get last7 => 'Nakaraang 7 araw';
-
-  @override
-  String get last30 => 'Nakaraang 30 araw';
-
-  @override
-  String get select => 'Pumili';
-
-  @override
-  String get selectAll => 'Piliin ang lahat ng tugma';
-
-  @override
-  String get deleteSelected => 'Burahin ang napili';
-
-  @override
-  String get delete => 'Burahin';
-
-  @override
-  String get undo => 'Ibalik';
-
-  @override
-  String get deleteTitle => 'Burahin ang mga naka-save na pagsusuri?';
-
-  @override
-  String get deleteBody =>
-      'Aalisin nito ang naka-save na check sa Usisa, hindi ang SMS sa messaging app.';
-
-  @override
-  String get clearSavedData => 'Burahin ang naka-save na datos';
-
-  @override
-  String get notSaved =>
-      'Hindi na-save. Nandito pa ang resulta sa session na ito.';
-
-  @override
-  String get saveFailed => 'Hindi ma-save ang pagbabago. Subukan muli.';
-
-  @override
-  String get learnHeading => 'Kilalanin ang babala. Mag-ingat.';
-
-  @override
-  String get learnIntro =>
-      'Mga praktikal na paalala para sa araw-araw na mensahe sa Pilipinas.';
-
-  @override
-  String get privacy => 'Pagkapribado at imbakan';
-
-  @override
-  String get language => 'Wika';
-
-  @override
-  String get saveHistory => 'I-save ang pribadong kasaysayan';
-
-  @override
-  String get restoreDraft => 'Ibalik ang aking draft';
-
-  @override
-  String get draftDetail =>
-      'Encrypted na text draft sa loob ng 24 oras. Hindi sine-save ang screenshot.';
-
-  @override
-  String get onlineChecks => 'Online na pagsusuri ng link';
-
-  @override
-  String get onlineDisclosure => 'I-enable ang online na pagsusuri ng link?';
-
-  @override
-  String get onlineSettingsDescription =>
-      'Suriin online ang buong URL gamit ang Google Safe Browsing.';
-
-  @override
-  String get onlineBody =>
-      'Habang naka-on, ipinapadala ng manwal na link check ang buong URL, kasama ang path at query, sa gateway ng Usisa at Google Safe Browsing. Sa device mananatili ang mensahe, nagpadala, at larawan. Hindi nag-a-upload ng URL ang SMS check. Maaaring makaligtaan ng Google ang banta o mag-flag ng ligtas na site. Nag-e-expire ang online na babala. Lokal na resulta at huling check lang ang sine-save sa history, hindi ang online na hatol.';
-
-  @override
-  String get googleAdvisory => 'Paalala mula sa Google';
-
-  @override
-  String get advisoryUnavailable =>
-      'Hindi mabuksan ang pahina ng tulong. Nandito pa rin ang iyong pagsusuri.';
-
-  @override
-  String get phishingHelp => 'Alamin ang phishing';
-
-  @override
-  String get malwareHelp => 'Alamin ang malware';
-
-  @override
-  String get unwantedHelp => 'Alamin ang di-kanais-nais na software';
-
-  @override
-  String get enableOnline => 'I-enable ang online na pagsusuri';
-
-  @override
-  String get localOnly => 'Sa device lamang';
-
-  @override
-  String get gatewayMissing =>
-      'Hindi pa naka-configure ang online na pagsusuri sa build na ito. Gumagana pa rin ang lokal na pagsusuri.';
-
-  @override
-  String get about => 'Tungkol sa Usisa';
-
-  @override
-  String get aboutBody =>
-      'Para sa mga mensahe sa Pilipinas. Ipinapakita ng Usisa ang posibleng babala, pero maaaring may scam na hindi makita at hindi nito pinatutunayan ang nagpadala.';
-
-  @override
-  String get sessionPreview =>
-      'Sa browser preview, session lang ang storage. Kailangan ng Android para sa OCR at papasok na SMS.';
-
-  @override
-  String get privateHistoryConsent =>
-      'Mag-save ng encrypted na teksto, link, at resulta sa device (pinakahuling 100 scan). Nag-e-expire ang review pagkalipas ng 30 araw. Binubura ng Usisa ang expired file habang bukas o sa susunod na paggamit. Hindi ito magagawa sa takdang oras kapag naka-stop ang app. Burahin ang naka-save na datos para mabura agad kung available ang storage.';
-
-  @override
-  String get reviewRecoveredScreenshot => 'Suriin ang nakaraang screenshot';
-
-  @override
-  String get discardRecoveredScreenshot => 'Alisin ang nakaraang screenshot';
-
-  @override
-  String get assumedHttps =>
-      'Ipinagpalagay ang HTTPS dahil walang scheme ang link. Walang pahinang binuksan.';
-
-  @override
-  String get reputationExpired =>
-      'Hindi na kasalukuyan ang dating online na resulta. Suriin muli.';
-
-  @override
-  String get previousThreat => 'Dating nakalista bilang banta.';
-
-  @override
-  String checkedAtLabel(String date) {
-    return 'Huling sinuri: $date';
+  String smsAlertFrom(String sender) {
+    return 'Mula sa $sender';
   }
 
   @override
-  String get retentionCleanupFailed =>
-      'May nag-expire na datos na hindi nabura. Subukan ang Burahin ang naka-save na datos sa Settings.';
+  String get smsAlertUnknownSender => 'hindi kilalang numero';
 
   @override
-  String get welcomeTitle => 'Suriin muna bago kumilos.';
+  String get fromYourTexts => 'Mula sa iyong mga text';
 
   @override
-  String get welcomeBody =>
-      'Suriin ang kahina-hinalang mensahe at link para sa babala. Para sa English, Filipino, at Taglish sa Pilipinas.';
+  String checkedOnDate(String date) {
+    return 'Sinuri noong $date';
+  }
 
   @override
-  String get welcomePrivacy =>
-      'Gumagana offline ang manwal na check. Opsyonal at naka-off muna ang history, online link check, at SMS. Maaaring may scam na hindi makita. Tiyakin nang hiwalay ang mahahalagang hiling.';
+  String get checkAgain => 'Suriin muli';
 
   @override
-  String get startChecking => 'Simulang magsuri';
+  String get askAiLookCloser => 'Ipasuri nang mas mabuti sa AI';
 
   @override
-  String get smsHeading => 'Pagsuri ng papasok na SMS';
+  String get aiScanIntro => 'Ano ang gusto mong tingnan ng AI?';
 
   @override
-  String get smsDisclosure => 'I-enable ang pagsuri ng SMS?';
+  String get aiScanMessage => 'Isang mensahe';
 
   @override
-  String get smsDisclosureBody =>
-      'Sa device lang sinusuri ang bagong SMS. Hindi ina-upload ang mensahe o binabasa ang inbox at ibang app. Nag-e-expire sa 15 minuto ang hanggang 20 encrypted na review. Maaaring maantala ang check ng Android; hihinto ito kapag force-stop. May scam na maaaring hindi makita.';
+  String get aiScanLink => 'Isang link';
 
   @override
-  String get enableSmsChecks => 'I-enable ang pagsuri ng SMS';
+  String get aiScanScreenshot => 'Isang screenshot';
 
   @override
-  String get smsPermissionNeeded => 'Kailangan ng pahintulot sa SMS';
+  String get aiUnavailable => 'Hindi ito natingnan ng AI ngayon';
 
   @override
-  String get smsEnabled => 'Naka-enable ang pagsuri ng SMS';
+  String get sendToFamily => 'Ipadala sa pamilya';
 
   @override
-  String get smsDisabled => 'Naka-off ang pagsuri ng SMS';
+  String get readAloud => 'Basahin nang malakas';
 
   @override
-  String get smsLimits =>
-      'Sa device lang sinusuri. Maaaring maantala ng Android. Hindi garantisado ang lahat; walang alerto sa mababang panganib.';
+  String get readAloudNoFilipino =>
+      'Walang Filipino na boses sa phone na ito, kaya binabasa sa English.';
 
   @override
-  String get smsAlertsOff =>
-      'Naka-off ang notification. Nandito pa rin ang kamakailang review. I-on ang alert sa Android settings.';
+  String get readAloudUnavailable =>
+      'Hindi magagamit ang Basahin nang malakas sa phone na ito.';
 
   @override
-  String get enableSmsAlerts => 'I-enable ang mga notification';
+  String shareIntro(String verdict) {
+    return 'Sinuri ko ang isang mensahe gamit ang Usisa. Ang sabi: $verdict';
+  }
 
   @override
-  String get smsDegraded =>
-      'May mensaheng hindi nasuri. I-off at i-on muli ang SMS check.';
+  String get settingsDisplay => 'Itsura';
 
   @override
-  String get manageSms => 'Pamahalaan ang pagsuri ng SMS';
+  String get settingsTextSize => 'Laki ng text';
 
   @override
-  String get recentSms => 'Kamakailang SMS';
+  String get textSizeNormal => 'Karaniwan';
 
   @override
-  String get smsTemporary =>
-      'Naka-encrypt ang pansamantalang review at nag-e-expire pagkalipas ng 15 minuto. Binubura ang mababang panganib matapos suriin.';
+  String get textSizeLarge => 'Malaki';
 
   @override
-  String get smsEmpty =>
-      'Walang pansamantalang review. Maaaring nag-expire, mababa ang panganib, o dumating habang naka-off ang check.';
+  String get textSizeExtraLarge => 'Napakalaki';
 
   @override
-  String get smsMissing =>
-      'Hindi available ang review. Maaaring nag-expire, nabura, o naka-off ang SMS check. Kopyahin ang mensahe para sa manwal na scan.';
+  String get settingsTextSizeNote =>
+      'Dagdag ito sa sariling laki ng text ng phone mo.';
 
   @override
-  String get smsPending =>
-      'Wala pang natapos na check. Subukan muli o kopyahin ang mensahe para sa manwal na scan.';
+  String get settingsLanguage => 'Wika';
 
   @override
-  String get continueAction => 'Magpatuloy';
+  String get languageEnglish => 'English';
 
   @override
-  String get back => 'Bumalik';
+  String get languageFilipino => 'Filipino';
 
   @override
-  String riskLabel(String risk) {
-    String _temp0 = intl.Intl.selectLogic(risk, {
-      'high': 'Mataas na panganib',
-      'caution': 'Mag-ingat',
-      'other': 'Mababang panganib',
+  String get settingsProtection => 'Proteksyon';
+
+  @override
+  String get settingsOnline => 'Pagsuri online';
+
+  @override
+  String get settingsOnlineSwitch =>
+      'Suriin online ang mga link at gamitin ang AI';
+
+  @override
+  String get settingsOnlineOn =>
+      'Ipinapadala ang mga link sa serbisyong pansuri ng Usisa. Ipinapadala ng AI scan ang text ng mensahe sa isang AI service.';
+
+  @override
+  String get settingsOnlineOff =>
+      'Sa phone mo lang sinusuri ang lahat, kaya baka may scam na hindi mahuli ng Usisa.';
+
+  @override
+  String get settingsAbout => 'Tungkol sa Usisa';
+
+  @override
+  String get aboutGuide =>
+      'Gabay ang Usisa, hindi garantiya. Naghahanap ito ng mga karaniwang senyales ng scam, pero puwede itong magkamali. Kung may kakaiba, huwag mag-click, huwag magbayad at huwag ibigay ang mga code. Magtanong sa taong pinagkakatiwalaan mo.';
+
+  @override
+  String get aboutData =>
+      'Sa phone na ito lang naka-save ang mga sinuri mo at ang History. Walang ipinapadala kahit saan maliban kung naka-on ang pagsuri online.';
+
+  @override
+  String get learnIntro => 'Kilalanin ang mga daya ng scammer sa Pilipinas.';
+
+  @override
+  String get learnSourcesNote =>
+      'Batay sa pampublikong payo ng BSP, NTC, PNP-ACG, CICC at DICT.';
+
+  @override
+  String get learnGoldenTitle => 'Mga gintong tuntunin';
+
+  @override
+  String get learnGoldenRules =>
+      'Huwag ibigay kaninuman ang OTP, PIN o password mo, kahit sa nagsasabing taga-bangko o taga-gobyerno sila.\nHuwag pindutin ang link sa text na hindi mo inaasahan. Ikaw mismo ang magbukas ng opisyal na app o website.\nTumigil at suriin muna bago magpadala ng pera. Tawagan ang tao o kompanya sa numerong alam mo na.';
+
+  @override
+  String get learnSampleLabel => 'Halimbawang pekeng text';
+
+  @override
+  String get learnRedFlags => 'Mga babala';
+
+  @override
+  String learnMore(String topic) {
+    return 'Alamin pa: $topic';
+  }
+
+  @override
+  String get learnReportTitle => 'Mag-report ng scam';
+
+  @override
+  String get learnReportIntro =>
+      'Kung tinarget ka o nawalan ka ng pera, i-report ito. I-save ang screenshot ng mga mensahe at ang numero ng nagpadala.';
+
+  @override
+  String get learnReportChannels =>
+      'CICC hotline 1326|Libre, 24 oras araw-araw. Ang anti-scam hotline ng gobyerno (CICC at DICT).\neGov PH app|Report > Scam > Text Scam, saka i-upload ang mga screenshot.\nAng bangko o e-wallet mo|Tawagan agad ang opisyal na hotline nito kung may pera o account na nadamay. Kung hindi sila kumilos, magreklamo sa BSP Online Buddy (BOB) sa bsp.gov.ph.\nPNP Anti-Cybercrime Group|I-report ang online fraud sa kahit anong police station o sa acg.pnp.gov.ph.\nNTC|Para sa scam text at problema sa SIM, magreklamo sa NTC sa ntc.gov.ph.';
+
+  @override
+  String learnTopicTitle(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Pekeng text mula sa bangko at e-wallet',
+      'prize': 'Pekeng premyo at raffle',
+      'family': 'Pekeng emergency ng pamilya',
+      'aid': 'Pekeng ayuda ng gobyerno',
+      'parcel': 'Pekeng bayad sa delivery at parcel',
+      'job': 'Pekeng trabaho at online task',
+      'investment': 'Scam sa investment at crypto',
+      'other': 'Patalastas ng online na sugal',
     });
     return '$_temp0';
   }
 
   @override
-  String sourceLabel(String source) {
-    String _temp0 = intl.Intl.selectLogic(source, {
-      'link': 'Link',
-      'screenshot': 'Screenshot',
-      'sms': 'SMS',
-      'other': 'Teksto',
+  String learnTopicAbout(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Mukhang galing sa bangko mo, GCash o Maya ang text: naka-lock daw ang account mo o kailangang i-verify, at may link. Mukhang totoo ang site pero ninanakaw nito ang password at OTP mo. Hindi kailanman humihingi ang bangko o e-wallet ng OTP, PIN o password sa text, tawag o link. Ikaw mismo ang magbukas ng opisyal na app.',
+      'prize': '\"Nanalo\" ka raw sa raffle na hindi mo sinalihan, kadalasan may pangalan ng mall, TV show o ahensya ng gobyerno. Para makuha ito, kailangan mo munang magbayad ng \"processing fee\" o ibigay ang detalye mo. Hindi pinagbabayad ng totoong promo ang nanalo, at may permit number mula sa DTI ang totoong raffle na puwede mong suriin.',
+      'family': 'May nagpapanggap na anak, apo o kamag-anak mo gamit ang bagong numero, o nagsasabing nurse o pulis sila na tumatawag tungkol sa kanila. May emergency daw, kailangan mong magpadala agad ng pera, at huwag sabihin sa iba. Tawagan muna ang kamag-anak mo sa numerong alam mo na bago magpadala.',
+      'aid': 'Sinasabi ng text na kwalipikado ka sa cash aid mula sa DSWD, SSS o PhilHealth, o sa refund, at kailangan mong mag-register sa link o magbayad. Inaanunsyo ang ayuda sa opisyal na website at page, at hindi nagpapadala ang ahensya ng payout link sa text. Magtanong sa opisyal na page o opisina ng ahensya.',
+      'parcel': 'Sinasabi ng text o tawag na naka-hold ang parcel mo at kailangan mong magbayad ng maliit na fee o i-update ang address mo sa link. May iba na nagsasabing na-hold sa customs ang package na may pangalan mo. Tingnan ang order sa app mismo ng shop, at huwag magbayad sa link na galing sa text.',
+      'job': 'Alok na madaling kita sa bahay sa pag-like ng video, pag-rate ng produkto o paggawa ng \"task\". Maliit at totoo ang unang bayad. Pagkatapos, pinapa-\"deposit\" ka para sa mas malalaking task, at hindi mo na ito mawi-withdraw. Hindi ka pinagbabayad ng totoong employer para magtrabaho.',
+      'investment': 'Pangako ng mabilis at siguradong kita, gaya ng pagdoble ng pera mo sa ilang araw, kadalasan sa crypto, forex o \"paluwagan\". Binabayaran ang mga naunang miyembro gamit ang pera ng mga bago hanggang bumagsak ito. Suriin sa SEC kung puwedeng tumanggap ng investment ang kompanya. Babala ang siguradong malaking kita.',
+      'other': 'Hindi hinihinging text na nag-aalok ng libreng credit o bonus sa online casino, slots o e-sabong. Marami sa mga site na ito ay ilegal at walang lisensya, at kinukuha ang deposito at personal mong impormasyon. Huwag pindutin ang link o mag-register.',
     });
     return '$_temp0';
   }
 
   @override
-  String errorMessage(String code) {
-    String _temp0 = intl.Intl.selectLogic(code, {
-      'emptyInput': 'Maglagay muna ng mensahe o link.',
-      'textTooLong': 'Hanggang 10,000 character. Walang pinutol.',
-      'invalidUrl': 'Maglagay ng isang kumpletong HTTP o HTTPS link. Gamitin ang Teksto para sa maraming link.',
-      'urlTooLong': 'Lampas 2,048 character ang link. I-edit muna.',
-      'tooManyLinks': 'Hanggang 10 magkakaibang link bawat pagsusuri.',
-      'imageTooLarge':
-          'Pumili ng larawang mas maliit sa 20 MB at 20 megapixel.',
-      'other': 'Hindi natapos. Nandito pa ang teksto. Subukan muli.',
+  String learnTopicSample(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'GCash ALERT: Masususpinde ang account mo ngayong araw. Mag-verify sa gcash-verify-ph.xyz at ilagay ang MPIN at OTP mo para hindi mawala ang balance mo.',
+      'prize': 'CONGRATULATIONS! Nanalo ka ng P50,000 sa Anniversary Raffle! Para makuha ang premyo, magbayad ng P1,500 processing fee sa numerong ito sa loob ng 24 oras.',
+      'family': 'Ma, bagong number ko ito, nawala phone ko. Nasa ospital ako, pa-send ng 5,000 sa GCash na ito ngayon na. Huwag mo munang sabihin kay Papa.',
+      'aid': 'DSWD: Kwalipikado ka sa P8,000 ayuda. Mag-register sa dswd-ayuda-claim.online at magbayad ng P200 para ma-release ang payout mo.',
+      'parcel': 'Naka-hold ang parcel mo dahil kulang ang address. Magbayad ng P35 re-delivery fee sa ph-parcel-track.top o ibabalik ito ngayong araw.',
+      'job': 'Hi! Naghahanap kami ng part-time. Kumita ng P500-P3,000 araw-araw sa pag-like lang ng video. Walang experience na kailangan. Mag-message sa Telegram para magsimula.',
+      'investment': 'Siguradong 30% na kita kada linggo! Mag-invest ng P5,000 ngayon at makakuha ng P20,000 sa isang buwan. Limitado ang slot, mag-imbita ng kaibigan para sa bonus.',
+      'other': 'LIBRENG P888 bonus para sa bagong player! Maglaro ng slots at e-sabong, withdraw kahit kailan. Mag-register na sa lucky888bet.vip',
     });
     return '$_temp0';
   }
 
   @override
-  String findingTitle(String code) {
-    String _temp0 = intl.Intl.selectLogic(code, {
-      'codeRequest': 'Humihingi ng lihim na code',
-      'paymentRequest': 'Humihingi ng bayad',
-      'urgency': 'Minamadali ka',
-      'prize': 'Nangangako ng premyo',
-      'advanceFee': 'Humihingi ng paunang bayad',
-      'deceptiveHost': 'Pangalan ng brand sa ibang domain',
-      'userInfo': 'Mapanlinlang na format ng link',
-      'httpLink': 'Hindi encrypted na link',
-      'ipHost': 'Numero o IP address',
-      'shortLink': 'Pinaikling destinasyon',
-      'unusualHost': 'Hindi karaniwang character sa domain',
-      'invalidLink': 'Hindi masuri ang link',
-      'other': 'Babala',
+  String learnTopicFlags(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Masususpinde ang account mo ngayong araw|Tinatakot ka para hindi ka makapag-isip\ngcash-verify-ph.xyz|Hindi ito ang totoong website ng GCash (gcash.com)\nilagay ang MPIN at OTP mo|Walang totoong bangko o e-wallet na humihingi nito',
+      'prize': 'Nanalo ka ng P50,000|Hindi ka mananalo sa raffle na hindi mo sinalihan\nmagbayad ng P1,500 processing fee|Hindi pinagbabayad muna ang totoong premyo\nsa loob ng 24 oras|Deadline para madaliin ka',
+      'family': 'bagong number ko ito|Hindi kilalang numero na nagsasabing kapamilya\npa-send ng 5,000 sa GCash na ito ngayon na|Pinipilit kang magpadala agad\nHuwag mo munang sabihin kay Papa|Pinapalihim para hindi mo ito masuri',
+      'aid': 'dswd-ayuda-claim.online|Nagtatapos sa .gov.ph ang website ng gobyerno\nmagbayad ng P200 para ma-release|Libre ang ayuda. Walang dapat maningil para matanggap mo ito',
+      'parcel': 'Magbayad ng P35 re-delivery fee|Maliit na bayad para makuha ang detalye ng card mo\nph-parcel-track.top|Hindi ito totoong website ng courier o shop\nibabalik ito ngayong araw|Deadline para madaliin ka',
+      'job': 'Kumita ng P500-P3,000 araw-araw sa pag-like lang ng video|Sobrang laking bayad sa halos walang trabaho\nMag-message sa Telegram|Inililipat ka sa pribadong chat na mahirap matunton',
+      'investment': 'Siguradong 30% na kita kada linggo|Walang totoong investment na sigurado ang malaking kita\nLimitado ang slot|Minamadali kang sumali bago ka makapag-isip\nmag-imbita ng kaibigan para sa bonus|Senyales ng pyramid scheme ang pagbabayad sa pag-recruit',
+      'other': 'LIBRENG P888 bonus|Libreng credit para akitin kang mag-deposit\nlucky888bet.vip|Hindi kilalang sugalan na maaaring walang lisensya',
     });
     return '$_temp0';
   }
-
-  @override
-  String findingBody(String code) {
-    String _temp0 = intl.Intl.selectLogic(code, {
-      'codeRequest':
-          'Tiyakin sa ibang paraan bago magbahagi ng code o password.',
-      'paymentRequest':
-          'Tiyakin ang tatanggap at dahilan bago magpadala ng pera.',
-      'urgency': 'Maaaring madaliin ka ng deadline o banta sa account.',
-      'prize': 'Tiyakin sa opisyal na paraan na ikaw mismo ang nagbukas.',
-      'advanceFee': 'Tiyakin ang dahilan at tatanggap ng paunang bayad.',
-      'deceptiveHost':
-          'May pangalan ng brand ngunit hindi tugma sa opisyal na domain.',
-      'userInfo':
-          'Hindi destinasyon ang bago ang @. Ipinapakita ang tunay na host.',
-      'httpLink':
-          'HTTP ang gamit. Hindi rin garantiya ng pagiging lehitimo ang HTTPS.',
-      'ipHost': 'IP address ang gamit sa halip na karaniwang domain.',
-      'shortLink':
-          'Nakatago ang destinasyon. Hindi pinalawak ng Usisa ang link.',
-      'unusualHost': 'Suriin ang encoded o halo-halong character; hindi ito patunay ng scam.',
-      'invalidLink':
-          'Mali o hindi suportado ang format. Walang pasya sa kaligtasan.',
-      'other': 'Tiyakin ang kahilingan bago kumilos.',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String get homeHeading => 'Isang hakbang sa unahan ng mga scam.';
-
-  @override
-  String get homeBrand => 'Usisa';
-
-  @override
-  String get homeBody =>
-      'Suriin ang mensahe, link, at screenshot para sa babala ng scam.';
-
-  @override
-  String get scanMessageCard => 'Suriin ang mensahe';
-
-  @override
-  String get scanMessageDescription => 'I-paste o i-type ang mensahe';
-
-  @override
-  String get checkLinkCard => 'Suriin ang link';
-
-  @override
-  String get checkLinkDescription => 'Suriin ang URL bago buksan.';
-
-  @override
-  String get scanScreenshotCard => 'Suriin ang screenshot';
-
-  @override
-  String get scanScreenshotDescription =>
-      'Basahin ang mensahe mula sa screenshot.';
-
-  @override
-  String get aiScan => 'AI Scan';
-
-  @override
-  String get aiBeta => 'Beta';
-
-  @override
-  String get aiHomeDescription => 'Magpatulong sa AI sa pagsusuri ng scam.';
-
-  @override
-  String get homeAiBadge => 'Bago';
-
-  @override
-  String get autoSmsCard => 'Awtomatikong SMS';
-
-  @override
-  String get autoSmsDescription => 'Suriin ang SMS para sa scam.';
-
-  @override
-  String get aiIntroTitle => 'Pagsusuri ng scam gamit ang AI';
-
-  @override
-  String get aiIntroBody =>
-      'Suriin ang mensahe, link, o screenshot. Ipapaliwanag ng AI ang panganib at susunod na hakbang.';
-
-  @override
-  String get aiMultiInput => 'Iba’t ibang input';
-
-  @override
-  String get aiMultiInputBody => 'Teksto, link, o screenshot na may OCR';
-
-  @override
-  String get aiContextAware => 'May konteksto';
-
-  @override
-  String get aiContextAwareBody =>
-      'Naghahanap ng karaniwang pattern ng scam sa PH';
-
-  @override
-  String get aiActionable => 'May susunod na hakbang';
-
-  @override
-  String get aiActionableBody =>
-      'Antas ng panganib, paliwanag, at susunod na hakbang';
-
-  @override
-  String get startAiScan => 'Simulan ang AI Scan';
-
-  @override
-  String get aiInputQuestion => 'Ano ang gusto mong suriin?';
-
-  @override
-  String get aiTextOption => 'Teksto / Mensahe';
-
-  @override
-  String get aiTextOptionBody => 'I-paste o i-type ang kahina-hinalang mensahe';
-
-  @override
-  String get aiLinkOption => 'URL / Link';
-
-  @override
-  String get aiLinkOptionBody => 'Suriin ang link para sa babala ng scam.';
-
-  @override
-  String get aiScreenshotOption => 'Screenshot / Larawan';
-
-  @override
-  String get aiScreenshotOptionBody =>
-      'Basahin at suriin ang teksto gamit ang OCR.';
-
-  @override
-  String get aiProgressTitle => 'Sinusuri ng AI…';
-
-  @override
-  String get aiStageReviewed => 'Nakumpirma ang sinuring teksto';
-
-  @override
-  String get aiStageLocal => 'Tapos na ang pagsusuri sa device';
-
-  @override
-  String get aiStageRequest => 'Ipinapadala ang teksto para sa AI check…';
-
-  @override
-  String get aiStageResult => 'Inihahanda ang resulta';
-
-  @override
-  String get smsDetectionTitle => 'Pagsuri ng SMS';
-
-  @override
-  String get smsDetectionBody =>
-      'Sinusuri ang bagong SMS para sa scam at nag-aalerto sa kahina-hinalang mensahe.';
-
-  @override
-  String get smsRecentDetections => 'Mga kamakailang SMS check';
-
-  @override
-  String get warningSigns => 'Mga natukoy na babala';
-
-  @override
-  String get safetyRecommendations => 'Mga rekomendasyong pangkaligtasan';
-
-  @override
-  String get linkWhyRisky => 'Bakit ito kahina-hinala?';
-
-  @override
-  String get learnScamTips => 'Mga paalala laban sa scam';
-
-  @override
-  String get learnScamTipsBody =>
-      'Mga simpleng paraan para umiwas\nsa karaniwang scam sa Pilipinas.';
-
-  @override
-  String get learnCommonScams => 'Karaniwang scam sa PH';
-
-  @override
-  String get getStarted => 'Magsimula';
-
-  @override
-  String get onboardingSecondTitle => 'Alamin kung bakit na-flag ang mensahe.';
-
-  @override
-  String get onboardingSecondBody =>
-      'Tingnan ang mga salita, link, at hiling na dapat siyasatin.';
-
-  @override
-  String get onboardingThirdTitle => 'Ikaw ang pipili ng mananatili sa device.';
-
-  @override
-  String get onboardingThirdBody =>
-      'Sa device lang ang manwal na check. Kailangan ng pagsuri at pahintulot mo bago mag-AI o online link check.';
-
-  @override
-  String get linkCheckerTitle => 'Taga-suri ng link';
-
-  @override
-  String get aiScanResult => 'Resulta ng AI Scan';
-
-  @override
-  String get learnStaySafeTitle => 'Matuto at Manatiling Ligtas';
-
-  @override
-  String get detection => 'Pagsusuri';
-
-  @override
-  String get general => 'Pangkalahatan';
-
-  @override
-  String get notifications => 'Mga notification';
-
-  @override
-  String get aiScanToggleBody => 'Suriin muna bago ipadala sa AI.';
-
-  @override
-  String get smsNotificationsEnabled => 'Naka-on ang SMS notifications.';
-
-  @override
-  String smsRecentTab(int count) {
-    return 'Kamakailan ($count)';
-  }
-
-  @override
-  String smsFlaggedTab(int count) {
-    return 'Na-flag ($count)';
-  }
-
-  @override
-  String get smsFlaggedEmpty => 'Walang na-flag sa kamakailang SMS check.';
-
-  @override
-  String get home => 'Home';
 }

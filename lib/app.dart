@@ -3,95 +3,165 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hugeicons/hugeicons.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
-import 'features/history/history_store.dart';
+import 'app/theme.dart';
+import 'features/check/check.dart';
+import 'features/check/ai_scan_screen.dart';
+import 'features/check/consent_screen.dart';
+import 'features/check/gateway_ai_checker.dart';
+import 'features/check/gateway_link_checker.dart';
+import 'features/check/home_screen.dart';
+import 'features/check/paste_screen.dart';
+import 'features/check/screenshot_screen.dart';
+import 'features/check/share_source.dart';
 import 'features/history/history_screen.dart';
-import 'features/home/home_screen.dart';
+import 'features/history/history_store.dart';
 import 'features/learn/learn_screen.dart';
-import 'features/scan/scan_screen.dart';
-import 'features/scan/ai_scan_entry_screen.dart';
-import 'features/settings/settings_store.dart';
+import 'features/scan/scan_models.dart';
+import 'features/scan/ocr_service.dart';
 import 'features/settings/settings_screen.dart';
-import 'features/settings/onboarding_screen.dart';
+import 'features/settings/settings_store.dart';
 import 'features/sms/sms_service.dart';
-import 'features/sms/sms_detection_screen.dart';
-import 'features/sms/sms_review_screen.dart';
+import 'features/sms/sms_setup_screen.dart';
 import 'l10n/app_localizations.dart';
-import 'theme/usisa_theme.dart';
-import 'widgets/glass_surface.dart';
-import 'widgets/usisa_modal.dart';
-import 'widgets/usisa_loading_indicator.dart';
 
 class UsisaApp extends StatefulWidget {
   const UsisaApp({
     super.key,
     this.storage,
-    this.isPreview = false,
+    this.runCheck,
+    this.readScreenshot,
+    this.gatewayClient,
+    this.shares,
+    this.readSharedImage,
     this.sms,
-    this.clock,
   });
+
   final PrivateStorage? storage;
-  final bool isPreview;
+
+  /// Runs a Check; widget tests pass a fake. Without one, the real pipeline runs behind the online consent.
+  final RunCheck? runCheck;
+
+  /// HTTP client for the gateway; widget tests pass a fake.
+  final http.Client? gatewayClient;
+
+  /// Picks a picture and reads its text; widget tests pass a fake.
+  final ScreenshotReader? readScreenshot;
+
+  /// Content shared in from other apps; widget tests pass a fake.
+  final Stream<SharedItem>? shares;
+
+  /// Reads the text in a shared picture (a cache path); widget tests pass a fake.
+  final Future<String> Function(String path)? readSharedImage;
+
+  /// The native SMS bridge; widget tests pass one over a fake channel.
   final SmsService? sms;
-  final DateTime Function()? clock;
+
   @override
   State<UsisaApp> createState() => _UsisaAppState();
 }
 
 class _UsisaAppState extends State<UsisaApp> {
-  late final PrivateStorage storage = widget.storage ?? MemoryStorage();
-  late final SettingsStore settings = SettingsStore(storage);
-  late final SmsService sms =
-      widget.sms ??
-      SmsService(
-        nativePlatform: storage is SecureStorage && !widget.isPreview
-            ? null
-            : false,
-      );
-  // shortcut: history has one foreground writer; add a durable shared gate before background history writes.
+  late final SettingsStore settings = SettingsStore(widget.storage ?? MemoryStorage());
+  // Clearing History also wipes the warned texts Android still holds, so they can't come back.
   late final HistoryStore history = HistoryStore(
-    storage,
-    clock: widget.clock,
+    settings.storage,
     clearSmsPrivacy: () async {
-      if (sms.nativePlatform) await sms.invalidatePrivacy();
+      if (sms.bridgeAvailable) await sms.invalidatePrivacy().catchError((_) => 0);
+    },
+    forgetSmsWarning: (id) async {
+      if (sms.bridgeAvailable) await sms.dismiss(id);
     },
   );
-  bool ready = false;
-  bool loadFailed = false;
-  bool sessionStarted = false;
+  late final http.Client _gateway = widget.gatewayClient ?? http.Client();
+  late final SmsService sms = widget.sms ?? SmsService();
+  final _navigator = GlobalKey<NavigatorState>();
+  late final Stream<SharedItem> _shares = widget.shares ?? (kIsWeb ? const Stream.empty() : channelShares());
+
+  final _savedTexts = <String>{};
+  bool _savingTexts = false;
+
+  /// Settings and History have loaded, so first-run setup can decide whether to show.
+  bool _ready = false;
+
+  // Coming back from Android settings (Fix, background running) picks up the new permission state.
+  late final AppLifecycleListener _lifecycle;
+
+  /// Saves each warned incoming text to History, marked From your texts, with the phone check's verdict.
+  /// The entry keeps the text's ID, so tapping its notification later updates it rather than adding one.
+  Future<void> _saveWarnedTexts() async {
+    if (_savingTexts || !sms.supported) return;
+    _savingTexts = true;
+    try {
+      for (final id in await sms.reviewIds()) {
+        if (_savedTexts.contains(id) || history.entries.any((e) => e.id == id)) continue;
+        final review = await sms.review(id);
+        if (review?.result == null) continue;
+        _savedTexts.add(id);
+        if (review!.result!.risk == RiskLevel.low) continue;
+        final input = CheckInput(review.body, source: CheckSource.sms, historyId: id);
+        // Phone check only: nothing about a text goes online until the person opens it.
+        await history.recording(const CheckPipeline().run)(input);
+      }
+    } catch (_) {
+      // A text that can't be read now is tried again the next time the bridge reports a change.
+    } finally {
+      _savingTexts = false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    if (!widget.isPreview && defaultTargetPlatform == TargetPlatform.android) {
-      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(_load());
-    });
-  }
-
-  Future<void> _load() async {
-    try {
-      await settings.load();
-      await sms.refresh();
-      await sms.setLanguage(settings.language);
-      history.enabled = settings.saveHistory;
-      await history.load();
-    } catch (_) {
-      loadFailed = true;
-    }
-    if (mounted) {
-      setState(() => ready = true);
-    }
+    sms.addListener(_saveWarnedTexts);
+    sms.refresh();
+    _lifecycle = AppLifecycleListener(onResume: sms.refresh);
+    // Corrupt or unreadable settings keep the defaults rather than blocking the app.
+    settings
+        .load()
+        .catchError((_) {})
+        .then((_) {
+          // Warm a sleeping gateway once per open, only for people who allowed online checks.
+          if (settings.onlineLinkChecks) warmUpGateway(_gateway, gatewayBase);
+          history.enabled = settings.saveHistory;
+          return history.load();
+        })
+        .then((_) => _saveWarnedTexts())
+        .catchError((_) {})
+        .whenComplete(() {
+          if (mounted) setState(() => _ready = true);
+        });
   }
 
   @override
   void dispose() {
+    sms.removeListener(_saveWarnedTexts);
+    _lifecycle.dispose();
     settings.dispose();
     history.dispose();
-    sms.dispose();
+    if (widget.gatewayClient == null) _gateway.close();
+    if (widget.sms == null) sms.dispose();
     super.dispose();
+  }
+
+  /// Asks for online consent the first time a Check would go online, then runs the pipeline.
+  Future<CheckResult> _runCheck(CheckInput input) async {
+    if (!settings.onlineConsentAsked && needsOnline(input)) {
+      final allow = await _navigator.currentState!.push(MaterialPageRoute<bool>(builder: (_) => const ConsentScreen()));
+      // Back leaves it unanswered: this Check stays on the phone and the question comes back next time.
+      if (allow != null) {
+        try {
+          await settings.update(onlineConsentAsked: true, onlineLinkChecks: allow);
+        } catch (_) {}
+      }
+    }
+    final online = settings.onlineLinkChecks;
+    return CheckPipeline(
+      linkChecker: online ? gatewayLinkChecker(_gateway, gatewayBase) : null,
+      aiChecker: online ? gatewayAiChecker(_gateway, gatewayBase, language: () => settings.language) : null,
+    ).run(input);
   }
 
   @override
@@ -100,519 +170,283 @@ class _UsisaAppState extends State<UsisaApp> {
     builder: (context, _) => MaterialApp(
       title: 'Usisa',
       debugShowCheckedModeBanner: false,
-      theme: UsisaTheme.light,
-      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: UsisaTheme.cream,
-          statusBarBrightness: Brightness.light,
-          statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: UsisaTheme.cream,
-          systemNavigationBarDividerColor: UsisaTheme.cream,
-          systemNavigationBarIconBrightness: Brightness.dark,
-          systemNavigationBarContrastEnforced: false,
-        ),
-        child: ColoredBox(color: UsisaTheme.cream, child: child!),
-      ),
+      navigatorKey: _navigator,
+      theme: buildUsisaTheme(),
       locale: Locale(settings.language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      home: ready
-          ? !settings.onboarded && !sessionStarted
-                ? OnboardingScreen(
-                    settings: settings,
-                    onStart: () => setState(() => sessionStarted = true),
-                  )
-                : _Shell(
-                    settings: settings,
-                    history: history,
-                    preview: widget.isPreview,
-                    loadFailed: loadFailed,
-                    sms: sms,
-                  )
-          : const Scaffold(
-              body: Center(child: UsisaLoadingIndicator(size: 36)),
-            ),
+      // The in-app text size multiplies the phone's own setting, on every screen.
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        final factor = SettingsStore.textSizes[settings.textSize]!;
+        return MediaQuery(
+          data: media.copyWith(textScaler: _TimesTextScaler(media.textScaler, factor)),
+          child: child!,
+        );
+      },
+      home: _Shell(
+        ready: _ready,
+        // Every Check from every screen is saved to History here.
+        runCheck: history.recording(widget.runCheck ?? _runCheck),
+        history: history,
+        settings: settings,
+        sms: sms,
+        readScreenshot: widget.readScreenshot ?? () async => (await OcrService().readScreenshot())?.text,
+        shares: _shares,
+        readSharedImage: widget.readSharedImage ?? (path) async => (await OcrService().readImage(XFile(path))).text,
+      ),
     ),
   );
 }
 
 class _Shell extends StatefulWidget {
   const _Shell({
-    required this.settings,
+    required this.ready,
+    required this.runCheck,
+    required this.readScreenshot,
     required this.history,
-    required this.preview,
-    required this.loadFailed,
+    required this.settings,
     required this.sms,
+    required this.shares,
+    required this.readSharedImage,
   });
-  final SettingsStore settings;
-  final HistoryStore history;
-  final bool preview;
-  final bool loadFailed;
+  final bool ready;
+  final RunCheck runCheck;
   final SmsService sms;
+  final HistoryStore history;
+  final SettingsStore settings;
+  final ScreenshotReader readScreenshot;
+  final Stream<SharedItem> shares;
+  final Future<String> Function(String path) readSharedImage;
+
   @override
   State<_Shell> createState() => _ShellState();
 }
 
-class _ShellState extends State<_Shell> with WidgetsBindingObserver {
-  int index = 0;
-  final _tabs = PageController();
-  StreamSubscription<String>? _smsOpens;
-  bool _consumingNotification = false;
-  bool _smsOpen = false;
-  String? _openSmsId;
-  String? _queuedSmsId;
-  bool _consumeAgain = false;
-  Timer? _retentionTimer;
-  bool _retentionActive = true;
-  bool _retentionRefreshing = false;
-  void _selectTab(int next) {
-    if (next == index) return;
-    setState(() => index = next);
-    if (!_tabs.hasClients) return;
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _tabs.jumpToPage(next);
-      return;
-    }
-    unawaited(
-      _tabs.animateToPage(
-        next,
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
-      ),
-    );
+class _ShellState extends State<_Shell> {
+  int _tab = 0;
+  // One switch for the home card and Settings, backed by the native SMS bridge.
+  // shortcut: without a bridge (web preview, widget tests) the switch is visual only.
+  bool _previewSmsOn = false;
+  bool get _smsOn => widget.sms.bridgeAvailable ? widget.sms.protectionOn : _previewSmsOn;
+
+  // Once shown, setup stays up until finished, even after turning protection on changes the bridge state.
+  bool _inSetup = false;
+  bool get _needsSetup {
+    if (widget.settings.onboarded) return false;
+    _inSetup |= widget.ready && widget.sms.bridgeAvailable && widget.sms.supported && !widget.sms.wanted;
+    return _inSetup;
   }
 
-  bool _retentionFailed = false;
-  void _scheduleRetention() {
-    _retentionTimer?.cancel();
-    if (!mounted || !_retentionActive || _retentionRefreshing) return;
-    final next = widget.history.nextExpiry;
-    if (next == null) return;
-    final delay = next.difference(widget.history.clock());
-    _retentionTimer = Timer(
-      delay <= Duration.zero ? const Duration(minutes: 1) : delay,
-      _refreshRetention,
-    );
-  }
+  Future<void> _finishSetup() => widget.settings.update(onboarded: true).catchError((_) {});
 
-  Future<void> _refreshRetention() async {
-    if (!mounted || !_retentionActive || _retentionRefreshing) return;
-    _retentionRefreshing = true;
+  Future<void> _fixSms() async {
     try {
-      await widget.history.load();
-      _retentionFailed = false;
+      await widget.sms.fix(language: widget.settings.language);
     } catch (_) {
-      _retentionFailed = true;
-    } finally {
-      _retentionRefreshing = false;
-      if (mounted) {
-        setState(() {});
-        _scheduleRetention();
-      }
+      await widget.sms.refresh();
     }
   }
+
+  Future<void> _setSms(bool on) async {
+    if (!widget.sms.bridgeAvailable) return setState(() => _previewSmsOn = on);
+    try {
+      await widget.sms.setEnabled(on, language: widget.settings.language);
+    } catch (_) {
+      // A failed request leaves the switch showing what the phone really has.
+      await widget.sms.refresh();
+    }
+  }
+
+  late final StreamSubscription<SharedItem> _shares;
+  late final StreamSubscription<String> _textAlerts;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    widget.history.addListener(_scheduleRetention);
-    _smsOpens = widget.sms.notificationOpens.listen(
-      (_) => _consumeNotification(),
-    );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _consumeNotification();
-      _refreshRetention();
-    });
+    _shares = widget.shares.listen(_openShare);
+    _textAlerts = widget.sms.notificationOpens.listen(_openTextAlert);
+    // The notification the app was launched from.
+    widget.sms
+        .refresh()
+        .then((_) => widget.sms.takeNotification())
+        .then((id) => id == null ? null : _openTextAlert(id))
+        .catchError((_) {});
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    _retentionActive = state == AppLifecycleState.resumed;
-    if (_retentionActive) {
-      _consumeNotification();
-      _refreshRetention();
-    } else {
-      _retentionTimer?.cancel();
-    }
-  }
-
-  Future<void> _consumeNotification() async {
-    if (!mounted) return;
-    if (_consumingNotification) {
-      _consumeAgain = true;
-      return;
-    }
-    _consumingNotification = true;
-    String? id;
-    try {
-      await widget.sms.refresh();
-      id = await widget.sms.takeNotification();
-    } catch (_) {
-      // The normal scan screen remains usable when the Android bridge is unavailable.
-    } finally {
-      _consumingNotification = false;
-      if (_consumeAgain && mounted) {
-        _consumeAgain = false;
-        scheduleMicrotask(_consumeNotification);
-      }
-    }
-    if (!mounted || id == null || id == _openSmsId) return;
-    if (_smsOpen) {
-      _queuedSmsId = id;
-      return;
-    }
-    unawaited(_openSms(id));
-  }
-
-  Future<void> _openSms(String id) async {
-    if (_smsOpen || !mounted) return;
-    _smsOpen = true;
-    _openSmsId = id;
-    try {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => SmsReviewScreen(
-            id: id,
-            sms: widget.sms,
-            history: widget.history,
-            settings: widget.settings,
-          ),
-        ),
-      );
-    } finally {
-      _smsOpen = false;
-      _openSmsId = null;
-      final next = _queuedSmsId;
-      _queuedSmsId = null;
-      if (mounted && next != null) {
-        unawaited(_openSms(next));
-      } else if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _consumeNotification(),
-        );
-      }
-    }
-  }
-
-  void _reviewSms() => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => SmsInboxScreen(sms: widget.sms, onOpen: _openSms),
-    ),
-  );
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    widget.history.removeListener(_scheduleRetention);
-    _retentionTimer?.cancel();
-    _smsOpens?.cancel();
-    _tabs.dispose();
+    _shares.cancel();
+    _textAlerts.cancel();
     super.dispose();
   }
 
-  void _settings() => _selectTab(3);
-
-  void _openScan(int mode, {bool aiAssisted = false}) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ScanScreen(
-          history: widget.history,
-          settings: widget.settings,
-          sms: widget.sms,
-          onManageSms: _settings,
-          onReviewSms: _reviewSms,
-          initialMode: mode,
-          singleMode: true,
-          aiAssisted: aiAssisted,
+  /// A tapped text notification opens Scan a message for that text and runs it (phone plus online link check).
+  Future<void> _openTextAlert(String id) async {
+    final review = await widget.sms.review(id).catchError((_) => null);
+    if (review == null || !mounted) return;
+    Navigator.of(context)
+      ..popUntil((route) => route.isFirst)
+      ..push(
+        MaterialPageRoute<void>(
+          builder: (_) => PasteScreen(
+            runCheck: widget.runCheck,
+            source: CheckSource.sms,
+            initialText: review.body,
+            historyId: id,
+            autoRun: true,
+          ),
         ),
-      ),
-    );
-  }
-
-  void _openAi() {
-    if (!widget.settings.aiScanning) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AiScanEntryScreen(
-          onChooseInput: (mode) => _openScan(mode, aiAssisted: true),
-        ),
-      ),
-    );
-  }
-
-  void _openSmsDetection() => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => SmsDetectionScreen(
-        sms: widget.sms,
-        onToggle: _setSmsEnabled,
-        onOpen: _openSms,
-      ),
-    ),
-  );
-
-  Future<void> _setSmsEnabled(bool value) async {
-    if (!widget.sms.supported) return;
-    final l = AppLocalizations.of(context);
-    if (value) {
-      final confirmed = await UsisaModal.show(
-        context: context,
-        title: l.smsDisclosure,
-        message: l.smsDisclosureBody,
-        primaryLabel: l.enableSmsChecks,
-        secondaryLabel: l.cancel,
-        variant: UsisaModalVariant.info,
       );
-      if (confirmed != true || !mounted) return;
+  }
+
+  /// A share opens the matching tile prefilled; nothing is checked until the person taps Check.
+  void _openShare(SharedItem item) {
+    final l = AppLocalizations.of(context);
+    final image = item.imagePath;
+    final text = item.text?.trim() ?? '';
+    final link = phoneCheck(text).links.singleOrNull == text;
+    Navigator.of(context)
+      ..popUntil((route) => route.isFirst)
+      ..push(
+        MaterialPageRoute<void>(
+          builder: (_) => image != null
+              ? ScreenshotScreen(
+                  readScreenshot: widget.readScreenshot,
+                  runCheck: widget.runCheck,
+                  readShared: () => widget.readSharedImage(image),
+                )
+              : PasteScreen(
+                  runCheck: widget.runCheck,
+                  source: link ? CheckSource.link : CheckSource.share,
+                  initialText: text,
+                  title: link ? l.tileLinkTitle : null,
+                ),
+        ),
+      );
+  }
+
+  void _startCheck(CheckKind kind) {
+    if (kind == CheckKind.message || kind == CheckKind.link) {
+      final link = kind == CheckKind.link;
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => PasteScreen(
+            runCheck: widget.runCheck,
+            source: link ? CheckSource.link : CheckSource.message,
+            title: link ? AppLocalizations.of(context).tileLinkTitle : null,
+          ),
+        ),
+      );
+      return;
     }
-    try {
-      await widget.sms.setEnabled(value, language: widget.settings.language);
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l.saveFailed)));
-        await widget.sms.refresh();
-      }
+    if (kind == CheckKind.screenshot) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ScreenshotScreen(readScreenshot: widget.readScreenshot, runCheck: widget.runCheck),
+        ),
+      );
+      return;
     }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AiScanScreen(runCheck: widget.runCheck, readScreenshot: widget.readScreenshot),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final destinations = <(List<List<dynamic>>, String)>[
-      (HugeIcons.strokeRoundedHome09, l.home),
-      (HugeIcons.strokeRoundedClock01, l.history),
-      (HugeIcons.strokeRoundedBook02, l.learn),
-      (HugeIcons.strokeRoundedSettings02, l.settings),
-    ];
-    final wide = MediaQuery.sizeOf(context).width >= 600;
-    final reducedMotion = MediaQuery.disableAnimationsOf(context);
-    final colors = Theme.of(context).colorScheme;
-    return PopScope(
-      canPop: index == 0,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && index != 0) _selectTab(0);
-      },
+    return ListenableBuilder(
+      listenable: widget.sms,
+      builder: (context, _) => _needsSetup
+          ? SmsSetupScreen(sms: widget.sms, language: widget.settings.language, onDone: _finishSetup)
+          : _tabs(l),
+    );
+  }
+
+  Widget _tabs(AppLocalizations l) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Light status icons over the indigo home header, dark over the lavender tabs.
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: _tab == 0 ? Brightness.light : Brightness.dark,
+        statusBarBrightness: _tab == 0 ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
       child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: Row(
+        body: ListenableBuilder(
+          listenable: widget.sms,
+          builder: (context, _) => IndexedStack(
+            index: _tab,
             children: [
-              if (wide)
-                SizedBox(
-                  width: 96,
-                  child: NavigationRail(
-                    minWidth: 96,
-                    scrollable: true,
-                    selectedIndex: index,
-                    onDestinationSelected: _selectTab,
-                    labelType: NavigationRailLabelType.all,
-                    destinations: destinations
-                        .map(
-                          (d) => NavigationRailDestination(
-                            icon: ExcludeSemantics(
-                              child: HugeIcon(
-                                icon: d.$1,
-                                color: colors.onSurfaceVariant,
-                                size: 24,
-                              ),
-                            ),
-                            selectedIcon: ExcludeSemantics(
-                              child: HugeIcon(
-                                icon: d.$1,
-                                color: UsisaTheme.coral,
-                                size: 24,
-                              ),
-                            ),
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(d.$2),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-              Expanded(
-                child: Column(
-                  children: [
-                    if (widget.loadFailed)
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(l.saveFailed),
-                      ),
-                    if (_retentionFailed)
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(l.retentionCleanupFailed),
-                      ),
-                    Expanded(
-                      child: PageView(
-                        controller: _tabs,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          _RetainedTab(
-                            child: TickerMode(
-                              enabled: index == 0,
-                              child: HomeScreen(
-                                sms: widget.sms,
-                                aiEnabled: widget.settings.aiScanning,
-                                onMessage: () => _openScan(0),
-                                onLink: () => _openScan(1),
-                                onScreenshot: () => _openScan(2),
-                                onAi: _openAi,
-                                onSms: _openSmsDetection,
-                                onSmsToggle: _setSmsEnabled,
-                                onRecentSms: _reviewSms,
-                              ),
-                            ),
-                          ),
-                          _RetainedTab(
-                            child: TickerMode(
-                              enabled: index == 1,
-                              child: HistoryScreen(
-                                history: widget.history,
-                                settings: widget.settings,
-                                onEnable: _settings,
-                                onScan: () => _selectTab(0),
-                                onBack: () => _selectTab(0),
-                              ),
-                            ),
-                          ),
-                          _RetainedTab(
-                            child: TickerMode(
-                              enabled: index == 2,
-                              child: LearnScreen(onBack: () => _selectTab(0)),
-                            ),
-                          ),
-                          _RetainedTab(
-                            child: TickerMode(
-                              enabled: index == 3,
-                              child: SettingsScreen(
-                                settings: widget.settings,
-                                history: widget.history,
-                                preview: widget.preview,
-                                sms: widget.sms,
-                                onReviewSms: _reviewSms,
-                                embedded: true,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              HomeScreen(
+                onCheck: _startCheck,
+                smsOn: _smsOn,
+                onSmsChanged: _setSms,
+                checkedToday: widget.sms.checkedToday,
+                protectionLost: widget.sms.bridgeAvailable && widget.sms.protectionLost,
+                onFix: _fixSms,
+              ),
+              HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
+              const LearnScreen(),
+              SettingsScreen(settings: widget.settings, history: widget.history, smsOn: _smsOn, onSmsChanged: _setSms),
+            ],
+          ),
+        ),
+        // Flat white nav with a hairline top border; square corners so no page colour shows through.
+        bottomNavigationBar: DecoratedBox(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: UsisaColors.hairline)),
+          ),
+          child: NavigationBar(
+            backgroundColor: Colors.white,
+            selectedIndex: _tab,
+            onDestinationSelected: (i) => setState(() => _tab = i),
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.home_outlined),
+                selectedIcon: const Icon(Icons.home_rounded),
+                label: l.navCheck,
+              ),
+              NavigationDestination(icon: const Icon(Icons.history_rounded), label: l.navHistory),
+              NavigationDestination(
+                icon: const Icon(Icons.menu_book_outlined),
+                selectedIcon: const Icon(Icons.menu_book_rounded),
+                label: l.navLearn,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings_rounded),
+                label: l.navSettings,
               ),
             ],
           ),
         ),
-        bottomNavigationBar: wide
-            ? null
-            : SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-                  child: GlassSurface(
-                    color: colors.surface.withValues(alpha: .88),
-                    borderRadius: BorderRadius.circular(32),
-                    child: SizedBox(
-                      height: 68,
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < destinations.length; i++)
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Semantics(
-                                  button: true,
-                                  selected: index == i,
-                                  label: destinations[i].$2,
-                                  child: InkWell(
-                                    customBorder: const StadiumBorder(),
-                                    onTap: () => _selectTab(i),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        ExcludeSemantics(
-                                          child: AnimatedScale(
-                                            scale: index == i ? 1.06 : 1,
-                                            duration: reducedMotion
-                                                ? Duration.zero
-                                                : const Duration(
-                                                    milliseconds: 150,
-                                                  ),
-                                            curve: Curves.easeOut,
-                                            child: HugeIcon(
-                                              icon: destinations[i].$1,
-                                              color: index == i
-                                                  ? UsisaTheme.coral
-                                                  : colors.onSurfaceVariant,
-                                              size: 24,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: AnimatedDefaultTextStyle(
-                                            duration: reducedMotion
-                                                ? Duration.zero
-                                                : const Duration(
-                                                    milliseconds: 150,
-                                                  ),
-                                            curve: Curves.easeOut,
-                                            style: TextStyle(
-                                              color: index == i
-                                                  ? UsisaTheme.coral
-                                                  : colors.onSurfaceVariant,
-                                              fontSize: 12,
-                                              height: 1.2,
-                                              fontWeight: index == i
-                                                  ? FontWeight.w700
-                                                  : FontWeight.w500,
-                                            ),
-                                            child: Text(
-                                              destinations[i].$2,
-                                              softWrap: false,
-                                              maxLines: 1,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
       ),
     );
   }
 }
 
-class _RetainedTab extends StatefulWidget {
-  const _RetainedTab({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_RetainedTab> createState() => _RetainedTabState();
-}
-
-class _RetainedTabState extends State<_RetainedTab>
-    with AutomaticKeepAliveClientMixin<_RetainedTab> {
-  @override
-  bool get wantKeepAlive => true;
+/// The phone's text scaler times the in-app text size.
+class _TimesTextScaler extends TextScaler {
+  const _TimesTextScaler(this.phone, this.factor);
+  final TextScaler phone;
+  final double factor;
 
   @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
-  }
+  double scale(double fontSize) => phone.scale(fontSize) * factor;
+
+  @override
+  @Deprecated('Use scale instead.')
+  double get textScaleFactor => scale(14) / 14;
+
+  @override
+  bool operator ==(Object other) => other is _TimesTextScaler && other.phone == phone && other.factor == factor;
+
+  @override
+  int get hashCode => Object.hash(phone, factor);
 }

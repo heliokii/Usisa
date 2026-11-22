@@ -22,6 +22,8 @@ class SmsBridge(private val activity: MainActivity, messenger: BinaryMessenger) 
         channel.setMethodCallHandler { call, reply ->
             if (call.method == "requestPermissions") { activity.requestSmsPermissions(reply); return@setMethodCallHandler }
             if (call.method == "requestNotifications") { activity.requestSmsPermissions(reply, true); return@setMethodCallHandler }
+            if (call.method == "openBackgroundSettings") { activity.openBackgroundSettings(); reply.success(null); return@setMethodCallHandler }
+            if (call.method == "openAppSettings") { activity.openAppSettings(); reply.success(null); return@setMethodCallHandler }
             io.execute {
                 try {
                     val value: Any? = when (call.method) {
@@ -38,6 +40,15 @@ class SmsBridge(private val activity: MainActivity, messenger: BinaryMessenger) 
                             val next = store.invalidate()
                             WorkManager.getInstance(activity).cancelAllWorkByTag(SmsCheckWorker.TAG)
                             next
+                        }
+                        // A warning deleted from History: forget the text and its notification so it isn't saved again.
+                        "dismiss" -> {
+                            val id = call.arguments as? String
+                            if (id != null && id.matches(Regex("[0-9a-f-]{36}"))) synchronized(PendingSmsStore.lock) {
+                                store.remove(id)
+                                activity.getSystemService(android.app.NotificationManager::class.java).cancel(id, 1)
+                            }
+                            null
                         }
                         "language" -> { store.setLanguage(call.arguments as? String ?: "en"); null }
                         "reviews" -> if (BuildConfig.SMS_ENABLED) store.reviews() else emptyList<String>()
@@ -58,9 +69,10 @@ class SmsBridge(private val activity: MainActivity, messenger: BinaryMessenger) 
     }
     private fun status(): Map<String, Any> {
         val permitted = SmsReceiver.permitted(activity)
-        return mapOf("supported" to BuildConfig.SMS_ENABLED, "enabled" to (store.enabled && permitted), "smsPermission" to permitted,
+        return mapOf("supported" to BuildConfig.SMS_ENABLED, "enabled" to (store.enabled && permitted), "wanted" to store.enabled,
+            "manufacturer" to android.os.Build.MANUFACTURER, "smsPermission" to permitted,
             "notifications" to (BuildConfig.SMS_ENABLED && SmsAlerts.allowed(activity)), "generation" to store.generation,
-            "degraded" to store.degraded, "pending" to if (BuildConfig.SMS_ENABLED) store.reviews().size else 0)
+            "degraded" to store.degraded, "checkedToday" to store.checkedToday, "pending" to if (BuildConfig.SMS_ENABLED) store.reviews().size else 0)
     }
     private fun jsonValue(value: Any?): Any? = when (value) {
         null, JSONObject.NULL -> null

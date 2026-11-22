@@ -9,23 +9,17 @@ Usisa is a Flutter Android app that helps people in the Philippines review suspi
 - Optional AI review through the gateway, sent only with consent and after the text is reviewed.
 - Optional Google Safe Browsing URL lookup, also requiring consent.
 - Optional saved history and drafts, stored locally using encrypted storage.
-- Home, History, Learn, and Settings screens.
+- New app shell (rebuild in progress): Check home with four tiles and the Auto SMS protection card; History, Learn and Settings are placeholders for now.
 - English and Filipino interface localization.
-- A separate Android `smsLab` development flavor for SMS-related flows.
-
-## What is complete and checked
-
-The last recorded check covered the Android `manual` flavor: 98 Flutter unit/widget checks and four emulator integration checks passed, and `flutter analyze --no-pub` was clean. The checks covered the manual scan and storage flow, screenshot OCR, consented AI review, and consented Safe Browsing lookup.
-
-Those results predate recent external edits to the generated localization files in `lib/l10n/`. Re-run analysis and checks before relying on them for a release.
+- Incoming SMS check: the single build declares `RECEIVE_SMS`; with the Auto SMS protection switch on, each text (multipart texts joined) is checked in the background by the same Dart phone check the app uses. Texts under 24 hours old are still checked after a delay. Harmless texts only add to the "N texts checked today" count on the home card and store no content.
 
 ## Unfinished or not verified
 
-- The `smsLab` SMS receiving and notification flows were intentionally excluded from the recorded app check. Treat them as unverified.
+- The SMS flow has unit tests (Kotlin `SmsPolicyTest`, Dart contract and home card tests); the end-to-end path on an emulator or phone still needs the manual check below. OEM battery managers (Xiaomi, Oppo, Vivo, Samsung) can stop it on real phones.
 - The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
-- The current Android release configuration uses debug signing. Set a production application ID and release signing key before distribution, and confirm SMS permissions and Play distribution eligibility before publishing.
+- Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file a release build fails on purpose. Release steps, the manual full-AI evaluation and the demo-day checklist are in [RELEASE.md](RELEASE.md).
 - Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
-- Production gateway hosting, quotas, and operational monitoring remain deployment work.
+- The gateway runs on Render's Free plan, which is not meant for production. See [server/README.md](server/README.md) for deploy, keep-alive and quota settings.
 - There is no `LICENSE` file, so reuse and distribution terms are not specified.
 
 ## Requirements
@@ -36,24 +30,22 @@ Those results predate recent external edits to the generated localization files 
 
 ## Build and install
 
-From the project root, fetch packages and run the default Android flavor (`manual`):
+From the project root, fetch packages and run the app (there is one build, no flavors):
 
 ```sh
 flutter pub get
 flutter gen-l10n
-flutter run --flavor manual
+flutter run
 ```
 
 To build a debug APK and install it on a connected Android device or emulator:
 
 ```sh
-flutter build apk --debug --flavor manual
-adb install -r build/app/outputs/flutter-apk/app-manual-debug.apk
+flutter build apk --debug
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-The manual flavor uses application ID `com.example.usisa` and keeps the SMS feature disabled.
-
-The separate SMS development flavor can be launched with `flutter run --flavor smsLab`. It is for development and has not been verified as a release-ready or Play-eligible feature.
+The application ID is `com.usisa.app`.
 
 ## Optional local gateway
 
@@ -70,16 +62,45 @@ npm start
 For the Android emulator, run the app with the host gateway URL:
 
 ```sh
-flutter run --flavor manual --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
+flutter run --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
 ```
 
 For a USB-connected device, run `adb reverse tcp:8787 tcp:8787` and use `http://127.0.0.1:8787` as `USISA_GATEWAY_URL`.
+
+Environment variables, timeouts, rate limits, the Render deploy and the keep-alive pinger are documented in [server/README.md](server/README.md).
+
+### Link check response
+
+`POST /v1/link-check {"url": "..."}` follows the link's redirects on the gateway (GET only, at most 8 hops, 2.5 s per hop, 6 s total, ports 80/443, internal addresses refused), then sends the raw link and every hop to Safe Browsing in one call. A finished check answers HTTP 200 with:
+
+| Field | Meaning |
+|---|---|
+| `status` | `matched` (some URL is flagged), `blockedByShortener` (the shortener itself refused the link), `noMatch` (every hop followed and none flagged; not proof of safety), `unavailable` (Couldn't check) |
+| `destination` | Real destination URL, or `null` when it is unconfirmed. For `non_web_destination` it is the non-web link (for example `intent://...`) |
+| `hops` | Every URL reached after the submitted one, in order. Partial when unfinished: show it as "so far" only |
+| `expansion` | `expanded`, `blocked` or `unresolved` |
+| `reason` | Only when `expansion` is `unresolved`: `timeout_hop`, `timeout_total`, `dns_error`, `blocked_address`, `blocked_port`, `credentials_in_url`, `fetch_error`, `http_error`, `too_many_hops`, `loop`, `non_web_destination`, `interstitial` (stopped on a shortener's preview page) |
+| `blockedUrl` | Only with `blockedByShortener`: the link the shortener blocked |
+| `flaggedUrls`, `threatTypes`, `expiresAt` | Which URLs Safe Browsing flagged, the threat types, and until when the match may be used |
+| `checkedAt`, `provider` | Check time and `Google Safe Browsing` |
+
+A flagged hop wins over an unfinished expansion. Anything other than `noMatch` must never show as Looks safe. HTTP 503 `{"error":"unavailable"}` still means the gateway is not configured or busy. Results are cached in memory: chains 10 min, clean results 5 min, unfinished chains 30 s.
 
 ## Verification commands
 
 ```sh
 flutter analyze --no-pub
 flutter test --no-pub
+dart run tool/release_gate.dart                         # analyze + tests + phone-only evaluation; fails on any miss
+cd android && ./gradlew :app:testDebugUnitTest          # Kotlin unit tests (SmsPolicyTest)
+cd android && ./gradlew :app:connectedDebugAndroidTest  # instrumentation tests, needs a device/emulator
 ```
 
-The recorded check described above did not exercise the SMS Lab flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.
+### Manual SMS check (emulator)
+
+1. `flutter run` on an emulator, then turn on **Auto SMS protection** on the home card and allow SMS.
+2. Send a harmless text: `adb emu sms send 09171234567 "Hi Ma, uuwi ako mamaya"`. Within a few seconds the card changes from "0 texts checked today" to "1 text checked today". Nothing is saved for it.
+3. Send a scam text: `adb emu sms send 09171234567 "Your GCash account is locked. Verify at http://gcash-verify.example now"`. The count goes up again and, with notifications allowed, a notification titled "Dangerous text" from 09171234567 appears (the message itself is hidden on the lock screen). Tapping it opens Scan a message with the text and runs the check; the text is also in History marked "From your texts". Notification permission is not requested yet (#42); on Android 13+ allow it in the app's system settings.
+4. If nothing changes, watch `adb logcat -s WM-WorkerWrapper:I flutter:I`.
+
+The recorded check described above did not exercise SMS flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.

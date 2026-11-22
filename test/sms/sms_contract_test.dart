@@ -110,6 +110,60 @@ void main() {
       );
     },
   );
+  test('a warning carries a notification title that states the verdict and who sent it', () async {
+    Map<String, dynamic>? completion;
+    messenger.setMockMethodCallHandler(worker, (call) async {
+      if (call.method == 'takeEvent') {
+        return {'id': 'scam', 'body': 'GCash: Send your OTP now.', 'sender': '09171234567', 'language': 'fil'};
+      }
+      completion = Map<String, dynamic>.from(call.arguments as Map);
+      return true;
+    });
+    await runSmsBackground(channel: worker);
+    expect(completion?['title'], 'Delikadong text');
+    expect(completion?['from'], 'Mula sa 09171234567');
+    // The body never travels in the notification strings; Android shows it only when unlocked.
+    expect('${completion?['title']}${completion?['from']}'.contains('OTP'), isFalse);
+  });
+
+  test('a harmless family text completes as low risk so it is only counted', () async {
+    Map<String, dynamic>? completion;
+    messenger.setMockMethodCallHandler(worker, (call) async {
+      if (call.method == 'takeEvent') {
+        return {'id': 'family', 'body': 'Hi Ma, pa-send ng pera pang-load mamaya. Salamat!', 'generation': 1};
+      }
+      completion = Map<String, dynamic>.from(call.arguments as Map);
+      return true;
+    });
+    await runSmsBackground(channel: worker);
+    expect(completion?['risk'], 'low');
+    // No notification for Looks safe texts.
+    expect(completion?['title'], isNull);
+  });
+  Future<Map<String, dynamic>?> complete(String body) async {
+    Map<String, dynamic>? completion;
+    messenger.setMockMethodCallHandler(worker, (call) async {
+      if (call.method == 'takeEvent') return {'id': 'rule', 'body': body};
+      completion = Map<String, dynamic>.from(call.arguments as Map);
+      return true;
+    });
+    await runSmsBackground(channel: worker);
+    return completion;
+  }
+
+  test('rule 5: an app-opening link in a text is at least Be careful and notifies', () async {
+    final completion = await complete('Hi! Buksan mo ito: intent://open#Intent;package=com.fake.wallet;end');
+    expect(completion?['risk'], 'caution');
+    expect(completion?['title'], isNotNull);
+  });
+
+  test("a link the phone can't judge alone completes as low risk, never Couldn't check", () async {
+    final completion = await complete('Hi Ma, eto yung recipe: https://example.org/adobo');
+    expect(completion?['risk'], 'low');
+    expect(completion?['title'], isNull);
+    expect(completion?['error'], isNull);
+  });
+
   test(
     'unsupported SMS content completes as an error, never low risk',
     () async {

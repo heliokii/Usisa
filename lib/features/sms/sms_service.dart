@@ -6,12 +6,7 @@ import 'package:flutter/services.dart';
 import '../scan/scan_models.dart';
 
 class SmsReview {
-  const SmsReview({
-    required this.body,
-    required this.generation,
-    this.result,
-    this.error,
-  });
+  const SmsReview({required this.body, required this.generation, this.result, this.error});
   final String body;
   final int generation;
   final ScanResult? result;
@@ -20,18 +15,14 @@ class SmsReview {
 
 class SmsService extends ChangeNotifier {
   SmsService({bool? nativePlatform, MethodChannel? channel})
-    : nativePlatform =
-          nativePlatform ??
-          (!kIsWeb && defaultTargetPlatform == TargetPlatform.android),
+    : nativePlatform = nativePlatform ?? (!kIsWeb && defaultTargetPlatform == TargetPlatform.android),
       _channel = channel ?? const MethodChannel('usisa/sms') {
     if (this.nativePlatform) {
       _channel.setMethodCallHandler((call) async {
         if (!_disposed && call.method == 'statusChanged') {
           await refresh();
         }
-        if (!_disposed &&
-            call.method == 'notification' &&
-            call.arguments is String) {
+        if (!_disposed && call.method == 'notification' && call.arguments is String) {
           _notifications.add(call.arguments as String);
         }
       });
@@ -47,8 +38,17 @@ class SmsService extends ChangeNotifier {
   bool smsPermission = false;
   bool notifications = false;
   bool degraded = false;
+
+  /// The person turned protection on; it stays wanted while Android has a permission revoked.
+  bool wanted = false;
+
+  /// Android's Build.MANUFACTURER.
+  String manufacturer = '';
   int generation = 0;
   int pendingCount = 0;
+
+  /// Texts the background check finished today (harmless ones are only counted).
+  int checkedToday = 0;
   bool _disposed = false;
 
   void _status(Map<dynamic, dynamic>? value) {
@@ -61,7 +61,10 @@ class SmsService extends ChangeNotifier {
     smsPermission = value['smsPermission'] == true;
     notifications = value['notifications'] == true;
     degraded = value['degraded'] == true;
+    wanted = supported && value['wanted'] == true;
+    manufacturer = value['manufacturer'] is String ? value['manufacturer'] as String : '';
     pendingCount = value['pending'] is int ? value['pending'] as int : 0;
+    checkedToday = value['checkedToday'] is int ? value['checkedToday'] as int : 0;
     if (value['generation'] is int) {
       generation = value['generation'] as int;
     }
@@ -94,13 +97,31 @@ class SmsService extends ChangeNotifier {
     if (value) {
       await _channel.invokeMethod<void>('requestPermissions');
     }
-    _status(
-      await _channel.invokeMapMethod('setEnabled', {
-        'enabled': value,
-        'language': language,
-      }),
-    );
+    _status(await _channel.invokeMapMethod('setEnabled', {'enabled': value, 'language': language}));
   }
+
+  /// Texts are checked and warnings can reach the person: SMS and notifications both allowed.
+  bool get protectionOn => enabled && notifications;
+
+  /// Turned on, but Android has a permission revoked: the "protection is off" banner.
+  bool get protectionLost => wanted && !protectionOn;
+
+  /// Xiaomi, Oppo, Vivo and Samsung stop background work unless the person allows it.
+  bool get needsBackgroundStep =>
+      const {'xiaomi', 'oppo', 'vivo', 'samsung'}.contains(manufacturer.trim().toLowerCase());
+
+  /// Fix for a revoked permission: ask again, and send the person to the app's settings when Android won't.
+  Future<void> fix({String language = 'en'}) async {
+    await _channel.invokeMethod<void>('requestPermissions');
+    await refresh();
+    if (!smsPermission || !notifications) return _channel.invokeMethod<void>('openAppSettings');
+    if (!enabled) await setEnabled(true, language: language);
+  }
+
+  Future<void> openBackgroundSettings() => _channel.invokeMethod<void>('openBackgroundSettings');
+
+  /// Forgets a warned text on Android (its saved check and notification).
+  Future<void> dismiss(String id) => _channel.invokeMethod<void>('dismiss', id);
 
   Future<void> setLanguage(String value) async {
     if (bridgeAvailable) {
@@ -116,10 +137,7 @@ class SmsService extends ChangeNotifier {
   Future<List<String>> reviewIds() async {
     if (!supported) return [];
     final ids = await _channel.invokeListMethod<String>('reviews') ?? [];
-    return ids
-        .where((id) => RegExp(r'^[0-9a-f-]{36}$').hasMatch(id))
-        .take(20)
-        .toList();
+    return ids.where((id) => RegExp(r'^[0-9a-f-]{36}$').hasMatch(id)).take(20).toList();
   }
 
   Future<int> invalidatePrivacy() async {
@@ -134,9 +152,8 @@ class SmsService extends ChangeNotifier {
     return value;
   }
 
-  Future<String?> takeNotification() async => !bridgeAvailable
-      ? null
-      : _channel.invokeMethod<String>('takeNotification');
+  Future<String?> takeNotification() async =>
+      !bridgeAvailable ? null : _channel.invokeMethod<String>('takeNotification');
   Future<SmsReview?> review(String id) async {
     if (!nativePlatform) {
       return null;
@@ -153,12 +170,8 @@ class SmsService extends ChangeNotifier {
     ScanResult? result;
     try {
       if (value['result'] is Map) {
-        result = ScanResult.fromJson(
-          Map<String, dynamic>.from(value['result'] as Map),
-        );
-        if (result.id != id ||
-            result.source != ScanSource.sms ||
-            result.text != value['body']) {
+        result = ScanResult.fromJson(Map<String, dynamic>.from(value['result'] as Map));
+        if (result.id != id || result.source != ScanSource.sms || result.text != value['body']) {
           return null;
         }
       }

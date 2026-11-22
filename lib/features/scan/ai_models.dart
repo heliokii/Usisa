@@ -16,6 +16,7 @@ const aiWarningCodes = {
   'impersonation',
   'prize',
   'suspicious_link',
+  'gambling_ad',
   'other',
 };
 const aiRecommendationCodes = {
@@ -25,6 +26,8 @@ const aiRecommendationCodes = {
   'contact_provider_if_shared',
 };
 const aiModels = {'openai/gpt-oss-120b', 'openai/gpt-oss-20b'};
+// v1 stays valid so retained history from before the gateway upgrade still loads.
+const aiPromptVersions = {'ph-scam-v1', 'ph-scam-v2'};
 const aiSummaryCode = 'assessment_complete';
 
 class ReviewedAiInput {
@@ -34,12 +37,16 @@ class ReviewedAiInput {
     required this.responseLanguage,
     required this.inputRevision,
     required this.privacyGeneration,
+    this.links = const [],
   });
   final String text;
   final ScanSource source;
   final String responseLanguage;
   final int inputRevision;
   final int privacyGeneration;
+
+  /// What the gateway's link check saw, as `{url, destination, hops}` (contract: server/index.mjs validLinks).
+  final List<Map<String, Object?>> links;
 }
 
 class AiAssessment {
@@ -136,7 +143,7 @@ class AiAssessment {
         rawAdvice.length > 4 ||
         at == null ||
         !aiModels.contains(json['modelId']) ||
-        json['promptVersion'] != 'ph-scam-v1') {
+        !aiPromptVersions.contains(json['promptVersion'])) {
       invalid();
     }
     final signs = <Finding>[];
@@ -148,10 +155,11 @@ class AiAssessment {
         invalid();
       }
       final quote = sign['evidence'] as String;
+      // A mismatched quote drops only that sign, as the gateway does (spec "Reasons").
       if (quote.trim().isEmpty ||
           quote.runes.length > 160 ||
           !text.contains(quote)) {
-        invalid();
+        continue;
       }
       final start = text.indexOf(quote);
       signs.add(

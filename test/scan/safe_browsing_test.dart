@@ -1,13 +1,9 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usisa/features/history/history_store.dart';
-import 'package:usisa/features/scan/result_screen.dart';
 import 'package:usisa/features/scan/scan_models.dart';
 import 'package:usisa/features/settings/settings_store.dart';
-import 'package:usisa/l10n/app_localizations.dart';
-import 'package:usisa/theme/usisa_theme.dart';
 
 LinkResult advisory({
   bool expired = false,
@@ -60,27 +56,6 @@ void main() {
     },
   );
 
-  test('permanent history retains local evidence and check metadata without caching Google verdicts', () async {
-    final storage = MemoryStorage();
-    final history = HistoryStore(storage)..enabled = true;
-    await history.save(
-      scan(advisory()),
-      expectedGeneration: history.generation,
-    );
-    final stored = jsonDecode(storage.values['scan.advisory-fixture']!) as Map;
-    final link = (stored['links'] as List).single as Map;
-    expect(link['provider'], 'Google Safe Browsing');
-    expect(link['reputation'], 'unavailable');
-    expect(link['threatTypes'], isEmpty);
-    expect(link['checkedAt'], isNotNull);
-    final reloaded = HistoryStore(storage)..enabled = true;
-    await reloaded.load();
-    expect(reloaded.entries.single.risk, RiskLevel.low);
-    expect(reloaded.entries.single.hasUncheckedLinks, isTrue);
-    history.dispose();
-    reloaded.dispose();
-  });
-
   test('old Web Risk consent cannot authorize Safe Browsing', () async {
     final storage = MemoryStorage();
     await storage.write(
@@ -96,165 +71,4 @@ void main() {
     await restored.load();
     expect(restored.onlineLinkChecks, isTrue);
   });
-
-  for (final expired in [false, true]) {
-    testWidgets(
-      'Google attribution is linked only for current advisories: expired=$expired',
-      (tester) async {
-        Uri? opened;
-        await tester.pumpWidget(
-          MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: ResultScreen(
-              result: scan(advisory(expired: expired)),
-              advisoryLauncher: (uri) async {
-                opened = uri;
-                return true;
-              },
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
-        final host = find.text('submitted.example').first;
-        await tester.ensureVisible(host);
-        await tester.tap(host);
-        await tester.pumpAndSettle();
-        final attribution = find.text(l.googleAdvisory);
-        if (expired) {
-          expect(attribution, findsNothing);
-          expect(
-            find.textContaining(l.previousThreat),
-            findsOneWidget,
-          );
-          expect(find.text(l.unknownLink), findsOneWidget);
-        } else {
-          await tester.ensureVisible(attribution);
-          await tester.tap(attribution);
-          await tester.pumpAndSettle();
-          expect(
-            opened.toString(),
-            'https://developers.google.com/safe-browsing/v4/advisory',
-          );
-        }
-      },
-    );
-  }
-
-  testWidgets('threat help opens only fixed trusted help pages', (
-    tester,
-  ) async {
-    final opened = <String>[];
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: ResultScreen(
-          result: scan(
-            advisory(
-              threats: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE'],
-            ),
-          ),
-          advisoryLauncher: (uri) async {
-            opened.add(uri.toString());
-            return true;
-          },
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
-    final host = find.text('submitted.example').first;
-    await tester.ensureVisible(host);
-    await tester.tap(host);
-    await tester.pumpAndSettle();
-    for (final label in [l.phishingHelp, l.malwareHelp, l.unwantedHelp]) {
-      await tester.ensureVisible(find.text(label));
-      await tester.tap(find.text(label));
-      await tester.pumpAndSettle();
-    }
-    expect(opened, [
-      'https://www.antiphishing.org/',
-      'https://developers.google.com/search/',
-      'https://www.google.com/about/unwanted-software-policy.html',
-    ]);
-  });
-
-  for (final throws in [false, true]) {
-    testWidgets(
-      'unavailable browser keeps the scan recoverable: throws=$throws',
-      (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: ResultScreen(
-              result: scan(advisory()),
-              advisoryLauncher: (_) async {
-                if (throws) throw StateError('No browser');
-                return false;
-              },
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
-        final host = find.text('submitted.example').first;
-        await tester.ensureVisible(host);
-        await tester.tap(host);
-        await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text(l.googleAdvisory));
-        await tester.tap(find.text(l.googleAdvisory));
-        await tester.pump();
-        expect(
-          find.text(l.advisoryUnavailable),
-          findsOneWidget,
-        );
-        expect(find.text(l.linkCheckerTitle), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
-  }
-
-  for (final width in [320.0, 840.0]) {
-    testWidgets(
-      'current advisory is usable at ${width}px with Filipino and 200% text',
-      (tester) async {
-        tester.view.physicalSize = Size(width, 740);
-        tester.view.devicePixelRatio = 1;
-        tester.platformDispatcher.textScaleFactorTestValue = 2;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        var opened = false;
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: UsisaTheme.light,
-            locale: const Locale('fil'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: ResultScreen(
-              result: scan(advisory()),
-              advisoryLauncher: (_) async {
-                opened = true;
-                return true;
-              },
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        final l = AppLocalizations.of(tester.element(find.byType(ResultScreen)));
-        final host = find.text('submitted.example').first;
-        await tester.ensureVisible(host);
-        await tester.tap(host);
-        await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text(l.googleAdvisory));
-        await tester.tap(find.text(l.googleAdvisory));
-        await tester.pumpAndSettle();
-        expect(opened, isTrue);
-        expect(tester.takeException(), isNull);
-      },
-    );
-  }
 }

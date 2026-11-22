@@ -1,11 +1,13 @@
 package com.example.usisa
 
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.Worker
@@ -31,7 +33,11 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
         private val engineMutex = Mutex()
         fun enqueue(context: Context, id: String) {
             val work = OneTimeWorkRequestBuilder<SmsCheckWorker>().setInputData(workDataOf("eventId" to id))
-                .addTag(TAG).setBackoffCriteria(androidx.work.BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS).build()
+                .addTag(TAG).setBackoffCriteria(androidx.work.BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+                // Expedited so the check runs within seconds. Below Android 12 expedited work needs a foreground
+                // notification (getForegroundInfo), so there it stays ordinary work, which starts promptly anyway.
+                .apply { if (Build.VERSION.SDK_INT >= 31) setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST) }
+                .build()
             WorkManager.getInstance(context).enqueueUniqueWork("usisa-$id", ExistingWorkPolicy.KEEP, work)
             val expiry = OneTimeWorkRequestBuilder<SmsExpiryWorker>().setInputData(workDataOf("eventId" to id))
                 .setInitialDelay(SmsPolicy.TTL_MS, TimeUnit.MILLISECONDS).addTag(TAG).build()
@@ -54,7 +60,8 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
         }
         synchronized(PendingSmsStore.lock) {
             if (SmsReceiver.permitted(applicationContext) && store.complete(id, event.getLong("generation"), payload)) {
-                if (payload.optString("risk") != "low") SmsAlerts.show(applicationContext, id, payload.has("error"))
+                if (payload.optString("risk") != "low") SmsAlerts.show(applicationContext, id, payload.has("error"),
+                    payload.optString("title"), payload.optString("from"), event.getString("body"))
             }
         }
         Handler(Looper.getMainLooper()).post { SmsBridge.onStateChanged?.invoke() }
@@ -69,7 +76,8 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
         val completion = CompletableDeferred<JSONObject>()
         channel.setMethodCallHandler { call, reply ->
             when (call.method) {
-                "takeEvent" -> reply.success(mapOf("id" to event.getString("id"), "body" to event.getString("body"), "generation" to event.getLong("generation")))
+                "takeEvent" -> reply.success(mapOf("id" to event.getString("id"), "body" to event.getString("body"), "generation" to event.getLong("generation"),
+                    "sender" to event.optString("sender"), "language" to PendingSmsStore(applicationContext).language))
                 "complete" -> {
                     try {
                         val payload = JSONObject(call.arguments as Map<*, *>)
@@ -78,6 +86,8 @@ class SmsCheckWorker(context: Context, parameters: WorkerParameters) : Coroutine
                             val result = payload.getJSONObject("result")
                             require(result.getString("id") == event.getString("id") && result.getString("text") == event.getString("body"))
                             require(result.getString("source") == "sms" && payload.getString("risk") in listOf("low", "caution", "high"))
+                            require(payload.optString("title").length <= 80 && payload.optString("from").length <= 120)
+                            require(payload.getString("risk") == "low" || payload.optString("title").isNotBlank())
                         } else require(payload.optString("error") in listOf("emptyInput", "textTooLong", "urlTooLong", "tooManyLinks", "scanFailed"))
                         reply.success(null); completion.complete(payload)
                     } catch (_: Exception) { reply.error("invalid_result", "Background result was invalid", null); completion.completeExceptionally(IllegalStateException("Invalid background result")) }

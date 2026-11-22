@@ -3,6 +3,7 @@ import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import {createReputationLookup} from './reputation.mjs';
 import {createAiScanner, isAiConfigured} from './ai_scan.mjs';
+import {createLinkChecker} from './link_check.mjs';
 
 function readBody(req, limit = 8192) {
   return new Promise((resolve,reject) => {
@@ -21,11 +22,33 @@ function readBody(req, limit = 8192) {
   });
 }
 
+// Server-side answer deadlines. Keep each at least 1 s below the app's request timeout
+// (lib/features/scan/ai_scan_client.dart 18 s, lib/features/check/gateway_link_checker.dart 10 s); gateway_ops.test.mjs checks this.
+// Safe Browsing gets whatever is left of the link-check deadline, less this margin, so the answer still goes out in time.
+export const TIMEOUTS = Object.freeze({aiMs:16000, linkCheckMs:8000});
+const SEND_MARGIN_MS = 500;
+
+// AI context from /v1/link-check results: {url, destination, hops} per link, same bounds as the follower (8 hops, 2048-char URLs).
+const linkString = value => typeof value === 'string' && value.length > 0 && value.length <= 2048 && value.isWellFormed();
+function validLinks(links) {
+  return Array.isArray(links) && links.length <= 5 && links.every(link => link && typeof link === 'object' && !Array.isArray(link) &&
+    Object.keys(link).length === 3 && linkString(link.url) && (link.destination === null || linkString(link.destination)) &&
+    Array.isArray(link.hops) && link.hops.length <= 8 && link.hops.every(linkString));
+}
+
+// On Render, Cloudflare overwrites CF-Connecting-IP on every request; X-Forwarded-For is only appended to, so its entries are spoofable.
+function clientAddress(req, trustProxy) {
+  const forwarded = trustProxy ? req.headers['cf-connecting-ip'] : undefined;
+  return typeof forwarded === 'string' && forwarded ? forwarded : req.socket.remoteAddress ?? 'unknown';
+}
+
 export function createGateway({lookup = createReputationLookup({apiKey:process.env.SAFE_BROWSING_API_KEY}),
   configured = Boolean(process.env.SAFE_BROWSING_API_KEY), allowedOrigin = process.env.ALLOWED_ORIGIN ?? '',
   scanAi = createAiScanner({apiKey:process.env.GROQ_API_KEY,model:process.env.GROQ_MODEL}),
   aiConfigured = isAiConfigured(process.env.GROQ_API_KEY,process.env.GROQ_MODEL),
-  aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 50)} = {}) {
+  aiDailyLimit = Number(process.env.AI_DAILY_LIMIT ?? 50),
+  trustProxy = process.env.RENDER === 'true', timeouts = TIMEOUTS, resolve, request, now} = {}) {
+  const checkLink = createLinkChecker({lookup, resolve, request, now});
   const rates = new Map();
   const pending = new Map();
   let active = 0;
@@ -53,10 +76,12 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
     const isAi = req.url === '/v1/ai-scan';
     if (!isAi && req.url !== '/v1/link-check') { send(404,{error:'not_found'}); return; }
     if (req.method !== 'POST') { res.setHeader('Allow','POST'); send(405,{error:'method_not_allowed'}); return; }
+    let onDeadline = null;
+    const deadline = setTimeout(()=>{ onDeadline?.(); send(503,{error:'unavailable'}); },isAi ? timeouts.aiMs : timeouts.linkCheckMs);
+    res.once('close',()=>clearTimeout(deadline));
     const now = Date.now();
     for (const [key,value] of rates) if (value.reset <= now) rates.delete(key);
-    // Use the actual socket peer; a public deployment must configure trusted ingress limits.
-    const ip = `${isAi ? 'ai' : 'url'}:${req.socket.remoteAddress ?? 'unknown'}`;
+    const ip = `${isAi ? 'ai' : 'url'}:${clientAddress(req,trustProxy)}`;
     if (!rates.has(ip) && rates.size >= 10000) { send(429,{error:'rate_limited'}); return; }
     const rate = rates.get(ip) ?? {count:0,reset:now+60000};
     rate.count++; rates.set(ip,rate);
@@ -65,12 +90,12 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
     try {
       const body = JSON.parse(await readBody(req,isAi ? 65536 : 8192));
       if (isAi) {
-        if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length !== 2 || typeof body.text !== 'string' || !body.text.trim() || [...body.text].length > 10000 || !body.text.isWellFormed() || !['en','fil'].includes(body.responseLanguage)) { send(400,{error:'invalid_input'}); return; }
+        if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length !== (Object.hasOwn(body,'links') ? 3 : 2) || (Object.hasOwn(body,'links') && !validLinks(body.links)) || typeof body.text !== 'string' || !body.text.trim() || [...body.text].length > 10000 || !body.text.isWellFormed() || !['en','fil'].includes(body.responseLanguage)) { send(400,{error:'invalid_input'}); return; }
         const key = req.headers['idempotency-key'];
         if (typeof key !== 'string' || !/^[A-Za-z0-9_-]{8,100}$/.test(key)) { send(400,{error:'invalid_submission'}); return; }
         if (!aiConfigured) { send(503,{error:'unavailable'}); return; }
         const id = `${ip}:${key}`;
-        const fingerprint = createHash('sha256').update(JSON.stringify({text:body.text,responseLanguage:body.responseLanguage})).digest('hex');
+        const fingerprint = createHash('sha256').update(JSON.stringify({text:body.text,responseLanguage:body.responseLanguage,links:body.links})).digest('hex');
         let entry = pending.get(id);
         if (entry && entry.fingerprint !== fingerprint) { send(409,{error:'submission_conflict'}); return; }
         if (!entry) {
@@ -93,6 +118,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
           if (--current.clients === 0 && !res.writableEnded) current.controller.abort();
         };
         res.once('close',disconnect);
+        // Past the deadline this client is gone too: the last one leaving aborts the Groq call and frees its slot.
+        onDeadline = disconnect;
         const result = await current.promise;
         res.removeListener('close',disconnect);
         if (attached) { attached = false; current.clients--; }
@@ -111,8 +138,8 @@ export function createGateway({lookup = createReputationLookup({apiKey:process.e
       if (!configured || active >= 8) { send(503,{error:'unavailable'}); return; }
       active++;
       try {
-        const result = await lookup(url.href);
-        send(result.status === 'unavailable' ? 503 : 200,result);
+        // Unfinished checks still answer 200 with status 'unavailable' so the app can show hops so far.
+        send(200,await checkLink(url.href,AbortSignal.timeout(Math.max(0,now + timeouts.linkCheckMs - SEND_MARGIN_MS - Date.now()))));
       } finally { active--; }
     } catch (error) { send(error?.status === 413 ? 413 : 400,{error:error?.status === 413 ? 'request_too_large' : 'invalid_request'}); }
   });
