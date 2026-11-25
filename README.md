@@ -1,106 +1,186 @@
+<img src="design/icon/usisa-app-icon.svg" alt="Usisa app icon" width="96">
+
 # Usisa
 
-Usisa is a Flutter Android app that helps people in the Philippines review suspicious messages, links, and screenshots. It provides local checks first, with optional AI and URL reputation checks through a separate gateway.
+Checks suspicious messages, links and screenshots for scams in the Philippines.
 
-## Features
+![Android 7.0+](https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white)
+![Flutter 3.47.5](https://img.shields.io/badge/Flutter-3.47.5-02569B?logo=flutter&logoColor=white)
+![Dart 3.13.4](https://img.shields.io/badge/Dart-3.13.4-0175C2?logo=dart&logoColor=white)
+![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-5FA04E?logo=nodedotjs&logoColor=white)
+![Languages: English, Filipino](https://img.shields.io/badge/languages-English%20%7C%20Filipino-4A44C9)
 
-- Local message and link risk checks. Results are heuristic signals, not a guarantee that content is safe or malicious.
-- Screenshot import with on-device text recognition (OCR); extracted text can be reviewed and edited.
-- Optional AI review through the gateway, sent only with consent and after the text is reviewed.
-- Optional Google Safe Browsing URL lookup, also requiring consent.
-- Optional saved history and drafts, stored locally using encrypted storage.
-- New app shell (rebuild in progress): Check home with four tiles and the Auto SMS protection card; History, Learn and Settings are placeholders for now.
-- English and Filipino interface localization.
-- Incoming SMS check: the single build declares `RECEIVE_SMS`; with the Auto SMS protection switch on, each text (multipart texts joined) is checked in the background by the same Dart phone check the app uses. Texts under 24 hours old are still checked after a delay. Harmless texts only add to the "N texts checked today" count on the home card and store no content.
+## Why use this
 
-## Unfinished or not verified
+- Check a pasted message, a link, a screenshot, a photo, or content shared from another app.
+- The phone check runs first and works offline. Online checks ask for consent.
+- See where a link really goes, after redirects, and whether Google Safe Browsing flags it.
+- Get warned about scam texts as they arrive (Auto SMS protection, opt-in).
+- Use it in English or Filipino.
 
-- The SMS flow has unit tests (Kotlin `SmsPolicyTest`, Dart contract and home card tests); the end-to-end path on an emulator or phone still needs the manual check below. OEM battery managers (Xiaomi, Oppo, Vivo, Samsung) can stop it on real phones.
-- The Android picker recovery instrumentation test requires API 29 or newer; the available emulator was API 24. A physical Android device and iOS build have not been validated.
-- Release builds sign with the key named in the git-ignored `android/key.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`; `storeFile` is relative to `android/`). Without that file a release build fails on purpose. Release steps, the manual full-AI evaluation and the demo-day checklist are in [RELEASE.md](RELEASE.md).
-- Filipino safety copy still needs human review, and detection quality needs measurement against independently labeled Philippine examples. Risk results are heuristic.
-- The gateway runs on Render's Free plan, which is not meant for production. See [server/README.md](server/README.md) for deploy, keep-alive and quota settings.
-- There is no `LICENSE` file, so reuse and distribution terms are not specified.
+Verdicts are heuristic. They never guarantee that content is safe or malicious.
 
-## Requirements
+## Prerequisites
 
-- Flutter 3.47.5 and Dart 3.13.4 (the versions used for the recorded check).
-- Android SDK and JDK 17 for Android builds; the app's minimum Android SDK is 24.
-- Node.js 24 or newer only if running the optional gateway locally.
+| Tool | Version | Needed for |
+|---|---|---|
+| Git | any | Cloning |
+| Flutter (includes Dart 3.13.4) | 3.47.5 | Everything in the app |
+| Android SDK and JDK | JDK 17 | Android builds; minimum Android SDK 24 |
+| Android emulator or phone with USB debugging | API 24+ | Running the app |
+| Node.js | 24+ | Only for running the gateway locally |
 
-## Build and install
+`adb` (Android SDK `platform-tools`) must be on your `PATH` for the `adb` commands below. Run `flutter doctor` to check the setup.
 
-From the project root, fetch packages and run the app (there is one build, no flavors):
+## Quick start
+
+Start an emulator or connect a phone, then:
 
 ```sh
-flutter pub get
-flutter gen-l10n
+git clone https://github.com/heliokii/Usisa.git
+cd Usisa
 flutter run
 ```
 
-To build a debug APK and install it on a connected Android device or emulator:
+No API keys are needed. The app uses the hosted gateway at https://usisa-gateway.onrender.com for online checks. Its first request after a quiet spell can take up to a minute.
 
-```sh
-flutter build apk --debug
-adb install -r build/app/outputs/flutter-apk/app-debug.apk
-```
+## Configuration
 
-The application ID is `com.usisa.app`.
+Only needed to run your own gateway. API keys stay on the gateway, never in Flutter assets or `--dart-define`.
 
-## Optional local gateway
+1. From the project root, copy the example file. This overwrites an existing `.env`.
 
-The on-device checks and OCR work without the gateway. AI review and online URL reputation checks need it. Keep API keys on the gateway; do not put them in Flutter assets or Dart defines.
+   ```sh
+   cp .env.example .env
+   ```
 
-In PowerShell, copy `.env.example` to `.env` at the project root and fill in the server-side keys. Then start the gateway:
+2. Fill in the keys:
 
-```powershell
-Copy-Item .env.example .env
-cd server
-npm start
-```
+   | Variable | Purpose |
+   |---|---|
+   | `GROQ_API_KEY` | Turns on AI review ([Groq](https://console.groq.com/keys)) |
+   | `GROQ_MODEL` | Must be on the allow-list in `server/ai_scan.mjs`; the example value works |
+   | `SAFE_BROWSING_API_KEY` | Turns on link checks ([Google Safe Browsing](https://developers.google.com/safe-browsing)) |
 
-For the Android emulator, run the app with the host gateway URL:
+3. Start the gateway (no `npm install`, it has no dependencies):
 
-```sh
-flutter run --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
-```
+   ```sh
+   cd server
+   npm start
+   ```
 
-For a USB-connected device, run `adb reverse tcp:8787 tcp:8787` and use `http://127.0.0.1:8787` as `USISA_GATEWAY_URL`.
+4. In a second terminal, from the project root, point the app at it.
 
-Environment variables, timeouts, rate limits, the Render deploy and the keep-alive pinger are documented in [server/README.md](server/README.md).
+   Emulator:
 
-### Link check response
+   ```sh
+   flutter run --dart-define=USISA_GATEWAY_URL=http://10.0.2.2:8787
+   ```
 
-`POST /v1/link-check {"url": "..."}` follows the link's redirects on the gateway (GET only, at most 8 hops, 2.5 s per hop, 6 s total, ports 80/443, internal addresses refused), then sends the raw link and every hop to Safe Browsing in one call. A finished check answers HTTP 200 with:
+   Phone over USB:
 
-| Field | Meaning |
+   ```sh
+   adb reverse tcp:8787 tcp:8787
+   flutter run --dart-define=USISA_GATEWAY_URL=http://127.0.0.1:8787
+   ```
+
+All variables, endpoints, rate limits and timeouts: [server/README.md](server/README.md).
+
+## Commands
+
+Run from the project root unless the command changes directory.
+
+| Command | What it does |
 |---|---|
-| `status` | `matched` (some URL is flagged), `blockedByShortener` (the shortener itself refused the link), `noMatch` (every hop followed and none flagged; not proof of safety), `unavailable` (Couldn't check) |
-| `destination` | Real destination URL, or `null` when it is unconfirmed. For `non_web_destination` it is the non-web link (for example `intent://...`) |
-| `hops` | Every URL reached after the submitted one, in order. Partial when unfinished: show it as "so far" only |
-| `expansion` | `expanded`, `blocked` or `unresolved` |
-| `reason` | Only when `expansion` is `unresolved`: `timeout_hop`, `timeout_total`, `dns_error`, `blocked_address`, `blocked_port`, `credentials_in_url`, `fetch_error`, `http_error`, `too_many_hops`, `loop`, `non_web_destination`, `interstitial` (stopped on a shortener's preview page) |
-| `blockedUrl` | Only with `blockedByShortener`: the link the shortener blocked |
-| `flaggedUrls`, `threatTypes`, `expiresAt` | Which URLs Safe Browsing flagged, the threat types, and until when the match may be used |
-| `checkedAt`, `provider` | Check time and `Google Safe Browsing` |
+| `flutter pub get` | Fetch packages |
+| `flutter gen-l10n` | Regenerate localizations after editing `lib/l10n/*.arb` |
+| `flutter analyze` | Lint |
+| `flutter build apk --debug` | Debug APK in `build/app/outputs/flutter-apk/` |
+| `flutter build apk --release` | Signed APK; needs `android/key.properties` |
+| `dart run tool/release_gate.dart` | Analyze, tests and phone-only evaluation; fails on any miss |
+| `npm --prefix server start` | Run the gateway |
 
-A flagged hop wins over an unfinished expansion. Anything other than `noMatch` must never show as Looks safe. HTTP 503 `{"error":"unavailable"}` still means the gateway is not configured or busy. Results are cached in memory: chains 10 min, clean results 5 min, unfinished chains 30 s.
+There is one build, with no flavors. The application ID is `com.usisa.app`.
 
-## Verification commands
+## Architecture
 
-```sh
-flutter analyze --no-pub
-flutter test --no-pub
-dart run tool/release_gate.dart                         # analyze + tests + phone-only evaluation; fails on any miss
-cd android && ./gradlew :app:testDebugUnitTest          # Kotlin unit tests (SmsPolicyTest)
-cd android && ./gradlew :app:connectedDebugAndroidTest  # instrumentation tests, needs a device/emulator
+```mermaid
+flowchart LR
+  input["Paste, screenshot, share"] --> pipeline["CheckPipeline"]
+  sms["Incoming SMS"] --> phone
+  pipeline --> phone["Phone check (offline)"]
+  pipeline -- consent --> gateway["Node gateway"]
+  gateway --> safe["Redirects + Safe Browsing"]
+  gateway --> groq["Groq AI review"]
+  pipeline --> verdict["Verdict"]
+  phone --> verdict
 ```
+
+| Path | Contents |
+|---|---|
+| `lib/main.dart`, `lib/app.dart` | Entry points and tab shell: Check, History, Learn, Settings |
+| `lib/features/check/` | Check pipeline (`check.dart`), phone check, screens |
+| `lib/features/sms/` | SMS setup and background check |
+| `lib/features/history/` | Encrypted on-device History |
+| `lib/l10n/` | English and Filipino strings |
+| `android/app/src/main/kotlin/` | SMS receiver, workers, alerts, share bridge |
+| `server/` | Gateway: plain `node:http`, holds the API keys |
+| `tool/` | Evaluation, evaluation-set builder, release gate |
+
+## Testing
+
+| Command | What it runs |
+|---|---|
+| `flutter test` | Dart unit and widget tests |
+| `flutter test tool/evaluate.dart` | Phone-only Quality bar evaluation |
+| `npm --prefix server test` | Gateway tests |
+| `cd android && ./gradlew :app:testDebugUnitTest` | Kotlin unit tests |
+| `cd android && ./gradlew :app:connectedDebugAndroidTest` | Instrumentation tests; needs a device or emulator |
+
+The `gradlew` script is not in Git. `flutter build apk --debug` creates it. In Windows PowerShell 5.1, run `cd android`, then `.\gradlew.bat :app:testDebugUnitTest`.
 
 ### Manual SMS check (emulator)
 
-1. `flutter run` on an emulator, then turn on **Auto SMS protection** on the home card and allow SMS.
-2. Send a harmless text: `adb emu sms send 09171234567 "Hi Ma, uuwi ako mamaya"`. Within a few seconds the card changes from "0 texts checked today" to "1 text checked today". Nothing is saved for it.
-3. Send a scam text: `adb emu sms send 09171234567 "Your GCash account is locked. Verify at http://gcash-verify.example now"`. The count goes up again and, with notifications allowed, a notification titled "Dangerous text" from 09171234567 appears (the message itself is hidden on the lock screen). Tapping it opens Scan a message with the text and runs the check; the text is also in History marked "From your texts". Notification permission is not requested yet (#42); on Android 13+ allow it in the app's system settings.
-4. If nothing changes, watch `adb logcat -s WM-WorkerWrapper:I flutter:I`.
+1. `flutter run` on an emulator, turn on **Auto SMS protection** on the home card, and allow SMS and notifications.
+2. Send a harmless text. The card should count "1 text checked today". Nothing is saved for it.
 
-The recorded check described above did not exercise SMS flows or API 29+ picker recovery. See [MOCK_TEST.md](MOCK_TEST.md) for synthetic sample content and [DESIGN.md](DESIGN.md) for the product design notes.
+   ```sh
+   adb emu sms send 09171234567 "Hi Ma, uuwi ako mamaya"
+   ```
+
+3. Send a scam text. A "Dangerous text" notification should appear, with the message hidden on the lock screen. Tapping it runs the check, and History marks it "From your texts".
+
+   ```sh
+   adb emu sms send 09171234567 "Your GCash account is locked. Verify at http://gcash-verify.example now"
+   ```
+
+4. If nothing changes, watch the log:
+
+   ```sh
+   adb logcat -s WM-WorkerWrapper:I flutter:I
+   ```
+
+More sample content: [MOCK_TEST.md](MOCK_TEST.md). Real-phone checks: [SMS_PHONE_CHECKLIST.md](SMS_PHONE_CHECKLIST.md).
+
+## Deployment
+
+- **App:** signed APK, see [RELEASE.md](RELEASE.md).
+- **Gateway:** Render Free web service, see [server/README.md](server/README.md#deploying-on-render). The Free plan is not meant for production.
+
+## Customization
+
+- **Detection rules:** `lib/features/check/phone_check.dart` (pure Dart). Tune on the development split only.
+- **Text:** edit both `app_en.arb` and `app_fil.arb`, then run `flutter gen-l10n`.
+- **AI warning codes:** change `server/ai_schema.mjs`, `lib/features/scan/ai_models.dart` and the `.arb` files together.
+- **Terms and design:** [GLOSSARY.md](GLOSSARY.md), [DESIGN.md](DESIGN.md).
+
+## Known limits
+
+- The SMS flow has unit tests but needs the manual check above end to end. Phone-maker battery managers (Xiaomi, Oppo, Vivo, Samsung) can stop it.
+- The iOS build is not validated.
+- Filipino safety copy still needs human review.
+- Detection quality needs measurement against independently labelled Philippine examples.
+
+## License
+
+No `LICENSE` file, so reuse terms for the code are not specified. Evaluation data in `test/fixtures/evaluation/` carries its own terms; the Kaggle-derived files are CC BY-NC-SA 4.0 (non-commercial).

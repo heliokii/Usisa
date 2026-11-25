@@ -9,6 +9,23 @@ npm start   # loads ../.env if it exists
 npm test
 ```
 
+## Link check response
+
+`POST /v1/link-check {"url": "..."}` follows the link's redirects on the gateway (GET only, at most 8 hops, 2.5 s per hop, 6 s total, ports 80/443, internal addresses refused), then sends the raw link and every hop to Safe Browsing in one call. A finished check answers HTTP 200 with:
+
+| Field | Meaning |
+|---|---|
+| `status` | `matched` (some URL is flagged), `blockedByShortener` (the shortener itself refused the link), `noMatch` (every hop followed and none flagged; not proof of safety), `unavailable` (Couldn't check) |
+| `destination` | Real destination URL, or `null` when it is unconfirmed. For `non_web_destination` it is the non-web link (for example `intent://...`) |
+| `hops` | Every URL reached after the submitted one, in order. Partial when unfinished: show it as "so far" only |
+| `expansion` | `expanded`, `blocked` or `unresolved` |
+| `reason` | Only when `expansion` is `unresolved`: `timeout_hop`, `timeout_total`, `dns_error`, `blocked_address`, `blocked_port`, `credentials_in_url`, `fetch_error`, `http_error`, `too_many_hops`, `loop`, `non_web_destination`, `interstitial` (stopped on a shortener's preview page) |
+| `blockedUrl` | Only with `blockedByShortener`: the link the shortener blocked |
+| `flaggedUrls`, `threatTypes`, `expiresAt` | Which URLs Safe Browsing flagged, the threat types, and until when the match may be used |
+| `checkedAt`, `provider` | Check time and `Google Safe Browsing` |
+
+A flagged hop wins over an unfinished expansion. Anything other than `noMatch` must never show as Looks safe. HTTP 503 `{"error":"unavailable"}` still means the gateway is not configured or busy. Results are cached in memory: chains 10 min, clean results 5 min, unfinished chains 30 s.
+
 ## Environment variables
 
 | Variable | Default | Purpose |
