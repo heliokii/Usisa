@@ -30,7 +30,7 @@ void main() {
     testWidgets('Learn shows Golden rules, the 8 topics and Report a scam in $language', (tester) async {
       final l = lookupAppLocalizations(Locale(language));
       await show(tester, LearnScreen(readAloud: ReadAloud(FakeTts({}))), language: language);
-      final titles = [l.learnGoldenTitle, for (final t in learnTopics) l.learnTopicTitle(t), l.learnReportTitle];
+      final titles = [l.learnGoldenHeadline, for (final t in learnTopics) l.learnTopicHeadline(t), l.learnReportTitle];
       for (final title in titles) {
         await scrollTo(tester, find.text(title));
         expect(find.text(title), findsOneWidget);
@@ -52,13 +52,17 @@ void main() {
     });
   }
 
-  testWidgets('Read aloud on a topic card speaks that card in the app language', (tester) async {
+  testWidgets('a topic card opens its page, whose Read aloud speaks it in the app language', (tester) async {
     final tts = FakeTts({'en-US', 'tl-PH'});
     await show(tester, LearnScreen(readAloud: ReadAloud(tts)), language: 'fil');
-    final card = find.byKey(const ValueKey('learn-family'));
+    final card = find.byKey(const ValueKey('learn-card-family'));
     await scrollTo(tester, card);
-    final button = find.descendant(of: card, matching: find.text('Basahin nang malakas'));
-    await tester.ensureVisible(button);
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+    final page = find.byKey(const ValueKey('learn-family'));
+    expect(page, findsOneWidget);
+    final button = find.descendant(of: page, matching: find.text('Basahin nang malakas'));
+    await tester.scrollUntilVisible(button, 300, scrollable: find.byType(Scrollable).last);
     await tester.pump();
     await tester.tap(button);
     await tester.pump();
@@ -66,6 +70,30 @@ void main() {
     expect(tts.spoken, hasLength(1));
     expect(tts.spoken.single.$1, 'tl-PH');
     expect(tts.spoken.single.$2, startsWith(lookupAppLocalizations(const Locale('fil')).learnTopicTitle('family')));
+  });
+
+  testWidgets('an article\'s Check a message button starts a check, and Back returns to Learn', (tester) async {
+    var checks = 0;
+    await show(tester, LearnScreen(readAloud: ReadAloud(FakeTts({})), onCheckMessage: () => checks++));
+    await tester.tap(find.text('Think before you tap.'));
+    await tester.pumpAndSettle();
+    final button = find.text('Check a message');
+    await tester.scrollUntilVisible(button, 300, scrollable: find.byType(Scrollable).last);
+    await tester.pumpAndSettle();
+    await tester.tap(button);
+    expect(checks, 1);
+
+    await tester.scrollUntilVisible(find.text('Back to Learn'), -300, scrollable: find.byType(Scrollable).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Back to Learn'));
+    await tester.pumpAndSettle();
+    expect(find.text('Know the red flags'), findsOneWidget);
+  });
+
+  testWidgets('a topic page opened from a verdict has no Check a message button', (tester) async {
+    await show(tester, LearnTopicScreen(topic: 'parcel', readAloud: ReadAloud(FakeTts({}))));
+    await tester.scrollUntilVisible(find.text('Not sure? Check it first.'), 300);
+    expect(find.text('Check a message'), findsNothing);
   });
 
   test('verdict reasons map to their Learn topic', () {

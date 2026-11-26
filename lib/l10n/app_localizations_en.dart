@@ -606,4 +606,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stopReading => 'Stop reading';
+
+  @override
+  String get learnEyebrow => 'Know a little. Stay ahead.';
+
+  @override
+  String get learnTitle => 'Learn and stay safe';
+
+  @override
+  String get learnGoldenHeadline => 'Think before you tap.';
+
+  @override
+  String get learnGoldenLede =>
+      'Three habits that stop most scams before they start.';
+
+  @override
+  String get learnReadGuide => 'Read the guide';
+
+  @override
+  String get learnRedFlagsHeading => 'Know the red flags';
+
+  @override
+  String learnTopicHeadline(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Your bank won\'t ask for your OTP.',
+      'prize': 'Too good to be true?',
+      'family': 'Is that really your family?',
+      'aid': 'Real aid has no fee.',
+      'parcel': 'Your parcel can wait.',
+      'job': 'Real jobs don\'t make you pay.',
+      'investment': 'No one can guarantee profit.',
+      'other': 'That free bonus isn\'t free.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String learnTopicTeaser(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing':
+          'Banks and e-wallets never ask for your OTP, PIN or password.',
+      'prize': 'You can\'t win a raffle you never joined.',
+      'family': 'A new number asking for money? Call the number you know.',
+      'aid': 'Government aid is never released through a link in a text.',
+      'parcel': 'A small re-delivery fee can cost you much more.',
+      'job': 'Easy pay for likes ends with you paying them.',
+      'investment': 'Guaranteed high returns are a warning sign.',
+      'other': 'Many gambling sites are illegal and keep your money.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get learnReportLink => 'Where to report';
+
+  @override
+  String get backToLearn => 'Back to Learn';
+
+  @override
+  String get learnCalloutTitle => 'Not sure? Check it first.';
+
+  @override
+  String get learnCalloutBody =>
+      'A short pause can protect you and the people you love.';
+
+  @override
+  String get learnCheckButton => 'Check a message';
 }

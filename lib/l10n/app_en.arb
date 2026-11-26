@@ -166,5 +166,20 @@
   "aiScanLinkSubtitle": "See where it leads and why.",
   "aiScanScreenshotSubtitle": "Read a message from a picture.",
   "checkingLabel": "Checking…",
-  "stopReading": "Stop reading"
+  "stopReading": "Stop reading",
+  "learnEyebrow": "Know a little. Stay ahead.",
+  "learnTitle": "Learn and stay safe",
+  "learnGoldenHeadline": "Think before you tap.",
+  "learnGoldenLede": "Three habits that stop most scams before they start.",
+  "learnReadGuide": "Read the guide",
+  "learnRedFlagsHeading": "Know the red flags",
+  "learnTopicHeadline": "{topic, select, phishing{Your bank won't ask for your OTP.} prize{Too good to be true?} family{Is that really your family?} aid{Real aid has no fee.} parcel{Your parcel can wait.} job{Real jobs don't make you pay.} investment{No one can guarantee profit.} other{That free bonus isn't free.}}",
+  "learnTopicTeaser": "{topic, select, phishing{Banks and e-wallets never ask for your OTP, PIN or password.} prize{You can't win a raffle you never joined.} family{A new number asking for money? Call the number you know.} aid{Government aid is never released through a link in a text.} parcel{A small re-delivery fee can cost you much more.} job{Easy pay for likes ends with you paying them.} investment{Guaranteed high returns are a warning sign.} other{Many gambling sites are illegal and keep your money.}}",
+  "learnReportLink": "Where to report",
+  "backToLearn": "Back to Learn",
+  "learnCalloutTitle": "Not sure? Check it first.",
+  "learnCalloutBody": "A short pause can protect you and the people you love.",
+  "learnCheckButton": "Check a message",
+  "@learnTopicHeadline": {"description":"Short headline on a Learn topic card and page.","placeholders":{"topic":{"type":"String"}}},
+  "@learnTopicTeaser": {"description":"One-line summary under a Learn topic headline.","placeholders":{"topic":{"type":"String"}}}
 }
