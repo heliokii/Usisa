@@ -611,4 +611,71 @@ class AppLocalizationsFil extends AppLocalizations {
 
   @override
   String get stopReading => 'Itigil ang pagbasa';
+
+  @override
+  String get learnEyebrow => 'Konting alam, laging handa.';
+
+  @override
+  String get learnTitle => 'Matuto at mag-ingat';
+
+  @override
+  String get learnGoldenHeadline => 'Mag-isip bago pumindot.';
+
+  @override
+  String get learnGoldenLede =>
+      'Tatlong gawi na pumipigil sa karamihan ng scam.';
+
+  @override
+  String get learnReadGuide => 'Basahin ang gabay';
+
+  @override
+  String get learnRedFlagsHeading => 'Kilalanin ang mga babala';
+
+  @override
+  String learnTopicHeadline(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing': 'Hindi hihingin ng bangko ang OTP mo.',
+      'prize': 'Parang sobrang ganda para maging totoo?',
+      'family': 'Kapamilya mo ba talaga \'yan?',
+      'aid': 'Walang bayad ang totoong ayuda.',
+      'parcel': 'Makapaghihintay ang parcel mo.',
+      'job': 'Hindi ka pagbabayarin ng totoong trabaho.',
+      'investment': 'Walang makakapagsiguro ng kita.',
+      'other': 'Hindi libre ang libreng bonus.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String learnTopicTeaser(String topic) {
+    String _temp0 = intl.Intl.selectLogic(topic, {
+      'phishing':
+          'Hindi humihingi ang bangko o e-wallet ng OTP, PIN o password.',
+      'prize': 'Hindi ka mananalo sa raffle na hindi mo sinalihan.',
+      'family':
+          'Bagong numero na humihingi ng pera? Tawagan ang numerong alam mo.',
+      'aid': 'Hindi ibinibigay ang ayuda sa link na galing sa text.',
+      'parcel': 'Ang maliit na re-delivery fee ay puwedeng mauwi sa mas malaking talo.',
+      'job': 'Ang madaling kita sa pag-like ay nauuwi sa ikaw ang nagbabayad.',
+      'investment': 'Babala ang siguradong malaking kita.',
+      'other': 'Marami sa mga site ng sugal ay ilegal at kinukuha ang pera mo.',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get learnReportLink => 'Saan magre-report';
+
+  @override
+  String get backToLearn => 'Bumalik sa Alamin';
+
+  @override
+  String get learnCalloutTitle => 'May duda? Suriin muna.';
+
+  @override
+  String get learnCalloutBody =>
+      'Ang sandaling paghinto ay makapagpoprotekta sa iyo at sa mga mahal mo.';
+
+  @override
+  String get learnCheckButton => 'Suriin ang isang mensahe';
 }

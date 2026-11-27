@@ -979,6 +979,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stop reading'**
   String get stopReading;
+
+  /// No description provided for @learnEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Know a little. Stay ahead.'**
+  String get learnEyebrow;
+
+  /// No description provided for @learnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn and stay safe'**
+  String get learnTitle;
+
+  /// No description provided for @learnGoldenHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Think before you tap.'**
+  String get learnGoldenHeadline;
+
+  /// No description provided for @learnGoldenLede.
+  ///
+  /// In en, this message translates to:
+  /// **'Three habits that stop most scams before they start.'**
+  String get learnGoldenLede;
+
+  /// No description provided for @learnReadGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the guide'**
+  String get learnReadGuide;
+
+  /// No description provided for @learnRedFlagsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Know the red flags'**
+  String get learnRedFlagsHeading;
+
+  /// Short headline on a Learn topic card and page.
+  ///
+  /// In en, this message translates to:
+  /// **'{topic, select, phishing{Your bank won\'t ask for your OTP.} prize{Too good to be true?} family{Is that really your family?} aid{Real aid has no fee.} parcel{Your parcel can wait.} job{Real jobs don\'t make you pay.} investment{No one can guarantee profit.} other{That free bonus isn\'t free.}}'**
+  String learnTopicHeadline(String topic);
+
+  /// One-line summary under a Learn topic headline.
+  ///
+  /// In en, this message translates to:
+  /// **'{topic, select, phishing{Banks and e-wallets never ask for your OTP, PIN or password.} prize{You can\'t win a raffle you never joined.} family{A new number asking for money? Call the number you know.} aid{Government aid is never released through a link in a text.} parcel{A small re-delivery fee can cost you much more.} job{Easy pay for likes ends with you paying them.} investment{Guaranteed high returns are a warning sign.} other{Many gambling sites are illegal and keep your money.}}'**
+  String learnTopicTeaser(String topic);
+
+  /// No description provided for @learnReportLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Where to report'**
+  String get learnReportLink;
+
+  /// No description provided for @backToLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Learn'**
+  String get backToLearn;
+
+  /// No description provided for @learnCalloutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure? Check it first.'**
+  String get learnCalloutTitle;
+
+  /// No description provided for @learnCalloutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A short pause can protect you and the people you love.'**
+  String get learnCalloutBody;
+
+  /// No description provided for @learnCheckButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Check a message'**
+  String get learnCheckButton;
 }
 
 class _AppLocalizationsDelegate

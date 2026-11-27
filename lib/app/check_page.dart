@@ -96,6 +96,62 @@ class PrimaryPillButton extends StatelessWidget {
   }
 }
 
+/// The top bar of a full page: wordmark, then the tagline in spaced capitals, over a hairline.
+class PageBar extends StatelessWidget {
+  const PageBar({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: UsisaColors.hairline)),
+    ),
+    child: Row(
+      children: [
+        const Wordmark(),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            AppLocalizations.of(context).pageTagline.toUpperCase(),
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: UsisaColors.inkMuted, letterSpacing: 1.4),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// An underlined "Back to …" text link that pops the page.
+class BackLink extends StatelessWidget {
+  const BackLink(this.label, {super.key});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: TextButton(
+      onPressed: () => Navigator.of(context).maybePop(),
+      style: TextButton.styleFrom(
+        foregroundColor: UsisaColors.ink,
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(48, 48),
+        tapTargetSize: MaterialTapTargetSize.padded,
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          decoration: TextDecoration.underline,
+          decorationColor: UsisaColors.lilac,
+          decorationThickness: 2,
+        ),
+      ),
+    ),
+  );
+}
+
 /// The layout every check page shares: wordmark bar, "Back to check", eyebrow, big title and intro,
 /// the page's own content, then a centred footnote and the main button pinned at the bottom.
 class CheckPage extends StatelessWidget {
@@ -131,27 +187,7 @@ class CheckPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: UsisaColors.hairline)),
-                ),
-                child: Row(
-                  children: [
-                    const Wordmark(),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        l.pageTagline.toUpperCase(),
-                        textAlign: TextAlign.end,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: tt.labelMedium?.copyWith(color: UsisaColors.inkMuted, letterSpacing: 1.4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              const PageBar(),
               Expanded(
                 // Short pages: build everything at once so large text can scroll to any field.
                 child: SingleChildScrollView(
@@ -159,26 +195,7 @@ class CheckPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton(
-                          onPressed: () => Navigator.of(context).maybePop(),
-                          style: TextButton.styleFrom(
-                            foregroundColor: UsisaColors.ink,
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(48, 48),
-                            tapTargetSize: MaterialTapTargetSize.padded,
-                          ),
-                          child: Text(
-                            l.backToCheck,
-                            style: tt.bodyMedium?.copyWith(
-                              decoration: TextDecoration.underline,
-                              decorationColor: UsisaColors.lilac,
-                              decorationThickness: 2,
-                            ),
-                          ),
-                        ),
-                      ),
+                      BackLink(l.backToCheck),
                       const SizedBox(height: 16),
                       if (showEyebrow) ...[Eyebrow(l.pageEyebrow), const SizedBox(height: 10)],
                       Semantics(

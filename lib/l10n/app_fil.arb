@@ -146,5 +146,18 @@
   "aiScanLinkSubtitle": "Alamin kung saan ito papunta at bakit.",
   "aiScanScreenshotSubtitle": "Basahin ang mensahe mula sa larawan.",
   "checkingLabel": "Sinusuri…",
-  "stopReading": "Itigil ang pagbasa"
+  "stopReading": "Itigil ang pagbasa",
+  "learnEyebrow": "Konting alam, laging handa.",
+  "learnTitle": "Matuto at mag-ingat",
+  "learnGoldenHeadline": "Mag-isip bago pumindot.",
+  "learnGoldenLede": "Tatlong gawi na pumipigil sa karamihan ng scam.",
+  "learnReadGuide": "Basahin ang gabay",
+  "learnRedFlagsHeading": "Kilalanin ang mga babala",
+  "learnTopicHeadline": "{topic, select, phishing{Hindi hihingin ng bangko ang OTP mo.} prize{Parang sobrang ganda para maging totoo?} family{Kapamilya mo ba talaga 'yan?} aid{Walang bayad ang totoong ayuda.} parcel{Makapaghihintay ang parcel mo.} job{Hindi ka pagbabayarin ng totoong trabaho.} investment{Walang makakapagsiguro ng kita.} other{Hindi libre ang libreng bonus.}}",
+  "learnTopicTeaser": "{topic, select, phishing{Hindi humihingi ang bangko o e-wallet ng OTP, PIN o password.} prize{Hindi ka mananalo sa raffle na hindi mo sinalihan.} family{Bagong numero na humihingi ng pera? Tawagan ang numerong alam mo.} aid{Hindi ibinibigay ang ayuda sa link na galing sa text.} parcel{Ang maliit na re-delivery fee ay puwedeng mauwi sa mas malaking talo.} job{Ang madaling kita sa pag-like ay nauuwi sa ikaw ang nagbabayad.} investment{Babala ang siguradong malaking kita.} other{Marami sa mga site ng sugal ay ilegal at kinukuha ang pera mo.}}",
+  "learnReportLink": "Saan magre-report",
+  "backToLearn": "Bumalik sa Alamin",
+  "learnCalloutTitle": "May duda? Suriin muna.",
+  "learnCalloutBody": "Ang sandaling paghinto ay makapagpoprotekta sa iyo at sa mga mahal mo.",
+  "learnCheckButton": "Suriin ang isang mensahe"
 }

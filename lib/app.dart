@@ -251,6 +251,9 @@ class _ShellState extends State<_Shell> {
   // The Check tab keeps its own page stack, so the bottom nav stays visible on its pages.
   final _checkNav = GlobalKey<NavigatorState>();
   final _checkNavStopsReading = StopReadingOnNavigate();
+  // Learn articles open inside the tab too.
+  final _learnNav = GlobalKey<NavigatorState>();
+  final _learnNavStopsReading = StopReadingOnNavigate();
 
   /// Shows the Check tab and returns its navigator, emptied back to home.
   NavigatorState _checkTab({bool reset = false}) {
@@ -441,7 +444,17 @@ class _ShellState extends State<_Shell> {
                 ),
               ),
               HistoryScreen(history: widget.history, settings: widget.settings, runCheck: widget.runCheck),
-              const LearnScreen(),
+              NavigatorPopHandler<Object?>(
+                enabled: _tab == 2,
+                onPopWithResult: (_) => _learnNav.currentState?.maybePop(),
+                child: Navigator(
+                  key: _learnNav,
+                  observers: [_learnNavStopsReading],
+                  onGenerateRoute: (_) => MaterialPageRoute<void>(
+                    builder: (_) => LearnScreen(onCheckMessage: () => _startCheck(CheckKind.message)),
+                  ),
+                ),
+              ),
               SettingsScreen(settings: widget.settings, history: widget.history, smsOn: _smsOn, onSmsChanged: _setSms),
             ],
           ),
@@ -460,6 +473,7 @@ class _ShellState extends State<_Shell> {
               ReadAloud.stopAll();
               // Tapping Check again returns to the Check home.
               if (i == 0 && _tab == 0) _checkNav.currentState?.popUntil((route) => route.isFirst);
+              if (i == 2 && _tab == 2) _learnNav.currentState?.popUntil((route) => route.isFirst);
               setState(() => _tab = i);
             },
             destinations: [
